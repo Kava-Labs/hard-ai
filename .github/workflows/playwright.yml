@@ -1,8 +1,9 @@
 name: Playwright Tests
 on:
   push:
-  pull_request:jobs:
+  pull_request:
 
+jobs:
   test:
     timeout-minutes: 60
     runs-on: ubuntu-latest
