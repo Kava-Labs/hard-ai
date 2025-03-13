@@ -1,0 +1,22 @@
+name: Client Test CI
+on: [push]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  unit-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Use Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+      - name: npm install
+        run: npm install
+      - name: run linter
+        run: npm run lint
+      - name: Run unit tests
+        run: npm run test:unit
