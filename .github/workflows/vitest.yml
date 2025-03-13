@@ -1,4 +1,4 @@
-name: Client Test CI
+name: Unit tests
 on: [push]
 
 concurrency:
@@ -19,4 +19,4 @@ jobs:
       - name: run linter
         run: npm run lint
       - name: Run unit tests
-        run: npm run test
+        run: npm run test:unit
