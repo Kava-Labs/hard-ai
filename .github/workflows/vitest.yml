@@ -1,5 +1,7 @@
-name: Client Test CI
-on: [push]
+name: Unit tests
+on:
+  push:
+  pull_request:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
@@ -19,4 +21,4 @@ jobs:
       - name: run linter
         run: npm run lint
       - name: Run unit tests
-        run: npm run test
+        run: npm run test:unit
