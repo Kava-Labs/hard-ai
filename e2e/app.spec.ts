@@ -8,7 +8,9 @@ test('renders the page with correct displayed & meta title', async ({
 
   await expect(page).toHaveTitle(/Hard AI/);
 
-  const heading = await page.getByText('Hard AI');
+  const diamondLogo = page.getByRole('img', { name: 'Hard Diamond logo' });
+  const hardAILogo = page.getByRole('img', { name: 'Hard AI logo' });
 
-  await expect(heading).toBeVisible();
+  await expect(diamondLogo).toBeVisible();
+  await expect(hardAILogo).toBeVisible();
 });
