@@ -6,8 +6,8 @@ export const useTheme = () => {
   if (!context) throw new Error('useTheme must be used within a ThemeProvider');
 
   const {
-    theme: { layout, colors, typography, spacing, borderRadius, logo },
+    theme: { layout, colors, typography, spacing, borderRadius },
   } = context;
 
-  return { layout, colors, typography, spacing, borderRadius, logo };
+  return { layout, colors, typography, spacing, borderRadius };
 };

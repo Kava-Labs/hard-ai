@@ -1,5 +1,3 @@
-import { ComponentType } from 'react';
-
 export interface ThemeLayout {
   headerHeight: string;
   controlHeight: string;
@@ -58,12 +56,9 @@ export interface Theme {
   typography: ThemeTypography;
   spacing: ThemeSpacing;
   borderRadius: ThemeBorderRadius;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  logo?: ComponentType<any>;
 }
 
-// Base theme with shared styles
-export const baseTheme: Theme = {
+export const theme: Theme = {
   layout: {
     headerHeight: '60px',
     controlHeight: '100px',
@@ -112,9 +107,3 @@ export const baseTheme: Theme = {
     full: '9999px',
   },
 };
-
-export const themes = {
-  base: baseTheme,
-};
-
-export type ThemeName = keyof typeof themes;
