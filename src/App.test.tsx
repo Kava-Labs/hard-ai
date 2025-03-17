@@ -6,10 +6,10 @@ describe('App Component', () => {
   it('renders "Hard AI" text', () => {
     const wrapper = render(<App />);
 
-    const diamondLogo = wrapper.getByRole('img', { name: 'Hard Diamond logo' });
     const hardAILogo = wrapper.getByRole('img', { name: 'Hard AI logo' });
+    const welcomeText = wrapper.getByText('How can I help you with Web3?');
 
-    expect(diamondLogo).toBeInTheDocument();
     expect(hardAILogo).toBeInTheDocument();
+    expect(welcomeText).toBeInTheDocument();
   });
 });

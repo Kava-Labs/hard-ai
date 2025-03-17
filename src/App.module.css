@@ -1,0 +1,24 @@
+.controlsContainer {
+  margin: auto;
+  max-width: 768px;
+  width: 100%;
+  z-index: 40;
+  background: var(--colors-bgPrimary);
+  padding-left: var(--spacing-sm);
+  padding-right: var(--spacing-sm);
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  gap: var(--spacing-xs);
+  padding-bottom: var(--spacing-xs);
+}
+
+.chatview {
+  position: relative;
+  contain: layout;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  height: 100vh;
+}
+
