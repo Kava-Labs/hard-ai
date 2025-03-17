@@ -10,7 +10,9 @@ test('renders the page with correct displayed & meta title', async ({
 
   const diamondLogo = page.getByRole('img', { name: 'Hard Diamond logo' });
   const hardAILogo = page.getByRole('img', { name: 'Hard AI logo' });
+  const welcomeText = page.getByText('How can I help you with Web3?');
 
   await expect(diamondLogo).toBeVisible();
   await expect(hardAILogo).toBeVisible();
+  await expect(welcomeText).toBeVisible();
 });
