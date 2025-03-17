@@ -23,11 +23,13 @@ export const App = () => {
           <img src={hardDiamondLogo} alt="Hard Diamond logo" height={40} />
           <div className={styles.buttonGroup}>
             {isMobileLayout && isMobileSideBarOpen && (
-              <MobileSideBar setIsMobileSideBarOpen={setIsMobileSideBarOpen} />
+              <MobileSideBar
+                onCloseClick={() => setIsMobileSideBarOpen(false)}
+              />
             )}
             {!isMobileLayout && !isDesktopSideBarHidden && (
               <DesktopSideBar
-                setIsDesktopSideBarHidden={setIsDesktopSideBarHidden}
+                onCloseClick={() => setIsDesktopSideBarHidden(true)}
               />
             )}
           </div>
@@ -42,9 +44,9 @@ export const App = () => {
         <div className={styles.chatview}>
           <div className={styles.chatHeader}>
             <NavBar
-              onMenu={() => setIsMobileSideBarOpen(true)}
-              onPanelOpen={() => setIsDesktopSideBarHidden(false)}
-              isPanelOpen={!isDesktopSideBarHidden}
+              onMobileMenuClick={() => setIsMobileSideBarOpen(true)}
+              onDesktopMenuClick={() => setIsDesktopSideBarHidden(false)}
+              isDesktopSideBarOpen={!isDesktopSideBarHidden}
             />
           </div>
           <div className={styles.controlsContainer}>

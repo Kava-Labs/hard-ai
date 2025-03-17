@@ -2,12 +2,10 @@ import ButtonIcon from './ButtonIcon';
 import { PanelLeftClose, TextSearch } from 'lucide-react';
 
 interface MobileSideBarProps {
-  setIsDesktopSideBarHidden: (i: boolean) => void;
+  onCloseClick: () => void;
 }
 
-export const DesktopSideBar = ({
-  setIsDesktopSideBarHidden,
-}: MobileSideBarProps) => {
+export const DesktopSideBar = ({ onCloseClick }: MobileSideBarProps) => {
   return (
     <>
       <ButtonIcon
@@ -27,7 +25,7 @@ export const DesktopSideBar = ({
           position: 'bottom',
         }}
         aria-label="Close Menu"
-        onClick={() => setIsDesktopSideBarHidden(true)}
+        onClick={onCloseClick}
       />
     </>
   );

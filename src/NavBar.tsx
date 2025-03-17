@@ -4,12 +4,16 @@ import ButtonIcon from './ButtonIcon';
 import { useIsMobileLayout } from './theme/useIsMobileLayout';
 
 interface NavBarProps {
-  onMenu(): void;
-  onPanelOpen(): void;
-  isPanelOpen: boolean;
+  onMobileMenuClick(): void;
+  onDesktopMenuClick(): void;
+  isDesktopSideBarOpen: boolean;
 }
 
-export const NavBar = ({ onMenu, onPanelOpen, isPanelOpen }: NavBarProps) => {
+export const NavBar = ({
+  onMobileMenuClick,
+  onDesktopMenuClick,
+  isDesktopSideBarOpen,
+}: NavBarProps) => {
   const isMobileLayout = useIsMobileLayout();
 
   return (
@@ -17,7 +21,7 @@ export const NavBar = ({ onMenu, onPanelOpen, isPanelOpen }: NavBarProps) => {
       <div className={styles.leftSection}>
         {!isMobileLayout ? (
           <div className={styles.desktopControls}>
-            {!isPanelOpen && (
+            {!isDesktopSideBarOpen && (
               <ButtonIcon
                 icon={PanelLeftOpen}
                 tooltip={{
@@ -25,7 +29,7 @@ export const NavBar = ({ onMenu, onPanelOpen, isPanelOpen }: NavBarProps) => {
                   position: 'bottom',
                 }}
                 aria-label="Open Menu"
-                onClick={onPanelOpen}
+                onClick={onDesktopMenuClick}
               />
             )}
             <ButtonIcon
@@ -46,7 +50,7 @@ export const NavBar = ({ onMenu, onPanelOpen, isPanelOpen }: NavBarProps) => {
                 position: 'bottom',
               }}
               aria-label="Toggle Menu"
-              onClick={onMenu}
+              onClick={onMobileMenuClick}
             />
           </div>
         )}

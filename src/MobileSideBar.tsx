@@ -2,12 +2,10 @@ import { TextSearch, X as CloseX } from 'lucide-react';
 import ButtonIcon from './ButtonIcon';
 
 interface MobileSideBarProps {
-  setIsMobileSideBarOpen: (i: boolean) => void;
+  onCloseClick: () => void;
 }
 
-export const MobileSideBar = ({
-  setIsMobileSideBarOpen,
-}: MobileSideBarProps) => {
+export const MobileSideBar = ({ onCloseClick }: MobileSideBarProps) => {
   return (
     <>
       <ButtonIcon
@@ -27,7 +25,7 @@ export const MobileSideBar = ({
           position: 'bottom',
         }}
         aria-label="Close Menu"
-        onClick={() => setIsMobileSideBarOpen(false)}
+        onClick={onCloseClick}
       />
     </>
   );
