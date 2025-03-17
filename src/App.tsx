@@ -15,48 +15,44 @@ export const App = () => {
   const [isDesktopSideBarHidden, setIsDesktopSideBarHidden] = useState(false);
 
   return (
-    <>
-      <div className={styles.app}>
-        <div
-          className={`${styles.sidebar} ${isMobileSideBarOpen ? styles.isOpen : ''} ${isDesktopSideBarHidden ? styles.isHidden : ''}`}
-        >
-          <div className={styles.sidebarHeader}>
-            <img src={hardDiamondLogo} alt="Hard Diamond logo" height={40} />
-            <div className={styles.buttonGroup}>
-              {isMobileLayout && isMobileSideBarOpen && (
-                <MobileSideBar
-                  setIsMobileSideBarOpen={setIsMobileSideBarOpen}
-                />
-              )}
-              {!isMobileLayout && !isDesktopSideBarHidden && (
-                <DesktopSideBar
-                  setIsDesktopSideBarHidden={setIsDesktopSideBarHidden}
-                />
-              )}
-            </div>
-          </div>
-
-          <div className={styles.sidebarContent}>
-            <ChatHistory />
+    <div className={styles.app}>
+      <div
+        className={`${styles.sidebar} ${isMobileSideBarOpen ? styles.isOpen : ''} ${isDesktopSideBarHidden ? styles.isHidden : ''}`}
+      >
+        <div className={styles.sidebarHeader}>
+          <img src={hardDiamondLogo} alt="Hard Diamond logo" height={40} />
+          <div className={styles.buttonGroup}>
+            {isMobileLayout && isMobileSideBarOpen && (
+              <MobileSideBar setIsMobileSideBarOpen={setIsMobileSideBarOpen} />
+            )}
+            {!isMobileLayout && !isDesktopSideBarHidden && (
+              <DesktopSideBar
+                setIsDesktopSideBarHidden={setIsDesktopSideBarHidden}
+              />
+            )}
           </div>
         </div>
 
-        <div className={styles.content}>
-          <div className={styles.chatview}>
-            <div className={styles.chatHeader}>
-              <NavBar
-                onMenu={() => setIsMobileSideBarOpen(true)}
-                onPanelOpen={() => setIsDesktopSideBarHidden(false)}
-                isPanelOpen={!isDesktopSideBarHidden}
-              />
-            </div>
-            <div className={styles.controlsContainer}>
-              <LandingContent />
-              <ChatInput />
-            </div>
+        <div className={styles.sidebarContent}>
+          <ChatHistory />
+        </div>
+      </div>
+
+      <div className={styles.content}>
+        <div className={styles.chatview}>
+          <div className={styles.chatHeader}>
+            <NavBar
+              onMenu={() => setIsMobileSideBarOpen(true)}
+              onPanelOpen={() => setIsDesktopSideBarHidden(false)}
+              isPanelOpen={!isDesktopSideBarHidden}
+            />
+          </div>
+          <div className={styles.controlsContainer}>
+            <LandingContent />
+            <ChatInput />
           </div>
         </div>
       </div>
-    </>
+    </div>
   );
 };
