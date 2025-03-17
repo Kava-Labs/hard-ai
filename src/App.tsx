@@ -10,24 +10,26 @@ import { DesktopSideBar } from './DesktopSideBar';
 import { NavBar } from './NavBar';
 
 export const App = () => {
-  const isMobileLayout = useIsMobileLayout();
   const [isMobileSideBarOpen, setIsMobileSideBarOpen] = useState(false);
   const [isDesktopSideBarOpen, setIsDesktopSideBarOpen] = useState(true);
 
+  const isMobileLayout = useIsMobileLayout();
+  const showMobileSideBar = isMobileLayout && isMobileSideBarOpen;
+  const showDesktopSideBar = !isMobileLayout && isDesktopSideBarOpen;
+  const sideBarStyles = `${styles.sidebar} ${isMobileSideBarOpen ? styles.isOpen : ''} ${isDesktopSideBarOpen ? '' : styles.isHidden}`;
+
   return (
     <div className={styles.app}>
-      <div
-        className={`${styles.sidebar} ${isMobileSideBarOpen ? styles.isOpen : ''} ${isDesktopSideBarOpen ? '' : styles.isHidden}`}
-      >
+      <div className={sideBarStyles}>
         <div className={styles.sidebarHeader}>
           <img src={hardDiamondLogo} alt="Hard Diamond logo" height={40} />
           <div className={styles.buttonGroup}>
-            {isMobileLayout && isMobileSideBarOpen && (
+            {showMobileSideBar && (
               <MobileSideBar
                 onCloseClick={() => setIsMobileSideBarOpen(false)}
               />
             )}
-            {!isMobileLayout && isDesktopSideBarOpen && (
+            {showDesktopSideBar && (
               <DesktopSideBar
                 onCloseClick={() => setIsDesktopSideBarOpen(false)}
               />
