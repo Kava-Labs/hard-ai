@@ -1,0 +1,89 @@
+.inputContainer {
+  display: flex;
+  align-items: flex-end;
+  position: relative;
+  min-height: 0;
+  flex: 1;
+}
+
+.input {
+  width: 100%;
+  background-color: transparent;
+  border: none;
+  color: var(--colors-textPrimary);
+  font-family: inherit;
+  font-weight: inherit;
+  font-size: 1.6rem; /* Explicit font size */
+  overflow-y: auto; /* Enable vertical scrolling if needed */
+  resize: none; /* Disable manual resizing */
+  text-wrap: wrap;
+  min-height: 30px;
+  padding-top: 4px;
+  scrollbar-color: var(--colors-textMuted) var(--colors-bgTertiary);
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+
+  &:focus {
+    border: none;
+    outline: none;
+    caret-color: white;
+  }
+}
+
+.input::placeholder {
+  font-size: 1.6rem;
+}
+
+.input::-webkit-scrollbar-track {
+  background-color: var(--colors-bgTertiary);
+}
+
+.input::-webkit-scrollbar-thumb {
+  background-color: var(--colors-textMuted);
+  border-radius: var(--borderRadius-md);
+}
+
+.sendChatButton {
+  width: 3rem;
+  height: 3rem;
+  padding: 0;
+  border-radius: 50%;
+  box-sizing: border-box;
+  background: var(--colors-accent);
+  border: 1px solid var(--colors-accentTransparent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 0.3s ease,
+  opacity 0.2s ease;
+
+  &:active {
+    opacity: 0.6;
+  }
+
+  &:disabled {
+    background: var(--colors-accentTransparent);
+    border-color: transparent;
+    cursor: not-allowed;
+    opacity: 0.5;
+    border: 1px solid var(--colors-accentTransparent);
+    border-radius: 50%;
+  }
+}
+
+.controls {
+  display: flex;
+  flex-direction: row;
+  flex-shrink: 0;
+  background-color: var(--colors-bgTertiary);
+  border-radius: var(--borderRadius-md);
+  padding: var(--spacing-md);
+  gap: var(--spacing-md);
+}
+
+.importantInfo {
+  font-size: 1.2rem;
+  text-align: center;
+  color: var(--colors-textMuted);
+}
