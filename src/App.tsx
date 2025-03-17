@@ -12,12 +12,12 @@ import { NavBar } from './NavBar';
 export const App = () => {
   const isMobileLayout = useIsMobileLayout();
   const [isMobileSideBarOpen, setIsMobileSideBarOpen] = useState(false);
-  const [isDesktopSideBarHidden, setIsDesktopSideBarHidden] = useState(false);
+  const [isDesktopSideBarOpen, setIsDesktopSideBarOpen] = useState(true);
 
   return (
     <div className={styles.app}>
       <div
-        className={`${styles.sidebar} ${isMobileSideBarOpen ? styles.isOpen : ''} ${isDesktopSideBarHidden ? styles.isHidden : ''}`}
+        className={`${styles.sidebar} ${isMobileSideBarOpen ? styles.isOpen : ''} ${isDesktopSideBarOpen ? '' : styles.isHidden}`}
       >
         <div className={styles.sidebarHeader}>
           <img src={hardDiamondLogo} alt="Hard Diamond logo" height={40} />
@@ -27,9 +27,9 @@ export const App = () => {
                 onCloseClick={() => setIsMobileSideBarOpen(false)}
               />
             )}
-            {!isMobileLayout && !isDesktopSideBarHidden && (
+            {!isMobileLayout && isDesktopSideBarOpen && (
               <DesktopSideBar
-                onCloseClick={() => setIsDesktopSideBarHidden(true)}
+                onCloseClick={() => setIsDesktopSideBarOpen(false)}
               />
             )}
           </div>
@@ -45,8 +45,8 @@ export const App = () => {
           <div className={styles.chatHeader}>
             <NavBar
               onMobileMenuClick={() => setIsMobileSideBarOpen(true)}
-              onDesktopMenuClick={() => setIsDesktopSideBarHidden(false)}
-              isDesktopSideBarOpen={!isDesktopSideBarHidden}
+              onDesktopMenuClick={() => setIsDesktopSideBarOpen(true)}
+              isDesktopSideBarOpen={isDesktopSideBarOpen}
             />
           </div>
           <div className={styles.controlsContainer}>
