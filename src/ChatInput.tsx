@@ -35,11 +35,11 @@ export const ChatInput = ({ setHasMessages }: ChatInputProps) => {
     },
     [],
   );
-  
+
   const onSubmitClick = () => {
     setInputValue('');
     setHasMessages(true);
-  }
+  };
 
   return (
     <>

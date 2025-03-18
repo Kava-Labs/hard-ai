@@ -1,4 +1,4 @@
-import { ConversationHistory } from "../types";
+import { ConversationHistory } from '../types';
 
 type GroupedConversations = Record<string, ConversationHistory[]>;
 
@@ -12,7 +12,7 @@ export const getTimeGroup = (timestamp: number): string => {
   const diffDays = Math.floor(
     (now.getTime() - timestamp) / (1000 * 60 * 60 * 24),
   );
-  
+
   if (diffDays === 0) return 'Today';
   if (diffDays === 1) return 'Yesterday';
   if (diffDays <= 7) return 'Last week';

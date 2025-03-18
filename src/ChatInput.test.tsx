@@ -13,7 +13,7 @@ vi.mock('./ChatInput.module.css', () => ({
 }));
 
 describe('ChatInput', () => {
-  const setHasMessages = vi.fn()
+  const setHasMessages = vi.fn();
   beforeEach(() => {
     vi.clearAllMocks();
   });
