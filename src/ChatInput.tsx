@@ -43,7 +43,6 @@ export const ChatInput = ({ setHasMessages }: ChatInputProps) => {
             placeholder="Ask anything..."
           />
           <button
-            data-testid="chat-view-button"
             ref={buttonRef}
             className={styles.sendChatButton}
             type="submit"

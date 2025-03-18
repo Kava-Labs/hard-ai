@@ -19,7 +19,7 @@ export interface ConversationProps {
 
 const ConversationComponent = ({ messages }: ConversationProps) => {
   return (
-    <div className={styles.conversationContainer} data-testid="conversation">
+    <div className={styles.conversationContainer}>
       {messages.map((message, index) => {
         if (message.role === 'user') {
           return (

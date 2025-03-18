@@ -8,7 +8,7 @@ export interface ContentProps {
 
 export const ContentComponent = ({ content, role }: ContentProps) => {
   return (
-    <div data-testid="conversation-message" data-chat-role={role}>
+    <div data-chat-role={role}>
       <span
         className={styles.content}
         dangerouslySetInnerHTML={{ __html: content }}
