@@ -13,12 +13,13 @@ vi.mock('./ChatInput.module.css', () => ({
 }));
 
 describe('ChatInput', () => {
+  const setHasMessages = vi.fn()
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
   it('should resize textarea correctly after sending a message', () => {
-    const wrapper = render(<ChatInput />);
+    const wrapper = render(<ChatInput setHasMessages={setHasMessages} />);
 
     const textarea = wrapper.getByPlaceholderText(
       'Ask anything...',
@@ -49,7 +50,7 @@ describe('ChatInput', () => {
   });
 
   it('should disable the send button when input is empty', () => {
-    const wrapper = render(<ChatInput />);
+    const wrapper = render(<ChatInput setHasMessages={setHasMessages} />);
 
     const sendButton = wrapper.getByRole('button', { name: 'Send Chat' });
 
@@ -67,7 +68,7 @@ describe('ChatInput', () => {
   });
 
   it('textarea should be focused by default', () => {
-    const wrapper = render(<ChatInput />);
+    const wrapper = render(<ChatInput setHasMessages={setHasMessages} />);
 
     const textarea = wrapper.getByPlaceholderText('Ask anything...');
     expect(textarea).toHaveFocus();
