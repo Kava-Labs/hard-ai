@@ -1,5 +1,5 @@
 import styles from './ChatInput.module.css';
-import { ChangeEvent, useCallback, useRef, useState } from 'react';
+import { ChangeEvent, useCallback, useEffect, useRef, useState } from 'react';
 import { SendChatIcon } from './SendChatIcon';
 
 const DEFAULT_HEIGHT = '30px';
@@ -12,6 +12,13 @@ export const ChatInput = ({ setHasMessages }: ChatInputProps) => {
   const [inputValue, setInputValue] = useState('');
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
+
+  //  focus the input on mount
+  useEffect(() => {
+    if (inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, []);
 
   const handleInputChange = useCallback(
     (event: ChangeEvent<HTMLTextAreaElement>) => {
@@ -28,6 +35,11 @@ export const ChatInput = ({ setHasMessages }: ChatInputProps) => {
     },
     [],
   );
+  
+  const onSubmitClick = () => {
+    setInputValue('');
+    setHasMessages(true);
+  }
 
   return (
     <>
@@ -46,7 +58,7 @@ export const ChatInput = ({ setHasMessages }: ChatInputProps) => {
             ref={buttonRef}
             className={styles.sendChatButton}
             type="submit"
-            onClick={() => setHasMessages(true)}
+            onClick={onSubmitClick}
             aria-label="Send Chat"
             disabled={inputValue.length === 0}
           >
