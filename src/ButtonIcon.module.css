@@ -31,9 +31,9 @@
   color: var(--colors-textPrimary);
   border: 1px solid var(--colors-borderSecondary);
   transition:
-          opacity 0.2s ease,
-          visibility 0.2s ease,
-          transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    opacity 0.2s ease,
+    visibility 0.2s ease,
+    transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   z-index: 50;
 }
 

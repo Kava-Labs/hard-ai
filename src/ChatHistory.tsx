@@ -25,22 +25,22 @@ export const ChatHistory = ({ conversations }: ChatHistoryProps) => {
           </small>
         </div>
       ) : (
-        Object.entries(groupedHistories).map(([timeGroup, groupConversations]) => (
-          <div key={timeGroup} className={styles.timeGroup}>
-            <small className={styles.timeGroupTitle}>{timeGroup}</small>
-            <div className={styles.timeGroupContent}>
-              {groupConversations.map((conversation) => (
-                <ChatHistoryItem
-                  key={conversation.id}
-                  conversation={conversation}
-                />
-              ))}
+        Object.entries(groupedHistories).map(
+          ([timeGroup, groupConversations]) => (
+            <div key={timeGroup} className={styles.timeGroup}>
+              <small className={styles.timeGroupTitle}>{timeGroup}</small>
+              <div className={styles.timeGroupContent}>
+                {groupConversations.map((conversation) => (
+                  <ChatHistoryItem
+                    key={conversation.id}
+                    conversation={conversation}
+                  />
+                ))}
+              </div>
             </div>
-          </div>
-        ))
+          ),
+        )
       )}
     </div>
   );
 };
-
-export default ChatHistory;

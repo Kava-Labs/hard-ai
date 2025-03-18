@@ -110,7 +110,7 @@ ol > li {
 }
 
 ol > li::before {
-  content: counter(list-counter) ".";
+  content: counter(list-counter) '.';
   position: absolute;
   left: 0;
   width: 1.5em;
@@ -128,7 +128,7 @@ ul > li {
 }
 
 ul > li::before {
-  content: "•";
+  content: '•';
   position: absolute;
   left: 0.75em;
   width: 1em;
