@@ -17,6 +17,7 @@
     "highlight.js": "^11.11.1",
     "lucide-react": "^0.482.0",
     "marked": "^15.0.7",
+    "@streamparser/json": "^0.0.21",
     "marked-highlight": "^2.2.1",
     "openai": "^4.73.1",
     "react": "^19.0.0",
