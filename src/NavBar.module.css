@@ -5,8 +5,8 @@
   flex-direction: row;
   justify-content: space-between;
   align-items: center;
-  padding-left: var(--spacing-md);
-  padding-right: var(--spacing-md);
+  padding-left: calc(var(--spacing-md) + .2rem);
+  padding-right: calc(var(--spacing-md) + .2rem);
 }
 
 .leftSection {
