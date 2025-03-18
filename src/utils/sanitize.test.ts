@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { sanitizeContent } from './sanatize';
+import { sanitizeContent } from './sanitize';
 
 describe('sanitizeContent', () => {
   it('should convert simple Markdown to safe HTML', async () => {
