@@ -1,14 +1,14 @@
-import { LandingContent } from './LandingContent';
-import { ChatInput } from './ChatInput';
+import { LandingContent } from './components/LandingContent';
+import { ChatInput } from './components/ChatInput';
 import styles from './App.module.css';
 import { useIsMobileLayout } from './theme/useIsMobileLayout';
-import { MobileSideBar } from './MobileSideBar';
+import { MobileSideBar } from './components/MobileSideBar';
 import { useState } from 'react';
 import hardDiamondLogo from './assets/hardDiamondLogo.svg';
-import { DesktopSideBar } from './DesktopSideBar';
-import { NavBar } from './NavBar';
-import { ConversationContainer } from './ConversationContainer';
-import { ChatHistoryContainer } from './ChatHistoryContainer';
+import { DesktopSideBar } from './components/DesktopSideBar';
+import { NavBar } from './components/NavBar';
+import { ConversationContainer } from './components/ConversationContainer';
+import { ChatHistoryContainer } from './components/ChatHistoryContainer';
 
 export const App = () => {
   const [isMobileSideBarOpen, setIsMobileSideBarOpen] = useState(false);

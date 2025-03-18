@@ -1,8 +1,8 @@
 import styles from './ChatHistory.module.css';
 import { Bot } from 'lucide-react';
-import { ConversationHistory } from './types';
+import { ConversationHistory } from '.././types';
 import { useMemo } from 'react';
-import { groupConversationsByTime } from './utils/helpers';
+import { groupConversationsByTime } from '.././utils/helpers';
 import { ChatHistoryItem } from './ChatHistoryItem';
 
 interface ChatHistoryProps {

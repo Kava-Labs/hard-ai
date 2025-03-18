@@ -1,7 +1,7 @@
 import styles from './NavBar.module.css';
 import { Menu, PanelLeftOpen, SquarePen } from 'lucide-react';
 import ButtonIcon from './ButtonIcon';
-import { useIsMobileLayout } from './theme/useIsMobileLayout';
+import { useIsMobileLayout } from '.././theme/useIsMobileLayout';
 
 interface NavBarProps {
   onMobileMenuClick(): void;

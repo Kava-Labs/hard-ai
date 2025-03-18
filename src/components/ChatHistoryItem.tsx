@@ -2,7 +2,7 @@ import { memo } from 'react';
 import ButtonIcon from './ButtonIcon';
 import { EllipsisVertical } from 'lucide-react';
 import styles from './ChatHistoryItem.module.css';
-import { ConversationHistory } from './types';
+import { ConversationHistory } from '.././types';
 
 interface ChatHistoryItemProps {
   conversation: ConversationHistory;

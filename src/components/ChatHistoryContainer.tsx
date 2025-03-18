@@ -1,5 +1,5 @@
 import { ChatHistory } from './ChatHistory';
-import { ConversationHistory } from './types';
+import { ConversationHistory } from '.././types';
 
 export const ChatHistoryContainer = () => {
   const conversations: ConversationHistory[] = [
