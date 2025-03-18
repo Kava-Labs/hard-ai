@@ -19,7 +19,7 @@ export const ChatHistory = ({ conversations }: ChatHistoryProps) => {
     <div className={styles.chatHistoryContainer}>
       {conversations.length === 0 ? (
         <div className={styles.emptyState}>
-          <Bot className={styles.emptyStateIcon} size={24}/>
+          <Bot className={styles.emptyStateIcon} size={24} />
           <small className={styles.emptyStateText}>
             Start a new chat to begin
           </small>

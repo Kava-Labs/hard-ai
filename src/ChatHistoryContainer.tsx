@@ -1,5 +1,5 @@
-import { ChatHistory } from "./ChatHistory";
-import { ConversationHistory } from "./types";
+import { ChatHistory } from './ChatHistory';
+import { ConversationHistory } from './types';
 
 export const ChatHistoryContainer = () => {
   const conversations: ConversationHistory[] = [
@@ -75,4 +75,4 @@ export const ChatHistoryContainer = () => {
   return (
     <ChatHistory conversations={conversations} />
   );
-}
+};
