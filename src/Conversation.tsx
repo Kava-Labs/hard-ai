@@ -23,13 +23,11 @@ const ConversationComponent = ({ messages }: ConversationProps) => {
       {messages.map((message, index) => {
         if (message.role === 'user') {
           return (
-            <div key={index}>
-              <div className={styles.userInputContainer}>
-                <Content
-                  role={message.role}
-                  content={message.content as string}
-                />
-              </div>
+            <div key={index} className={styles.userInputContainer}>
+              <Content
+                role={message.role}
+                content={message.content as string}
+              />
             </div>
           );
         }
