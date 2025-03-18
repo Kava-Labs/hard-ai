@@ -2,7 +2,11 @@ import styles from './Conversation.module.css';
 import { Content } from './Content';
 import hardAILogo from './assets/hardAILogo.svg';
 
-const AssistantMessage = ({ content }: { content: string }) => {
+interface AssistantMessageProps {
+  content: string;
+}
+
+const AssistantMessage = ({ content }: AssistantMessageProps) => {
   return (
     <div className={styles.assistantOutputContainer}>
       <img

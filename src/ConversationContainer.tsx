@@ -22,9 +22,5 @@ export const ConversationContainer = () => {
     },
   ];
 
-  return (
-    <div className="conversation-container">
-      <Conversation messages={messages} />
-    </div>
-  );
+  return <Conversation messages={messages} />;
 };

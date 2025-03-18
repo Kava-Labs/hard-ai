@@ -3,11 +3,12 @@ import { ChatInput } from './ChatInput';
 import styles from './App.module.css';
 import { useIsMobileLayout } from './theme/useIsMobileLayout';
 import { MobileSideBar } from './MobileSideBar';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { ChatHistory } from './ChatHistory';
 import hardDiamondLogo from './assets/hardDiamondLogo.svg';
 import { DesktopSideBar } from './DesktopSideBar';
 import { NavBar } from './NavBar';
+import { ConversationContainer } from './ConversationContainer';
 
 export const App = () => {
   const [isMobileSideBarOpen, setIsMobileSideBarOpen] = useState(false);
@@ -18,6 +19,9 @@ export const App = () => {
   const showDesktopSideBar = !isMobileLayout && isDesktopSideBarOpen;
   const sideBarStyles = `${styles.sidebar} ${isMobileSideBarOpen ? styles.isOpen : ''} ${isDesktopSideBarOpen ? '' : styles.isHidden}`;
 
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  const hasMessages = false;
   return (
     <div className={styles.app}>
       <div className={sideBarStyles}>
@@ -43,19 +47,53 @@ export const App = () => {
       </div>
 
       <div className={styles.content}>
-        <div className={styles.chatview}>
-          <div className={styles.chatHeader}>
-            <NavBar
-              onMobileMenuClick={() => setIsMobileSideBarOpen(true)}
-              onDesktopMenuClick={() => setIsDesktopSideBarOpen(true)}
-              isDesktopSideBarOpen={isDesktopSideBarOpen}
-            />
-          </div>
-          <div className={styles.controlsContainer}>
-            <LandingContent />
-            <ChatInput />
+        <div className={styles.chatview} data-testid="chatview">
+          <div ref={containerRef} className={styles.scrollContainer}>
+            <div className={styles.chatHeader}>
+              <NavBar
+                onMobileMenuClick={() => setIsMobileSideBarOpen(true)}
+                onDesktopMenuClick={() => setIsDesktopSideBarOpen(true)}
+                isDesktopSideBarOpen={isDesktopSideBarOpen}
+              />
+            </div>
+
+            <div className={styles.chatContainer}>
+              <div
+                className={`${styles.chatContent} ${hasMessages ? styles.fullHeight : ''}`}
+              >
+                {hasMessages && <ConversationContainer />}
+              </div>
+
+              <div
+                className={`${styles.controlsContainer} ${hasMessages ? styles.positionSticky : ''}`}
+                data-testid="controls"
+              >
+                {!hasMessages && <LandingContent />}
+
+                <ChatInput />
+              </div>
+            </div>
           </div>
         </div>
+
+        {/*<div className={styles.chatview}>*/}
+        {/*  <div className={styles.chatHeader}>*/}
+        {/*    <NavBar*/}
+        {/*      onMobileMenuClick={() => setIsMobileSideBarOpen(true)}*/}
+        {/*      onDesktopMenuClick={() => setIsDesktopSideBarOpen(true)}*/}
+        {/*      isDesktopSideBarOpen={isDesktopSideBarOpen}*/}
+        {/*    />*/}
+        {/*  </div>*/}
+        {/*  <div className={styles.controlsContainer}>*/}
+        {/*    <div className={styles.chatContainer}>*/}
+        {/*      <div className={`${styles.chatContent} ${styles.fullHeight}`}>*/}
+        {/*        <ConversationContainer />*/}
+        {/*        /!*<LandingContent />*!/*/}
+        {/*        <ChatInput />*/}
+        {/*      </div>*/}
+        {/*    </div>*/}
+        {/*  </div>*/}
+        {/*</div>*/}
       </div>
     </div>
   );

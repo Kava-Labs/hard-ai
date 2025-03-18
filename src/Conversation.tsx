@@ -28,7 +28,6 @@ const ConversationComponent = ({ messages }: ConversationProps) => {
                 <Content
                   role={message.role}
                   content={message.content as string}
-                  data-testid="user-message"
                 />
               </div>
             </div>
