@@ -8,6 +8,7 @@ import { ChatHistory } from './ChatHistory';
 import hardDiamondLogo from './assets/hardDiamondLogo.svg';
 import { DesktopSideBar } from './DesktopSideBar';
 import { NavBar } from './NavBar';
+import { ConversationContainer } from './ConversationContainer';
 
 export const App = () => {
   const [isMobileSideBarOpen, setIsMobileSideBarOpen] = useState(false);
@@ -17,6 +18,8 @@ export const App = () => {
   const showMobileSideBar = isMobileLayout && isMobileSideBarOpen;
   const showDesktopSideBar = !isMobileLayout && isDesktopSideBarOpen;
   const sideBarStyles = `${styles.sidebar} ${isMobileSideBarOpen ? styles.isOpen : ''} ${isDesktopSideBarOpen ? '' : styles.isHidden}`;
+
+  const [hasMessages, setHasMessages] = useState<boolean>(false);
 
   return (
     <div className={styles.app}>
@@ -44,16 +47,27 @@ export const App = () => {
 
       <div className={styles.content}>
         <div className={styles.chatview}>
-          <div className={styles.chatHeader}>
-            <NavBar
-              onMobileMenuClick={() => setIsMobileSideBarOpen(true)}
-              onDesktopMenuClick={() => setIsDesktopSideBarOpen(true)}
-              isDesktopSideBarOpen={isDesktopSideBarOpen}
-            />
-          </div>
-          <div className={styles.controlsContainer}>
-            <LandingContent />
-            <ChatInput />
+          <div className={styles.scrollContainer}>
+            <div className={styles.chatHeader}>
+              <NavBar
+                onMobileMenuClick={() => setIsMobileSideBarOpen(true)}
+                onDesktopMenuClick={() => setIsDesktopSideBarOpen(true)}
+                isDesktopSideBarOpen={isDesktopSideBarOpen}
+              />
+            </div>
+            <div className={styles.chatContainer}>
+              <div
+                className={`${styles.chatContent} ${hasMessages ? styles.fullHeight : ''}`}
+              >
+                {hasMessages && <ConversationContainer />}
+              </div>
+              <div
+                className={`${styles.controlsContainer} ${hasMessages ? styles.positionSticky : ''}`}
+              >
+                {!hasMessages && <LandingContent />}
+                <ChatInput setHasMessages={setHasMessages} />
+              </div>
+            </div>
           </div>
         </div>
       </div>

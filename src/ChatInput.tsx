@@ -4,7 +4,11 @@ import { SendChatIcon } from './SendChatIcon';
 
 const DEFAULT_HEIGHT = '30px';
 
-export const ChatInput = () => {
+interface ChatInputProps {
+  setHasMessages: (hasMessages: boolean) => void;
+}
+
+export const ChatInput = ({ setHasMessages }: ChatInputProps) => {
   const [inputValue, setInputValue] = useState('');
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
@@ -39,11 +43,10 @@ export const ChatInput = () => {
             placeholder="Ask anything..."
           />
           <button
-            data-testid="chat-view-button"
             ref={buttonRef}
             className={styles.sendChatButton}
             type="submit"
-            onClick={() => ({})}
+            onClick={() => setHasMessages(true)}
             aria-label="Send Chat"
             disabled={inputValue.length === 0}
           >
