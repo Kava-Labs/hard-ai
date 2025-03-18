@@ -1,6 +1,6 @@
 import styles from './Conversation.module.css';
 import { Content } from './Content';
-import hardAILogo from './assets/hardAILogo.svg';
+import hardDiamondLogo from './assets/hardDiamondLogo.svg';
 
 interface AssistantMessageProps {
   content: string;
@@ -11,7 +11,7 @@ const AssistantMessage = ({ content }: AssistantMessageProps) => {
     <div className={styles.assistantOutputContainer}>
       <img
         className={styles.conversationChatIcon}
-        src={hardAILogo}
+        src={hardDiamondLogo}
         alt="Hard AI logo"
       />
       <div className={styles.assistantContainer}>
