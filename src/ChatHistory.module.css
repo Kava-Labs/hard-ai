@@ -22,5 +22,22 @@
 .emptyStateText {
   margin: 0;
   text-transform: uppercase;
-  font-size: 1.2rem
+  font-size: 1.2rem;
+}
+
+.timeGroup {
+  margin-bottom: var(--spacing-md);
+}
+
+.timeGroupTitle {
+  margin: var(--spacing-xs) var(--spacing-md);
+  color: var(--colors-textTertiary);
+  font-size: 1rem;
+  font-weight: var(--typography-fontWeightSemibold);
+  text-transform: uppercase;
+}
+
+.timeGroupContent {
+  display: flex;
+  flex-direction: column;
 }

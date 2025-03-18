@@ -9,6 +9,7 @@ import hardDiamondLogo from './assets/hardDiamondLogo.svg';
 import { DesktopSideBar } from './DesktopSideBar';
 import { NavBar } from './NavBar';
 import { ConversationContainer } from './ConversationContainer';
+import { ChatHistoryContainer } from './ChatHistoryContainer';
 
 export const App = () => {
   const [isMobileSideBarOpen, setIsMobileSideBarOpen] = useState(false);
@@ -41,7 +42,7 @@ export const App = () => {
         </div>
 
         <div className={styles.sidebarContent}>
-          <ChatHistory />
+          <ChatHistoryContainer />
         </div>
       </div>
 
