@@ -9,9 +9,7 @@ interface ChatHistoryProps {
   conversations: ConversationHistory[];
 }
 
-export const ChatHistory = ({
-                              conversations,
-                            }: ChatHistoryProps) => {
+export const ChatHistory = ({ conversations }: ChatHistoryProps) => {
   const groupedHistories = useMemo(
     () => groupConversationsByTime(conversations),
     [conversations],
