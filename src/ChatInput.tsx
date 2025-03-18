@@ -39,6 +39,10 @@ export const ChatInput = ({ setHasMessages }: ChatInputProps) => {
   const onSubmitClick = () => {
     setInputValue('');
     setHasMessages(true);
+
+    if (inputRef.current) {
+      inputRef.current.style.height = DEFAULT_HEIGHT;
+    }
   };
 
   return (

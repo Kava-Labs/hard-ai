@@ -2,18 +2,18 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, fireEvent } from '@testing-library/react';
 import { ChatInput } from './ChatInput';
 
-vi.mock('./ChatInput.module.css', () => ({
-  default: {
-    controls: 'mock-controls',
-    inputContainer: 'mock-inputContainer',
-    input: 'mock-input',
-    sendChatButton: 'mock-sendChatButton',
-    importantInfo: 'mock-importantInfo',
+//  Mock for scrollHeight
+Object.defineProperty(HTMLElement.prototype, 'scrollHeight', {
+  configurable: true,
+  get: function () {
+    //  Return a larger value when the textarea has content
+    return this.value?.length > 0 ? 60 : 30;
   },
-}));
+});
 
 describe('ChatInput', () => {
   const setHasMessages = vi.fn();
+
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -33,18 +33,17 @@ describe('ChatInput', () => {
       },
     });
 
-    //  Verify the textarea height was set accordingly
-    expect(styleSpy).toHaveBeenCalledWith('30px');
-    //  Adjust to scrollHeight
-    expect(styleSpy).toHaveBeenCalledWith(
-      expect.stringMatching(/^min\(\d+px, 60vh\)$/),
-    );
+    //  Initially the mocked-default, then updated
+    expect(styleSpy).toHaveBeenNthCalledWith(1, '30px');
+    expect(styleSpy).toHaveBeenNthCalledWith(2, 'min(60px, 60vh)');
+    styleSpy.mockClear();
 
     const sendButton = wrapper.getByRole('button', { name: 'Send Chat' });
-
     fireEvent.click(sendButton);
 
+    //  Reset to default height
     expect(styleSpy).toHaveBeenCalledWith('30px');
+    expect(textarea.value).toBe('');
 
     styleSpy.mockRestore();
   });
@@ -53,17 +52,14 @@ describe('ChatInput', () => {
     const wrapper = render(<ChatInput setHasMessages={setHasMessages} />);
 
     const sendButton = wrapper.getByRole('button', { name: 'Send Chat' });
-
     expect(sendButton).toBeDisabled();
 
     const textarea = wrapper.getByPlaceholderText('Ask anything...');
 
     fireEvent.change(textarea, { target: { value: 'Hello!' } });
-
     expect(sendButton).not.toBeDisabled();
 
     fireEvent.change(textarea, { target: { value: '' } });
-
     expect(sendButton).toBeDisabled();
   });
 
