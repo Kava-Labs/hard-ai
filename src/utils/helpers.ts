@@ -13,8 +13,6 @@ export const getTimeGroup = (timestamp: number): string => {
     (now.getTime() - timestamp) / (1000 * 60 * 60 * 24),
   );
   
-  console.log(diffDays)
-
   if (diffDays === 0) return 'Today';
   if (diffDays === 1) return 'Yesterday';
   if (diffDays <= 7) return 'Last week';
