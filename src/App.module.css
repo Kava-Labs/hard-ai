@@ -80,7 +80,7 @@
 
 .sidebarContent::-webkit-scrollbar {
   background-color: var(--colors-bgSecondary);
-  width: 10px;
+  width: 1rem;
 }
 
 .content {
