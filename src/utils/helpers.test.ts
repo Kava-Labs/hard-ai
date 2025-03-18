@@ -1,5 +1,4 @@
-import { expect } from "@storybook/test";
-import { afterEach, beforeEach, describe, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, it, vi, expect } from "vitest";
 import { getTimeGroup, groupConversationsByTime } from "./helpers";
 import { ConversationHistory } from "../types";
 
