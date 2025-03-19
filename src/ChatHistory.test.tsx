@@ -3,24 +3,9 @@ import { fireEvent, render, screen } from '@testing-library/react';
 import { ChatHistory } from './ChatHistory';
 import { groupConversationsByTime } from './utils/helpers';
 import { ConversationHistory } from './types';
-import { ChatHistoryItemProps } from './ChatHistoryItem';
 
 vi.mock('./utils/helpers', () => ({
   groupConversationsByTime: vi.fn(),
-}));
-
-vi.mock('./ChatHistoryItem', () => ({
-  ChatHistoryItem: ({
-    conversation,
-    onHistoryItemClick,
-  }: ChatHistoryItemProps) => (
-    <div
-      data-testid={`history-item-${conversation.id}`}
-      onClick={onHistoryItemClick}
-    >
-      {conversation.title}
-    </div>
-  ),
 }));
 
 describe('ChatHistory Component', () => {
@@ -89,12 +74,9 @@ describe('ChatHistory Component', () => {
     );
 
     expect(screen.getByText('Today')).toBeInTheDocument();
-
+    expect(screen.getByText('Project Planning Discussion')).toBeInTheDocument();
     expect(
-      screen.getByTestId('history-item-conv-2025-03-15-001'),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByTestId('history-item-conv-2025-03-16-002'),
+      screen.getByText('Recipe Ideas for Dinner Party'),
     ).toBeInTheDocument();
   });
 
@@ -150,13 +132,8 @@ describe('ChatHistory Component', () => {
 
     expect(screen.getByText('Today')).toBeInTheDocument();
     expect(screen.getByText('Yesterday')).toBeInTheDocument();
-
-    expect(
-      screen.getByTestId('history-item-conv-2025-03-19-001'),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByTestId('history-item-conv-2025-03-18-001'),
-    ).toBeInTheDocument();
+    expect(screen.getByText('Yesterday Conversation')).toBeInTheDocument();
+    expect(screen.getByText('Today Conversation')).toBeInTheDocument();
   });
 
   it('should call onSelectConversation with correct ID when conversation is clicked', async () => {
@@ -189,8 +166,7 @@ describe('ChatHistory Component', () => {
       />,
     );
 
-    fireEvent.click(screen.getByTestId('history-item-conv-2025-03-19-001'));
-
+    fireEvent.click(screen.getByText('Today Conversation'));
     expect(mockOnSelectConversation).toHaveBeenCalledWith(
       'conv-2025-03-19-001',
     );
