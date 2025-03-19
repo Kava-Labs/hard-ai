@@ -16,7 +16,10 @@ export const App = () => {
   const [isMobileSideBarOpen, setIsMobileSideBarOpen] = useState(false);
   const [isDesktopSideBarOpen, setIsDesktopSideBarOpen] = useState(true);
 
-  const conversations: ConversationHistory[] = mockConversationHistory;
+  const conversations: ConversationHistory[] = useMemo(
+    () => Object.values(mockConversationHistory),
+    [],
+  );
 
   const [activeConversationId, setActiveConversationId] = useState<
     string | null
@@ -27,13 +30,11 @@ export const App = () => {
   const activeConversationMessages = useMemo(() => {
     if (!activeConversationId) return [];
 
-    const activeConversation = conversations.find(
-      (c) => c.id === activeConversationId,
-    );
+    const activeConversation = mockConversationHistory[activeConversationId];
     if (!activeConversation) return [];
 
     return activeConversation.conversation;
-  }, [activeConversationId, conversations]);
+  }, [activeConversationId]);
 
   const isMobileLayout = useIsMobileLayout();
   const showMobileSideBar = isMobileLayout && isMobileSideBarOpen;

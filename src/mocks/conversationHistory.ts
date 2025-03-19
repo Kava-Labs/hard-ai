@@ -1,7 +1,7 @@
 import { ConversationHistory } from '../types';
 
-export const mockConversationHistory: ConversationHistory[] = [
-  {
+export const mockConversationHistory: Record<string, ConversationHistory> = {
+  'conv-2025-03-15-001': {
     id: 'conv-2025-03-15-001',
     model: 'gpt-4-turbo',
     title: 'Project Planning Discussion',
@@ -19,7 +19,7 @@ export const mockConversationHistory: ConversationHistory[] = [
     lastSaved: Date.now(),
     tokensRemaining: 6453,
   },
-  {
+  'conv-2025-03-16-002': {
     id: 'conv-2025-03-16-002',
     model: 'claude-3-opus',
     title: 'Recipe Ideas for Dinner Party',
@@ -37,7 +37,7 @@ export const mockConversationHistory: ConversationHistory[] = [
     lastSaved: Date.now(),
     tokensRemaining: 4821,
   },
-  {
+  'conv-2025-03-17-003': {
     id: 'conv-2025-03-17-003',
     model: 'gpt-3.5-turbo',
     title: 'Help with Data Analysis',
@@ -55,7 +55,7 @@ export const mockConversationHistory: ConversationHistory[] = [
     lastSaved: Date.now() - 100000000,
     tokensRemaining: 7632,
   },
-  {
+  'conv-2025-03-18-004': {
     id: 'conv-2025-03-18-004',
     model: 'gpt-3.5-turbo',
     title: 'Help with party planning',
@@ -73,7 +73,7 @@ export const mockConversationHistory: ConversationHistory[] = [
     lastSaved: Date.now() - 1000000000,
     tokensRemaining: 7632,
   },
-  {
+  'conv-2025-03-19-005': {
     id: 'conv-2025-03-19-005',
     model: 'claude-3-opus',
     title: 'Tokenomics Discussion',
@@ -114,4 +114,4 @@ export const mockConversationHistory: ConversationHistory[] = [
     lastSaved: Date.now() - 50000000,
     tokensRemaining: 5432,
   },
-];
+};
