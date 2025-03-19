@@ -126,7 +126,7 @@ export const ChatHistoryItem = memo(
                 ref={inputRef}
                 type="text"
                 value={editInputValue}
-                role="Edit Title Input"
+                aria-label="Edit Title Input"
                 onChange={(e) => setEditInputValue(e.target.value)}
                 onKeyDown={handleKeyDown}
                 className={styles.chatHistoryTitleInput}
@@ -135,7 +135,7 @@ export const ChatHistoryItem = memo(
                 }}
               />
             ) : (
-              <small data-testid="chat-history-entry">{title}</small>
+              <small>{title}</small>
             )}
           </div>
           <ButtonIcon

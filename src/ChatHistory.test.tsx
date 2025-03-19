@@ -38,35 +38,51 @@ describe('ChatHistory Component', () => {
     expect(screen.getByText('Start a new chat to begin')).toBeInTheDocument();
   });
 
-  it('should display conversations sorted by lastSaved time', () => {
+  it('should display conversations grouped by time', () => {
+    // Create mock history data with different timestamps
+    const today = Date.now();
+    const yesterday = today - 86400000; // 24 hours ago
+    const older = today - 172800000; // 48 hours ago
+
     const mockHistories: ConversationHistories = {
-      'conv-2025-03-15-001': {
-        id: 'conv-2025-03-15-001',
+      'conv-today': {
+        id: 'conv-today',
         model: 'gpt-4-turbo',
-        title: 'Project Planning Discussion',
+        title: 'Today Conversation',
         conversation: [
           { role: 'system', content: 'You are a helpful AI assistant.' },
-          {
-            role: 'user',
-            content: 'Can you help me plan a new web application project?',
-          },
+          { role: 'user', content: 'Hello!' },
         ],
-        lastSaved: Date.now() - 100000, // Older conversation
+        lastSaved: today,
         tokensRemaining: 6453,
       },
-      'conv-2025-03-16-002': {
-        id: 'conv-2025-03-16-002',
+      'conv-yesterday': {
+        id: 'conv-yesterday',
         model: 'claude-3-opus',
-        title: 'Recipe Ideas for Dinner Party',
+        title: 'Yesterday Conversation',
         conversation: [
           {
             role: 'system',
             content: 'You are Claude, a helpful AI assistant.',
           },
-          { role: 'user', content: "I'm hosting a dinner party this weekend." },
+          { role: 'user', content: 'I have a question from yesterday.' },
         ],
-        lastSaved: Date.now(), // Newer conversation
+        lastSaved: yesterday,
         tokensRemaining: 4821,
+      },
+      'conv-older': {
+        id: 'conv-older',
+        model: 'claude-3-opus',
+        title: 'Older Conversation',
+        conversation: [
+          {
+            role: 'system',
+            content: 'You are Claude, a helpful AI assistant.',
+          },
+          { role: 'user', content: 'This is an older conversation.' },
+        ],
+        lastSaved: older,
+        tokensRemaining: 5000,
       },
     };
 
@@ -79,17 +95,15 @@ describe('ChatHistory Component', () => {
       />,
     );
 
-    expect(screen.getByText('Project Planning Discussion')).toBeInTheDocument();
-    expect(
-      screen.getByText('Recipe Ideas for Dinner Party'),
-    ).toBeInTheDocument();
+    // Check for time group headers
+    expect(screen.getByText('Today')).toBeInTheDocument();
+    expect(screen.getByText('Yesterday')).toBeInTheDocument();
+    expect(screen.getByText('Last week')).toBeInTheDocument();
 
-    //  Check order - newer conversation should be rendered first
-    const items = screen.getAllByText(
-      /Project Planning Discussion|Recipe Ideas for Dinner Party/,
-    );
-    expect(items[0].textContent).toBe('Recipe Ideas for Dinner Party');
-    expect(items[1].textContent).toBe('Project Planning Discussion');
+    // Check for conversation titles
+    expect(screen.getByText('Today Conversation')).toBeInTheDocument();
+    expect(screen.getByText('Yesterday Conversation')).toBeInTheDocument();
+    expect(screen.getByText('Older Conversation')).toBeInTheDocument();
   });
 
   it('should call onSelectConversation with correct ID when conversation is clicked', () => {
@@ -158,10 +172,78 @@ describe('ChatHistory Component', () => {
       />,
     );
 
+    // Get elements by test id
     const activeItem = screen.getByText('Active Conversation');
     const inactiveItem = screen.getByText('Inactive Conversation');
 
     expect(activeItem.getAttribute('data-selected')).toBe('true');
     expect(inactiveItem.getAttribute('data-selected')).toBe('false');
+  });
+
+  it('should render conversations within their proper time groups', () => {
+    const mockHistories: ConversationHistories = {
+      'conv-today-1': {
+        id: 'conv-today-1',
+        model: 'gpt-4-turbo',
+        title: 'First Today Conversation',
+        conversation: [],
+        lastSaved: Date.now(),
+        tokensRemaining: 6000,
+      },
+      'conv-today-2': {
+        id: 'conv-today-2',
+        model: 'gpt-4-turbo',
+        title: 'Second Today Conversation',
+        conversation: [],
+        lastSaved: Date.now() - 3600000, // 1 hour ago
+        tokensRemaining: 6000,
+      },
+      'conv-yesterday': {
+        id: 'conv-yesterday',
+        model: 'claude-3-opus',
+        title: 'Yesterday Conversation',
+        conversation: [],
+        lastSaved: Date.now() - 86400000, // 24 hours ago
+        tokensRemaining: 5000,
+      },
+    };
+
+    render(
+      <ChatHistory
+        chatHistories={mockHistories}
+        onSelectConversation={mockOnSelectConversation}
+        onDeleteConversation={mockOnDeleteConversation}
+        onUpdateConversationTitle={mockOnUpdateConversationTitle}
+      />,
+    );
+
+    //  Get an array of the elements that match either the expected time labels or titles
+    //  Verify that they are collected in the expected order (i.e. grouped correctly)
+
+    expect(
+      screen.getAllByText(
+        /Today|Yesterday|First Today Conversation|Second Today Conversation|Yesterday Conversation/,
+      )[0].textContent,
+    ).toBe('Today');
+    expect(
+      screen.getAllByText(
+        /Today|Yesterday|First Today Conversation|Second Today Conversation|Yesterday Conversation/,
+      )[1].textContent,
+    ).toBe('First Today Conversation');
+    expect(
+      screen.getAllByText(
+        /Today|Yesterday|First Today Conversation|Second Today Conversation|Yesterday Conversation/,
+      )[2].textContent,
+    ).toBe('Second Today Conversation');
+    expect(
+      screen.getAllByText(
+        /Today|Yesterday|First Today Conversation|Second Today Conversation|Yesterday Conversation/,
+      )[3].textContent,
+    ).toBe('Yesterday');
+    expect(
+      screen.getAllByText(
+        /Today|Yesterday|First Today Conversation|Second Today Conversation|Yesterday Conversation/,
+      )[4].textContent,
+    ).toBe('Yesterday Conversation');
   });
 });
