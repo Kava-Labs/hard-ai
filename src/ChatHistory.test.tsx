@@ -2,15 +2,15 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { fireEvent, render, screen } from '@testing-library/react';
 import { ChatHistory } from './ChatHistory';
 import { ConversationHistories } from './types';
+import { ChatHistoryItemProps } from './ChatHistoryItem';
 
-// Mock the ChatHistoryItem component
 vi.mock('./ChatHistoryItem', () => ({
-  ChatHistoryItem: ({ conversation, onHistoryItemClick, isSelected }) => (
-    <div
-      data-testid={`chat-item-${conversation.id}`}
-      data-selected={isSelected}
-      onClick={onHistoryItemClick}
-    >
+  ChatHistoryItem: ({
+    conversation,
+    onHistoryItemClick,
+    isSelected,
+  }: ChatHistoryItemProps) => (
+    <div data-selected={isSelected} onClick={onHistoryItemClick}>
       {conversation.title}
     </div>
   ),
@@ -35,9 +35,7 @@ describe('ChatHistory Component', () => {
       />,
     );
 
-    // The div should be empty when there are no conversations
-    const chatHistoryDiv = screen.getByRole('generic');
-    expect(chatHistoryDiv.children.length).toBe(0);
+    expect(screen.getByText('Start a new chat to begin')).toBeInTheDocument();
   });
 
   it('should display conversations sorted by lastSaved time', () => {
@@ -81,13 +79,12 @@ describe('ChatHistory Component', () => {
       />,
     );
 
-    // Both conversations should be displayed
     expect(screen.getByText('Project Planning Discussion')).toBeInTheDocument();
     expect(
       screen.getByText('Recipe Ideas for Dinner Party'),
     ).toBeInTheDocument();
 
-    // Check order - newer conversation should be rendered first
+    //  Check order - newer conversation should be rendered first
     const items = screen.getAllByText(
       /Project Planning Discussion|Recipe Ideas for Dinner Party/,
     );
@@ -161,42 +158,10 @@ describe('ChatHistory Component', () => {
       />,
     );
 
-    const activeItem = screen.getByTestId('chat-item-conv-2025-03-19-001');
-    const inactiveItem = screen.getByTestId('chat-item-conv-2025-03-19-002');
+    const activeItem = screen.getByText('Active Conversation');
+    const inactiveItem = screen.getByText('Inactive Conversation');
 
     expect(activeItem.getAttribute('data-selected')).toBe('true');
     expect(inactiveItem.getAttribute('data-selected')).toBe('false');
-  });
-
-  it('should pass the correct props to ChatHistoryItem components', () => {
-    const mockHistories: ConversationHistories = {
-      'conv-2025-03-19-001': {
-        id: 'conv-2025-03-19-001',
-        model: 'gpt-4-turbo',
-        title: 'Test Conversation',
-        conversation: [
-          { role: 'system', content: 'You are a helpful AI assistant.' },
-          { role: 'user', content: 'Hello!' },
-        ],
-        lastSaved: Date.now(),
-        tokensRemaining: 6453,
-      },
-    };
-
-    render(
-      <ChatHistory
-        chatHistories={mockHistories}
-        onSelectConversation={mockOnSelectConversation}
-        onDeleteConversation={mockOnDeleteConversation}
-        onUpdateConversationTitle={mockOnUpdateConversationTitle}
-        activeConversationId="conv-2025-03-19-001"
-      />,
-    );
-
-    // Check that the component passes all required props to ChatHistoryItem
-    const chatItem = screen.getByTestId('chat-item-conv-2025-03-19-001');
-    expect(chatItem).toBeInTheDocument();
-    expect(chatItem).toHaveTextContent('Test Conversation');
-    expect(chatItem.getAttribute('data-selected')).toBe('true');
   });
 });
