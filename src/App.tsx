@@ -3,17 +3,21 @@ import { ChatInput } from './ChatInput';
 import styles from './App.module.css';
 import { useIsMobileLayout } from './theme/useIsMobileLayout';
 import { MobileSideBar } from './MobileSideBar';
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useCallback } from 'react';
 import hardDiamondLogo from './assets/hardDiamondLogo.svg';
 import { DesktopSideBar } from './DesktopSideBar';
 import { NavBar } from './NavBar';
-import { mockConversationHistory } from './mocks/conversationHistory';
+import { ChatMessage, ConversationHistories } from './types';
+import { mockConversationHistories } from './mocks/conversationHistory';
 import { ChatHistory } from './ChatHistory';
 import { Conversation } from './Conversation';
 
 export const App = () => {
   const [isMobileSideBarOpen, setIsMobileSideBarOpen] = useState(false);
   const [isDesktopSideBarOpen, setIsDesktopSideBarOpen] = useState(true);
+
+  const [conversationHistories, setConversationHistories] =
+    useState<ConversationHistories>(mockConversationHistories);
 
   const [activeConversationId, setActiveConversationId] = useState<
     string | null
@@ -24,11 +28,55 @@ export const App = () => {
   const activeConversationMessages = useMemo(() => {
     if (!activeConversationId) return [];
 
-    const activeConversation = mockConversationHistory[activeConversationId];
+    const activeConversation = conversationHistories[activeConversationId];
     if (!activeConversation) return [];
 
     return activeConversation.conversation;
-  }, [activeConversationId]);
+  }, [activeConversationId, conversationHistories]);
+
+  const handleSubmitMessage = useCallback(
+    (message: ChatMessage) => {
+      //  if this is the first message in the conversation, assign it an ID
+      if (!hasActiveConversation) {
+        const newConversationId = `conv-${new Date().toISOString()}`;
+        setActiveConversationId(newConversationId);
+
+        //  then add it to conversation
+        setConversationHistories((prev) => ({
+          ...prev,
+          [newConversationId]: {
+            id: newConversationId,
+            model: 'gpt-4o',
+            title: 'New Chat',
+            conversation: [
+              {
+                role: 'system',
+                content: 'You are a helpful AI assistant.',
+              },
+              message,
+            ],
+            lastSaved: Date.now(),
+            tokensRemaining: 8000,
+          },
+        }));
+      } else {
+        //  Update existing conversation
+        setConversationHistories((prev) => {
+          const currentConversation = prev[activeConversationId];
+
+          return {
+            ...prev,
+            [activeConversationId]: {
+              ...currentConversation,
+              conversation: [...currentConversation.conversation, message],
+              lastSaved: Date.now(),
+            },
+          };
+        });
+      }
+    },
+    [activeConversationId, hasActiveConversation],
+  );
 
   const isMobileLayout = useIsMobileLayout();
   const showMobileSideBar = isMobileLayout && isMobileSideBarOpen;
@@ -56,7 +104,7 @@ export const App = () => {
 
         <div className={styles.sidebarContent}>
           <ChatHistory
-            chatHistories={mockConversationHistory}
+            chatHistories={conversationHistories}
             onSelectConversation={(id: string) => setActiveConversationId(id)}
           />
         </div>
@@ -84,7 +132,7 @@ export const App = () => {
                 className={`${styles.controlsContainer} ${hasActiveConversation ? styles.positionSticky : ''}`}
               >
                 {!hasActiveConversation && <LandingContent />}
-                <ChatInput />
+                <ChatInput onSubmitMessage={handleSubmitMessage} />
               </div>
             </div>
           </div>

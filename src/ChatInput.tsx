@@ -1,15 +1,20 @@
 import styles from './ChatInput.module.css';
 import { ChangeEvent, useCallback, useEffect, useRef, useState } from 'react';
 import { SendChatIcon } from './SendChatIcon';
+import { ChatMessage } from './types';
 
 const DEFAULT_HEIGHT = '30px';
 
-export const ChatInput = () => {
+type ChatInputProps = {
+  onSubmitMessage?: (message: ChatMessage) => void;
+};
+
+export const ChatInput = ({ onSubmitMessage }: ChatInputProps) => {
   const [inputValue, setInputValue] = useState('');
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
 
-  //  focus the input on mount
+  // Focus the input on mount
   useEffect(() => {
     if (inputRef.current) {
       inputRef.current.focus();
@@ -33,10 +38,33 @@ export const ChatInput = () => {
   );
 
   const onSubmitClick = () => {
-    setInputValue('');
+    if (inputValue.trim() === '') return;
 
+    // Create message object
+    const message: ChatMessage = {
+      role: 'user',
+      content: inputValue,
+    };
+
+    // Send message to parent component
+    if (onSubmitMessage) {
+      onSubmitMessage(message);
+    }
+
+    // Reset input
+    setInputValue('');
     if (inputRef.current) {
       inputRef.current.style.height = DEFAULT_HEIGHT;
+    }
+  };
+
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    // Submit on Enter key (without Shift key)
+    if (event.key === 'Enter' && !event.shiftKey) {
+      event.preventDefault();
+      if (inputValue.trim() !== '') {
+        onSubmitClick();
+      }
     }
   };
 
@@ -49,7 +77,7 @@ export const ChatInput = () => {
             rows={1}
             value={inputValue}
             onChange={handleInputChange}
-            onKeyDown={() => ({})}
+            onKeyDown={handleKeyDown}
             ref={inputRef}
             placeholder="Ask anything..."
           />
