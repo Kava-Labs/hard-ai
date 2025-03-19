@@ -11,13 +11,15 @@ import { ChatMessage, ConversationHistories } from './types';
 import { mockConversationHistories } from './mocks/conversationHistory';
 import { ChatHistory } from './ChatHistory';
 import { Conversation } from './Conversation';
+import { useChat } from './useChat';
 
 export const App = () => {
   const [isMobileSideBarOpen, setIsMobileSideBarOpen] = useState(false);
   const [isDesktopSideBarOpen, setIsDesktopSideBarOpen] = useState(true);
 
-  const [conversationHistories, setConversationHistories] =
-    useState<ConversationHistories>(mockConversationHistories);
+  const { activeChat } = useChat();
+
+  const conversations: ConversationHistory[] = mockConversationHistory;
 
   const [activeConversationId, setActiveConversationId] = useState<
     string | null
