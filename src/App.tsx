@@ -7,10 +7,10 @@ import { useMemo, useState } from 'react';
 import hardDiamondLogo from './assets/hardDiamondLogo.svg';
 import { DesktopSideBar } from './DesktopSideBar';
 import { NavBar } from './NavBar';
-import { ConversationContainer } from './ConversationContainer';
-import { ChatHistoryContainer } from './ChatHistoryContainer';
 import { ConversationHistory } from './types';
 import { mockConversationHistory } from './mocks/conversationHistory';
+import { ChatHistory } from './ChatHistory';
+import { Conversation } from './Conversation';
 
 export const App = () => {
   const [isMobileSideBarOpen, setIsMobileSideBarOpen] = useState(false);
@@ -60,7 +60,7 @@ export const App = () => {
         </div>
 
         <div className={styles.sidebarContent}>
-          <ChatHistoryContainer
+          <ChatHistory
             conversations={conversations}
             onSelectConversation={(id: string) => setActiveConversationId(id)}
           />
@@ -82,9 +82,7 @@ export const App = () => {
                 className={`${styles.chatContent} ${hasActiveConversation ? styles.fullHeight : ''}`}
               >
                 {hasActiveConversation && (
-                  <ConversationContainer
-                    messages={activeConversationMessages}
-                  />
+                  <Conversation messages={activeConversationMessages} />
                 )}
               </div>
               <div
