@@ -1,6 +1,6 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { MessageHistoryStore } from './stores/messageHistoryStore';
-import { ChatMessage, ActiveChat } from './types';
+import { ChatMessage, ActiveChat, ConversationHistory } from './types';
 import { TextStreamStore } from './stores/textStreamStore';
 import { v4 as uuidv4 } from 'uuid';
 import OpenAI from 'openai/index';
@@ -15,6 +15,10 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
     });
   });
 
+  const [savedConversations, setSavedConversations] = useState<
+    ConversationHistory[]
+  >([]);
+
   const [activeChat, setActiveChat] = useState<ActiveChat>({
     id: uuidv4(), // add uuid v4 for conversation id
     isRequesting: false,
@@ -27,6 +31,22 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
     progressStore: new TextStreamStore(),
     errorStore: new TextStreamStore(),
   });
+
+  useEffect(() => {
+    const id = setInterval(() => {
+      setSavedConversations((prev) => {
+        const storedConversations =
+          localStorage.getItem('conversations') ?? '{}';
+        if (JSON.stringify(prev) !== storedConversations) {
+          return JSON.parse(storedConversations);
+        }
+        return prev;
+      });
+    }, 1000);
+    return () => {
+      clearInterval(id);
+    };
+  }, []);
 
   const handleChatCompletion = useCallback(
     (newMessages: ChatMessage[]) => {
@@ -68,10 +88,12 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
   return useMemo(
     () => ({
       activeChat,
+      savedConversations,
+
       handleChatCompletion,
       handleCancel,
     }),
-    [activeChat, handleChatCompletion, handleCancel],
+    [activeChat, savedConversations, handleChatCompletion, handleCancel],
   );
 };
 
