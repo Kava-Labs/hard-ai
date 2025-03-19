@@ -1,32 +1,46 @@
-import { describe, it, expect, vi, beforeEach, Mock } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { fireEvent, render, screen } from '@testing-library/react';
 import { ChatHistory } from './ChatHistory';
-import { groupConversationsByTime } from './utils/helpers';
 import { ConversationHistories } from './types';
 
-vi.mock('./utils/helpers', () => ({
-  groupConversationsByTime: vi.fn(),
+// Mock the ChatHistoryItem component
+vi.mock('./ChatHistoryItem', () => ({
+  ChatHistoryItem: ({ conversation, onHistoryItemClick, isSelected }) => (
+    <div
+      data-testid={`chat-item-${conversation.id}`}
+      data-selected={isSelected}
+      onClick={onHistoryItemClick}
+    >
+      {conversation.title}
+    </div>
+  ),
 }));
 
 describe('ChatHistory Component', () => {
   const mockOnSelectConversation = vi.fn();
+  const mockOnDeleteConversation = vi.fn();
+  const mockOnUpdateConversationTitle = vi.fn();
 
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  it('should display empty state when no conversations exist', () => {
+  it('should display empty chat history when no conversations exist', () => {
     render(
       <ChatHistory
         chatHistories={{}}
         onSelectConversation={mockOnSelectConversation}
+        onDeleteConversation={mockOnDeleteConversation}
+        onUpdateConversationTitle={mockOnUpdateConversationTitle}
       />,
     );
 
-    expect(screen.getByText('Start a new chat to begin')).toBeInTheDocument();
+    // The div should be empty when there are no conversations
+    const chatHistoryDiv = screen.getByRole('generic');
+    expect(chatHistoryDiv.children.length).toBe(0);
   });
 
-  it('should group and display conversations when they exist', () => {
+  it('should display conversations sorted by lastSaved time', () => {
     const mockHistories: ConversationHistories = {
       'conv-2025-03-15-001': {
         id: 'conv-2025-03-15-001',
@@ -39,7 +53,7 @@ describe('ChatHistory Component', () => {
             content: 'Can you help me plan a new web application project?',
           },
         ],
-        lastSaved: Date.now(),
+        lastSaved: Date.now() - 100000, // Older conversation
         tokensRemaining: 6453,
       },
       'conv-2025-03-16-002': {
@@ -53,85 +67,35 @@ describe('ChatHistory Component', () => {
           },
           { role: 'user', content: "I'm hosting a dinner party this weekend." },
         ],
-        lastSaved: Date.now(),
+        lastSaved: Date.now(), // Newer conversation
         tokensRemaining: 4821,
       },
     };
-
-    const mockGroupedConversations = {
-      Today: Object.values(mockHistories),
-    };
-
-    (groupConversationsByTime as Mock).mockReturnValue(
-      mockGroupedConversations,
-    );
 
     render(
       <ChatHistory
         chatHistories={mockHistories}
         onSelectConversation={mockOnSelectConversation}
+        onDeleteConversation={mockOnDeleteConversation}
+        onUpdateConversationTitle={mockOnUpdateConversationTitle}
       />,
     );
 
-    expect(screen.getByText('Today')).toBeInTheDocument();
+    // Both conversations should be displayed
     expect(screen.getByText('Project Planning Discussion')).toBeInTheDocument();
     expect(
       screen.getByText('Recipe Ideas for Dinner Party'),
     ).toBeInTheDocument();
+
+    // Check order - newer conversation should be rendered first
+    const items = screen.getAllByText(
+      /Project Planning Discussion|Recipe Ideas for Dinner Party/,
+    );
+    expect(items[0].textContent).toBe('Recipe Ideas for Dinner Party');
+    expect(items[1].textContent).toBe('Project Planning Discussion');
   });
 
-  it('should handle multiple time groups', () => {
-    const mockHistories: ConversationHistories = {
-      'conv-2025-03-19-001': {
-        id: 'conv-2025-03-19-001',
-        model: 'gpt-4-turbo',
-        title: 'Today Conversation',
-        conversation: [
-          { role: 'system', content: 'You are a helpful AI assistant.' },
-          { role: 'user', content: 'Hello!' },
-        ],
-        lastSaved: Date.now(),
-        tokensRemaining: 6453,
-      },
-      'conv-2025-03-18-001': {
-        id: 'conv-2025-03-18-001',
-        model: 'claude-3-opus',
-        title: 'Yesterday Conversation',
-        conversation: [
-          {
-            role: 'system',
-            content: 'You are Claude, a helpful AI assistant.',
-          },
-          { role: 'user', content: 'Hi there!' },
-        ],
-        lastSaved: Date.now() - 86400000, // 1 day ago
-        tokensRemaining: 4821,
-      },
-    };
-
-    const mockGroupedConversations = {
-      Today: [mockHistories['conv-2025-03-19-001']],
-      Yesterday: [mockHistories['conv-2025-03-18-001']],
-    };
-
-    (groupConversationsByTime as Mock).mockReturnValue(
-      mockGroupedConversations,
-    );
-
-    render(
-      <ChatHistory
-        chatHistories={mockHistories}
-        onSelectConversation={mockOnSelectConversation}
-      />,
-    );
-
-    expect(screen.getByText('Today')).toBeInTheDocument();
-    expect(screen.getByText('Yesterday')).toBeInTheDocument();
-    expect(screen.getByText('Yesterday Conversation')).toBeInTheDocument();
-    expect(screen.getByText('Today Conversation')).toBeInTheDocument();
-  });
-
-  it('should call onSelectConversation with correct ID when conversation is clicked', async () => {
+  it('should call onSelectConversation with correct ID when conversation is clicked', () => {
     const mockHistories: ConversationHistories = {
       'conv-2025-03-19-001': {
         id: 'conv-2025-03-19-001',
@@ -146,18 +110,12 @@ describe('ChatHistory Component', () => {
       },
     };
 
-    const mockGroupedConversations = {
-      Today: [mockHistories['conv-2025-03-19-001']],
-    };
-
-    (groupConversationsByTime as Mock).mockReturnValue(
-      mockGroupedConversations,
-    );
-
     render(
       <ChatHistory
         chatHistories={mockHistories}
         onSelectConversation={mockOnSelectConversation}
+        onDeleteConversation={mockOnDeleteConversation}
+        onUpdateConversationTitle={mockOnUpdateConversationTitle}
       />,
     );
 
@@ -167,7 +125,50 @@ describe('ChatHistory Component', () => {
     );
   });
 
-  it('should properly memoize the grouped conversations', () => {
+  it('should properly set isSelected prop for active conversation', () => {
+    const mockHistories: ConversationHistories = {
+      'conv-2025-03-19-001': {
+        id: 'conv-2025-03-19-001',
+        model: 'gpt-4-turbo',
+        title: 'Active Conversation',
+        conversation: [
+          { role: 'system', content: 'You are a helpful AI assistant.' },
+          { role: 'user', content: 'Hello!' },
+        ],
+        lastSaved: Date.now(),
+        tokensRemaining: 6453,
+      },
+      'conv-2025-03-19-002': {
+        id: 'conv-2025-03-19-002',
+        model: 'claude-3-opus',
+        title: 'Inactive Conversation',
+        conversation: [
+          { role: 'system', content: 'You are a helpful AI assistant.' },
+          { role: 'user', content: 'Hello!' },
+        ],
+        lastSaved: Date.now() - 10000,
+        tokensRemaining: 6453,
+      },
+    };
+
+    render(
+      <ChatHistory
+        chatHistories={mockHistories}
+        onSelectConversation={mockOnSelectConversation}
+        onDeleteConversation={mockOnDeleteConversation}
+        onUpdateConversationTitle={mockOnUpdateConversationTitle}
+        activeConversationId="conv-2025-03-19-001"
+      />,
+    );
+
+    const activeItem = screen.getByTestId('chat-item-conv-2025-03-19-001');
+    const inactiveItem = screen.getByTestId('chat-item-conv-2025-03-19-002');
+
+    expect(activeItem.getAttribute('data-selected')).toBe('true');
+    expect(inactiveItem.getAttribute('data-selected')).toBe('false');
+  });
+
+  it('should pass the correct props to ChatHistoryItem components', () => {
     const mockHistories: ConversationHistories = {
       'conv-2025-03-19-001': {
         id: 'conv-2025-03-19-001',
@@ -182,62 +183,20 @@ describe('ChatHistory Component', () => {
       },
     };
 
-    const mockGroupedConversations = {
-      Today: [mockHistories['conv-2025-03-19-001']],
-    };
-
-    (groupConversationsByTime as Mock).mockReturnValue(
-      mockGroupedConversations,
-    );
-
-    const { rerender } = render(
+    render(
       <ChatHistory
         chatHistories={mockHistories}
         onSelectConversation={mockOnSelectConversation}
+        onDeleteConversation={mockOnDeleteConversation}
+        onUpdateConversationTitle={mockOnUpdateConversationTitle}
+        activeConversationId="conv-2025-03-19-001"
       />,
     );
 
-    //  First render should call the grouping function
-    expect(groupConversationsByTime).toHaveBeenCalledTimes(1);
-
-    //  Rerender with the same props
-    rerender(
-      <ChatHistory
-        chatHistories={mockHistories}
-        onSelectConversation={mockOnSelectConversation}
-      />,
-    );
-
-    //  Function should not be called again due to memoization
-    expect(groupConversationsByTime).toHaveBeenCalledTimes(1);
-
-    const updatedMockHistories: ConversationHistories = {
-      ...mockHistories,
-      'conv-2025-03-19-002': {
-        id: 'conv-2025-03-19-002',
-        model: 'claude-3-opus',
-        title: 'New Conversation',
-        conversation: [
-          {
-            role: 'system',
-            content: 'You are Claude, a helpful AI assistant.',
-          },
-          { role: 'user', content: 'Hello Claude!' },
-        ],
-        lastSaved: Date.now(),
-        tokensRemaining: 4821,
-      },
-    };
-
-    //  Rerender with new conversations
-    rerender(
-      <ChatHistory
-        chatHistories={updatedMockHistories}
-        onSelectConversation={mockOnSelectConversation}
-      />,
-    );
-
-    //  Function should be called again
-    expect(groupConversationsByTime).toHaveBeenCalledTimes(2);
+    // Check that the component passes all required props to ChatHistoryItem
+    const chatItem = screen.getByTestId('chat-item-conv-2025-03-19-001');
+    expect(chatItem).toBeInTheDocument();
+    expect(chatItem).toHaveTextContent('Test Conversation');
+    expect(chatItem.getAttribute('data-selected')).toBe('true');
   });
 });
