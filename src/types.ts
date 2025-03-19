@@ -30,7 +30,6 @@ export type ConversationHistory = {
   tokensRemaining: number;
 };
 
-
 export type ConversationHistories = Record<string, ConversationHistory>;
 
 export type ChatMessage =
