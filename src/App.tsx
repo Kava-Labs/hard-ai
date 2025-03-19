@@ -3,113 +3,28 @@ import { ChatInput } from './ChatInput';
 import styles from './App.module.css';
 import { useIsMobileLayout } from './theme/useIsMobileLayout';
 import { MobileSideBar } from './MobileSideBar';
-import { useMemo, useState, useCallback } from 'react';
+import { useState } from 'react';
 import hardDiamondLogo from './assets/hardDiamondLogo.svg';
 import { DesktopSideBar } from './DesktopSideBar';
 import { NavBar } from './NavBar';
-import { ChatMessage, ConversationHistories } from './types';
-import { mockConversationHistories } from './mocks/conversationHistory';
 import { ChatHistory } from './ChatHistory';
-import { Conversation } from './Conversation';
 import { useChat } from './useChat';
+import { ConversationHistories } from './types';
+import { ConversationWrapper } from './ConversationWrapper';
 
 export const App = () => {
   const [isMobileSideBarOpen, setIsMobileSideBarOpen] = useState(false);
   const [isDesktopSideBarOpen, setIsDesktopSideBarOpen] = useState(true);
 
-  const { activeChat } = useChat();
+  const {
+    activeChat,
+    savedConversations,
+    handleChatCompletion,
+    handleCancel,
+    onSelectConversation,
+  } = useChat();
 
-  const conversations: ConversationHistory[] = mockConversationHistory;
-
-  const [activeConversationId, setActiveConversationId] = useState<
-    string | null
-  >(null);
-
-  const activeConversationMessages = useMemo(() => {
-    if (!activeConversationId) return [];
-
-    const activeConversation = conversationHistories[activeConversationId];
-    if (!activeConversation) return [];
-
-    return activeConversation.conversation;
-  }, [activeConversationId, conversationHistories]);
-
-  const handleSubmitMessage = useCallback(
-    (message: ChatMessage) => {
-      //  if this is the first message in the conversation, assign it an ID
-      if (!activeConversationId) {
-        const newConversationId = `conv-${new Date().toISOString()}`;
-        setActiveConversationId(newConversationId);
-
-        const systemPrompt: ChatMessage = {
-          role: 'system',
-          content: 'You are a helpful AI assistant.',
-        };
-
-        //  then add it to the conversation
-        setConversationHistories((prev) => ({
-          ...prev,
-          [newConversationId]: {
-            id: newConversationId,
-            model: 'gpt-4o',
-            title: 'New Chat',
-            conversation: [systemPrompt, message],
-            lastSaved: Date.now(),
-            tokensRemaining: 8000,
-          },
-        }));
-      } else {
-        //  Update existing conversation
-        setConversationHistories((prev) => {
-          const currentConversation = prev[activeConversationId];
-
-          return {
-            ...prev,
-            [activeConversationId]: {
-              ...currentConversation,
-              conversation: [...currentConversation.conversation, message],
-              lastSaved: Date.now(),
-            },
-          };
-        });
-      }
-    },
-    [activeConversationId],
-  );
-
-  const handleDeleteConversation = useCallback(
-    (id: string) => {
-      setConversationHistories((prev) => {
-        const newConversations = { ...prev };
-        delete newConversations[id];
-        return newConversations;
-      });
-
-      //  If the deleted conversation was active, clear the active conversation
-      if (activeConversationId === id) {
-        setActiveConversationId(null);
-      }
-    },
-    [activeConversationId],
-  );
-
-  const handleUpdateConversationTitle = useCallback(
-    (id: string, newTitle: string) => {
-      setConversationHistories((prev) => {
-        const updatedConversation = prev[id];
-        if (!updatedConversation) return prev;
-
-        return {
-          ...prev,
-          [id]: {
-            ...updatedConversation,
-            title: newTitle,
-          },
-        };
-      });
-    },
-    [],
-  );
+  const hasActiveConversation = activeChat.isConversationStarted === true;
 
   const isMobileLayout = useIsMobileLayout();
   const showMobileSideBar = isMobileLayout && isMobileSideBarOpen;
@@ -137,11 +52,11 @@ export const App = () => {
 
         <div className={styles.sidebarContent}>
           <ChatHistory
-            chatHistories={conversationHistories}
-            onSelectConversation={setActiveConversationId}
-            activeConversationId={activeConversationId}
-            onDeleteConversation={handleDeleteConversation}
-            onUpdateConversationTitle={handleUpdateConversationTitle}
+            chatHistories={savedConversations.reduce((acc, cur) => {
+              acc[cur.id] = cur;
+              return acc;
+            }, {} as ConversationHistories)}
+            onSelectConversation={onSelectConversation}
           />
         </div>
       </div>
@@ -158,17 +73,20 @@ export const App = () => {
             </div>
             <div className={styles.chatContainer}>
               <div
-                className={`${styles.chatContent} ${activeConversationId ? styles.fullHeight : ''}`}
+                className={`${styles.chatContent} ${hasActiveConversation ? styles.fullHeight : ''}`}
               >
-                {activeConversationId && (
-                  <Conversation messages={activeConversationMessages} />
+                {hasActiveConversation && (
+                  <ConversationWrapper activeChat={activeChat} />
                 )}
               </div>
               <div
-                className={`${styles.controlsContainer} ${activeConversationId ? styles.positionSticky : ''}`}
+                className={`${styles.controlsContainer} ${hasActiveConversation ? styles.positionSticky : ''}`}
               >
-                {!activeConversationId && <LandingContent />}
-                <ChatInput onSubmitMessage={handleSubmitMessage} />
+                {!hasActiveConversation && <LandingContent />}
+                <ChatInput
+                  handleChatCompletion={handleChatCompletion}
+                  handleCancel={handleCancel}
+                />
               </div>
             </div>
           </div>
