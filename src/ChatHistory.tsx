@@ -7,9 +7,13 @@ import { ChatHistoryItem } from './ChatHistoryItem';
 
 interface ChatHistoryProps {
   conversations: ConversationHistory[];
+  onSelectConversation: (id: string) => void;
 }
 
-export const ChatHistory = ({ conversations }: ChatHistoryProps) => {
+export const ChatHistory = ({
+  conversations,
+  onSelectConversation,
+}: ChatHistoryProps) => {
   const groupedHistories = useMemo(
     () => groupConversationsByTime(conversations),
     [conversations],
@@ -34,6 +38,9 @@ export const ChatHistory = ({ conversations }: ChatHistoryProps) => {
                   <ChatHistoryItem
                     key={conversation.id}
                     conversation={conversation}
+                    onHistoryItemClick={() =>
+                      onSelectConversation(conversation.id)
+                    }
                   />
                 ))}
               </div>

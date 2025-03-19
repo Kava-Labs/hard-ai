@@ -4,11 +4,7 @@ import { SendChatIcon } from './SendChatIcon';
 
 const DEFAULT_HEIGHT = '30px';
 
-interface ChatInputProps {
-  setHasMessages: (hasMessages: boolean) => void;
-}
-
-export const ChatInput = ({ setHasMessages }: ChatInputProps) => {
+export const ChatInput = () => {
   const [inputValue, setInputValue] = useState('');
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
@@ -38,7 +34,6 @@ export const ChatInput = ({ setHasMessages }: ChatInputProps) => {
 
   const onSubmitClick = () => {
     setInputValue('');
-    setHasMessages(true);
 
     if (inputRef.current) {
       inputRef.current.style.height = DEFAULT_HEIGHT;
