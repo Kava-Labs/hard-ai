@@ -7,7 +7,7 @@ export const doChat = async (activeChat: ActiveChat) => {
   try {
     const stream = await activeChat.client.chat.completions.create(
       {
-        model: activeChat.id,
+        model: activeChat.model,
         messages: activeChat.messageHistoryStore.getSnapshot(),
         stream: true,
       },
