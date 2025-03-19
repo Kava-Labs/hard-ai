@@ -36,10 +36,12 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
   useEffect(() => {
     const id = setInterval(() => {
       setSavedConversations((prev) => {
-        const storedConversations =
-          localStorage.getItem('conversations') ?? '{}';
-        if (JSON.stringify(prev) !== storedConversations) {
-          return JSON.parse(storedConversations);
+        const storedConversations = Object.values(
+          JSON.parse(localStorage.getItem('conversations') ?? '{}'),
+        ) as ConversationHistory[];
+
+        if (JSON.stringify(prev) !== JSON.stringify(storedConversations)) {
+          return storedConversations;
         }
         return prev;
       });
@@ -87,14 +89,25 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
     setActiveChat((prev) => ({ ...prev, isRequesting: false }));
   }, [activeChat]);
 
+  const onSelectConversation = useCallback((_id: string) => {
+    console.warn('onSelectConversation:: unimplemented');
+  }, []);
+
   return useMemo(
     () => ({
       activeChat,
       savedConversations,
 
+      onSelectConversation,
       handleChatCompletion,
       handleCancel,
     }),
-    [activeChat, savedConversations, handleChatCompletion, handleCancel],
+    [
+      activeChat,
+      savedConversations,
+      handleChatCompletion,
+      handleCancel,
+      onSelectConversation,
+    ],
   );
 };
