@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, it, vi, expect } from 'vitest';
 import { getTimeGroup, groupConversationsByTime } from './helpers';
-import { ConversationHistory } from '../types';
+import { ConversationHistories } from '../types';
 
 describe('getTimeGroup', () => {
   beforeEach(() => {
@@ -46,13 +46,13 @@ describe('getTimeGroup', () => {
 });
 
 describe('groupConversationsByTime', () => {
-  let mockConversations: Record<string, ConversationHistory>;
+  let mockHistories: ConversationHistories;
   const now = new Date('2024-02-13T12:00:00Z').getTime();
 
   beforeEach(() => {
     vi.spyOn(Date.prototype, 'getTime').mockImplementation(() => now);
 
-    mockConversations = {
+    mockHistories = {
       '1': {
         id: '1',
         title: 'Today Chat',
@@ -85,7 +85,7 @@ describe('groupConversationsByTime', () => {
   });
 
   it('should group conversations by time period', () => {
-    const grouped = groupConversationsByTime(mockConversations);
+    const grouped = groupConversationsByTime(mockHistories);
 
     expect(Object.keys(grouped)).toEqual(['Today', 'Yesterday', 'Last week']);
     expect(grouped['Today'][0].title).toBe('Today Chat');
@@ -103,9 +103,9 @@ describe('groupConversationsByTime', () => {
       tokensRemaining: 128000,
     };
 
-    mockConversations['4'] = anotherTodayChat;
+    mockHistories['4'] = anotherTodayChat;
 
-    const grouped = groupConversationsByTime(mockConversations);
+    const grouped = groupConversationsByTime(mockHistories);
     expect(grouped['Today'][0].title).toBe('Another Today Chat');
     expect(grouped['Today'][1].title).toBe('Today Chat');
   });

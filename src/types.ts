@@ -13,6 +13,8 @@ export type ConversationHistory = {
   tokensRemaining: number;
 };
 
+export type ConversationHistories = Record<string, ConversationHistory>;
+
 export interface ReasoningAssistantMessage {
   role: 'assistant';
   content: string;

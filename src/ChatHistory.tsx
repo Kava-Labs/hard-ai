@@ -1,12 +1,12 @@
 import styles from './ChatHistory.module.css';
 import { Bot } from 'lucide-react';
-import { ConversationHistory } from './types';
+import { ConversationHistories } from './types';
 import { useMemo } from 'react';
 import { groupConversationsByTime } from './utils/helpers';
 import { ChatHistoryItem } from './ChatHistoryItem';
 
 interface ChatHistoryProps {
-  chatHistories: Record<string, ConversationHistory>;
+  chatHistories: ConversationHistories;
   onSelectConversation: (id: string) => void;
 }
 
