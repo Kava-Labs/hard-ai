@@ -22,6 +22,7 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
   const [activeChat, setActiveChat] = useState<ActiveChat>({
     id: uuidv4(), // add uuid v4 for conversation id
     isRequesting: false,
+    isConversationStarted: false,
     model: initModel ? initModel : 'gpt-4o',
     abortController: new AbortController(),
     client: client,
@@ -53,6 +54,7 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
       const newActiveChat: ActiveChat = {
         ...activeChat,
         isRequesting: true,
+        isConversationStarted: true,
         abortController: new AbortController(),
       };
       // update isRequesting state and create a new abortController

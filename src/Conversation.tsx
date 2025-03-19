@@ -7,6 +7,10 @@ import {
 } from 'openai/resources/index';
 import AssistantMessage from './AssistantMessage';
 import { Content } from './Content';
+import {
+  MessageHistoryStore,
+  useMessageHistoryStore,
+} from './stores/messageHistoryStore';
 
 export type ChatMessage =
   | ChatCompletionMessageParam
@@ -14,10 +18,12 @@ export type ChatMessage =
   | ChatCompletionAssistantMessageParam;
 
 export interface ConversationProps {
-  messages: ChatMessage[];
+  messageHistoryStore: MessageHistoryStore;
 }
 
-const ConversationComponent = ({ messages }: ConversationProps) => {
+const ConversationComponent = ({ messageHistoryStore }: ConversationProps) => {
+  const messages = useMessageHistoryStore(messageHistoryStore);
+
   return (
     <div className={styles.conversationContainer}>
       {messages.map((message, index) => {

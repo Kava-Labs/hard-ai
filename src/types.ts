@@ -10,6 +10,7 @@ import OpenAI from 'openai/index';
 export type ActiveChat = {
   id: string;
   isRequesting: boolean;
+  isConversationStarted: boolean;
   model: string;
   abortController: AbortController;
   client: OpenAI;
