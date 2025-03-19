@@ -6,7 +6,7 @@ import { ChatMessage } from './types';
 const DEFAULT_HEIGHT = '30px';
 
 type ChatInputProps = {
-  onSubmitMessage?: (message: ChatMessage) => void;
+  onSubmitMessage: (message: ChatMessage) => void;
 };
 
 export const ChatInput = ({ onSubmitMessage }: ChatInputProps) => {
@@ -38,20 +38,11 @@ export const ChatInput = ({ onSubmitMessage }: ChatInputProps) => {
   );
 
   const onSubmitClick = () => {
-    if (inputValue.trim() === '') return;
-
-    // Create message object
-    const message: ChatMessage = {
+    onSubmitMessage({
       role: 'user',
       content: inputValue,
-    };
+    });
 
-    // Send message to parent component
-    if (onSubmitMessage) {
-      onSubmitMessage(message);
-    }
-
-    // Reset input
     setInputValue('');
     if (inputRef.current) {
       inputRef.current.style.height = DEFAULT_HEIGHT;
@@ -59,7 +50,6 @@ export const ChatInput = ({ onSubmitMessage }: ChatInputProps) => {
   };
 
   const handleKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    // Submit on Enter key (without Shift key)
     if (event.key === 'Enter' && !event.shiftKey) {
       event.preventDefault();
       if (inputValue.trim() !== '') {
@@ -87,13 +77,12 @@ export const ChatInput = ({ onSubmitMessage }: ChatInputProps) => {
             type="submit"
             onClick={onSubmitClick}
             aria-label="Send Chat"
-            disabled={inputValue.length === 0}
+            disabled={inputValue.trim() === ''}
           >
             <SendChatIcon />
           </button>
         </div>
       </div>
-
       <div className={styles.importantInfo}>
         <span>Hard AI can make mistakes. Check important info.</span>
       </div>
