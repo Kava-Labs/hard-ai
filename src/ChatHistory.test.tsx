@@ -18,7 +18,7 @@ describe('ChatHistory Component', () => {
   it('should display empty state when no conversations exist', () => {
     render(
       <ChatHistory
-        conversations={[]}
+        chatHistories={[]}
         onSelectConversation={mockOnSelectConversation}
       />,
     );
@@ -68,7 +68,7 @@ describe('ChatHistory Component', () => {
 
     render(
       <ChatHistory
-        conversations={mockConversations}
+        chatHistories={mockConversations}
         onSelectConversation={mockOnSelectConversation}
       />,
     );
@@ -125,7 +125,7 @@ describe('ChatHistory Component', () => {
 
     render(
       <ChatHistory
-        conversations={allConversations}
+        chatHistories={allConversations}
         onSelectConversation={mockOnSelectConversation}
       />,
     );
@@ -161,7 +161,7 @@ describe('ChatHistory Component', () => {
 
     render(
       <ChatHistory
-        conversations={mockConversations}
+        chatHistories={mockConversations}
         onSelectConversation={mockOnSelectConversation}
       />,
     );
@@ -197,7 +197,7 @@ describe('ChatHistory Component', () => {
 
     const { rerender } = render(
       <ChatHistory
-        conversations={mockConversations}
+        chatHistories={mockConversations}
         onSelectConversation={mockOnSelectConversation}
       />,
     );
@@ -208,7 +208,7 @@ describe('ChatHistory Component', () => {
     //  Rerender with the same props
     rerender(
       <ChatHistory
-        conversations={mockConversations}
+        chatHistories={mockConversations}
         onSelectConversation={mockOnSelectConversation}
       />,
     );
@@ -231,7 +231,7 @@ describe('ChatHistory Component', () => {
     //  Rerender with new conversations
     rerender(
       <ChatHistory
-        conversations={[...mockConversations, newConversation]}
+        chatHistories={[...mockConversations, newConversation]}
         onSelectConversation={mockOnSelectConversation}
       />,
     );

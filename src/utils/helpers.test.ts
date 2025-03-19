@@ -46,14 +46,14 @@ describe('getTimeGroup', () => {
 });
 
 describe('groupConversationsByTime', () => {
-  let mockConversations: ConversationHistory[];
+  let mockConversations: Record<string, ConversationHistory>;
   const now = new Date('2024-02-13T12:00:00Z').getTime();
 
   beforeEach(() => {
     vi.spyOn(Date.prototype, 'getTime').mockImplementation(() => now);
 
-    mockConversations = [
-      {
+    mockConversations = {
+      '1': {
         id: '1',
         title: 'Today Chat',
         lastSaved: now - 1000 * 60 * 60 * 2, // 2 hours ago
@@ -61,7 +61,7 @@ describe('groupConversationsByTime', () => {
         model: 'gpt-4o-mini',
         tokensRemaining: 128000,
       },
-      {
+      '2': {
         id: '2',
         title: 'Yesterday Chat',
         lastSaved: now - 1000 * 60 * 60 * 25, // 25 hours ago
@@ -69,7 +69,7 @@ describe('groupConversationsByTime', () => {
         model: 'gpt-4o-mini',
         tokensRemaining: 128000,
       },
-      {
+      '3': {
         id: '3',
         title: 'Last Week Chat',
         lastSaved: now - 1000 * 60 * 60 * 24 * 5, // 5 days ago
@@ -77,7 +77,7 @@ describe('groupConversationsByTime', () => {
         model: 'gpt-4o-mini',
         tokensRemaining: 128000,
       },
-    ];
+    };
   });
 
   afterEach(() => {
@@ -102,7 +102,8 @@ describe('groupConversationsByTime', () => {
       model: 'gpt-4o-mini',
       tokensRemaining: 128000,
     };
-    mockConversations.push(anotherTodayChat);
+
+    mockConversations['4'] = anotherTodayChat;
 
     const grouped = groupConversationsByTime(mockConversations);
     expect(grouped['Today'][0].title).toBe('Another Today Chat');
@@ -110,7 +111,7 @@ describe('groupConversationsByTime', () => {
   });
 
   it('should handle empty conversations array', () => {
-    const grouped = groupConversationsByTime([]);
+    const grouped = groupConversationsByTime({});
     expect(grouped).toEqual({});
   });
 });

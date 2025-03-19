@@ -6,22 +6,22 @@ import { groupConversationsByTime } from './utils/helpers';
 import { ChatHistoryItem } from './ChatHistoryItem';
 
 interface ChatHistoryProps {
-  conversations: ConversationHistory[];
+  chatHistories: Record<string, ConversationHistory>;
   onSelectConversation: (id: string) => void;
 }
 
 export const ChatHistory = ({
-  conversations,
+  chatHistories,
   onSelectConversation,
 }: ChatHistoryProps) => {
   const groupedHistories = useMemo(
-    () => groupConversationsByTime(conversations),
-    [conversations],
+    () => groupConversationsByTime(chatHistories),
+    [chatHistories],
   );
 
   return (
     <div className={styles.chatHistoryContainer}>
-      {conversations.length === 0 ? (
+      {Object.values(chatHistories).length === 0 ? (
         <div className={styles.emptyState}>
           <Bot className={styles.emptyStateIcon} size={24} />
           <small className={styles.emptyStateText}>
