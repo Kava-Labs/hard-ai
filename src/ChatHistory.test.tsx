@@ -21,6 +21,12 @@ describe('ChatHistory Component', () => {
   const mockOnDeleteConversation = vi.fn();
   const mockOnUpdateConversationTitle = vi.fn();
 
+  const mockProps = {
+    onSelectConversation: mockOnSelectConversation,
+    onDeleteConversation: mockOnDeleteConversation,
+    onUpdateConversationTitle: mockOnUpdateConversationTitle,
+  };
+
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -29,9 +35,8 @@ describe('ChatHistory Component', () => {
     render(
       <ChatHistory
         chatHistories={{}}
-        onSelectConversation={mockOnSelectConversation}
-        onDeleteConversation={mockOnDeleteConversation}
-        onUpdateConversationTitle={mockOnUpdateConversationTitle}
+        activeConversationId={'123'}
+        {...mockProps}
       />,
     );
 
@@ -39,10 +44,9 @@ describe('ChatHistory Component', () => {
   });
 
   it('should display conversations grouped by time', () => {
-    // Create mock history data with different timestamps
     const today = Date.now();
-    const yesterday = today - 86400000; // 24 hours ago
-    const older = today - 172800000; // 48 hours ago
+    const yesterday = today - 86400000;
+    const older = today - 172800000;
 
     const mockHistories: ConversationHistories = {
       'conv-today': {
@@ -89,18 +93,15 @@ describe('ChatHistory Component', () => {
     render(
       <ChatHistory
         chatHistories={mockHistories}
-        onSelectConversation={mockOnSelectConversation}
-        onDeleteConversation={mockOnDeleteConversation}
-        onUpdateConversationTitle={mockOnUpdateConversationTitle}
+        activeConversationId={'123'}
+        {...mockProps}
       />,
     );
 
-    // Check for time group headers
     expect(screen.getByText('Today')).toBeInTheDocument();
     expect(screen.getByText('Yesterday')).toBeInTheDocument();
     expect(screen.getByText('Last week')).toBeInTheDocument();
 
-    // Check for conversation titles
     expect(screen.getByText('Today Conversation')).toBeInTheDocument();
     expect(screen.getByText('Yesterday Conversation')).toBeInTheDocument();
     expect(screen.getByText('Older Conversation')).toBeInTheDocument();
@@ -124,9 +125,8 @@ describe('ChatHistory Component', () => {
     render(
       <ChatHistory
         chatHistories={mockHistories}
-        onSelectConversation={mockOnSelectConversation}
-        onDeleteConversation={mockOnDeleteConversation}
-        onUpdateConversationTitle={mockOnUpdateConversationTitle}
+        activeConversationId={'123'}
+        {...mockProps}
       />,
     );
 
@@ -165,14 +165,11 @@ describe('ChatHistory Component', () => {
     render(
       <ChatHistory
         chatHistories={mockHistories}
-        onSelectConversation={mockOnSelectConversation}
-        onDeleteConversation={mockOnDeleteConversation}
-        onUpdateConversationTitle={mockOnUpdateConversationTitle}
         activeConversationId="conv-2025-03-19-001"
+        {...mockProps}
       />,
     );
 
-    // Get elements by test id
     const activeItem = screen.getByText('Active Conversation');
     const inactiveItem = screen.getByText('Inactive Conversation');
 
@@ -211,39 +208,25 @@ describe('ChatHistory Component', () => {
     render(
       <ChatHistory
         chatHistories={mockHistories}
-        onSelectConversation={mockOnSelectConversation}
-        onDeleteConversation={mockOnDeleteConversation}
-        onUpdateConversationTitle={mockOnUpdateConversationTitle}
+        activeConversationId={'123'}
+        {...mockProps}
       />,
     );
 
     //  Get an array of the elements that match either the expected time labels or titles
     //  Verify that they are collected in the expected order (i.e. grouped correctly)
-
-    expect(
-      screen.getAllByText(
-        /Today|Yesterday|First Today Conversation|Second Today Conversation|Yesterday Conversation/,
-      )[0].textContent,
-    ).toBe('Today');
-    expect(
-      screen.getAllByText(
-        /Today|Yesterday|First Today Conversation|Second Today Conversation|Yesterday Conversation/,
-      )[1].textContent,
-    ).toBe('First Today Conversation');
-    expect(
-      screen.getAllByText(
-        /Today|Yesterday|First Today Conversation|Second Today Conversation|Yesterday Conversation/,
-      )[2].textContent,
-    ).toBe('Second Today Conversation');
-    expect(
-      screen.getAllByText(
-        /Today|Yesterday|First Today Conversation|Second Today Conversation|Yesterday Conversation/,
-      )[3].textContent,
-    ).toBe('Yesterday');
-    expect(
-      screen.getAllByText(
-        /Today|Yesterday|First Today Conversation|Second Today Conversation|Yesterday Conversation/,
-      )[4].textContent,
-    ).toBe('Yesterday Conversation');
+    const textToMatch =
+      /Today|Yesterday|First Today Conversation|Second Today Conversation|Yesterday Conversation/;
+    expect(screen.getAllByText(textToMatch)[0].textContent).toBe('Today');
+    expect(screen.getAllByText(textToMatch)[1].textContent).toBe(
+      'First Today Conversation',
+    );
+    expect(screen.getAllByText(textToMatch)[2].textContent).toBe(
+      'Second Today Conversation',
+    );
+    expect(screen.getAllByText(textToMatch)[3].textContent).toBe('Yesterday');
+    expect(screen.getAllByText(textToMatch)[4].textContent).toBe(
+      'Yesterday Conversation',
+    );
   });
 });

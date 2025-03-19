@@ -8,7 +8,7 @@ import { Bot } from 'lucide-react';
 interface ChatHistoryProps {
   chatHistories: ConversationHistories;
   onSelectConversation: (id: string) => void;
-  activeConversationId?: string | null;
+  activeConversationId: string | null;
   onDeleteConversation: (id: string) => void;
   onUpdateConversationTitle: (id: string, newTitle: string) => void;
 }
