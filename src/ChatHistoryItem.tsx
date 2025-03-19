@@ -4,16 +4,19 @@ import { EllipsisVertical } from 'lucide-react';
 import styles from './ChatHistoryItem.module.css';
 import { ConversationHistory } from './types';
 
-interface ChatHistoryItemProps {
+export interface ChatHistoryItemProps {
   conversation: ConversationHistory;
+  onHistoryItemClick: () => void;
 }
-
 export const ChatHistoryItem = memo(
-  ({ conversation }: ChatHistoryItemProps) => {
+  ({ conversation, onHistoryItemClick }: ChatHistoryItemProps) => {
     const { title } = conversation;
 
     return (
-      <div className={`${styles.chatHistoryItem} ${styles.selected}`}>
+      <div
+        className={`${styles.chatHistoryItem} ${styles.selected}`}
+        onClick={onHistoryItemClick}
+      >
         <div className={styles.chatHistoryContent}>
           <div className={styles.titleContainer}>
             <small>{title}</small>
