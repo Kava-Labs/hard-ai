@@ -75,6 +75,40 @@ export const App = () => {
     [activeConversationId],
   );
 
+  const handleDeleteConversation = useCallback(
+    (id: string) => {
+      setConversationHistories((prev) => {
+        const newConversations = { ...prev };
+        delete newConversations[id];
+        return newConversations;
+      });
+
+      //  If the deleted conversation was active, clear the active conversation
+      if (activeConversationId === id) {
+        setActiveConversationId(null);
+      }
+    },
+    [activeConversationId],
+  );
+
+  const handleUpdateConversationTitle = useCallback(
+    (id: string, newTitle: string) => {
+      setConversationHistories((prev) => {
+        const updatedConversation = prev[id];
+        if (!updatedConversation) return prev;
+
+        return {
+          ...prev,
+          [id]: {
+            ...updatedConversation,
+            title: newTitle,
+          },
+        };
+      });
+    },
+    [],
+  );
+
   const isMobileLayout = useIsMobileLayout();
   const showMobileSideBar = isMobileLayout && isMobileSideBarOpen;
   const showDesktopSideBar = !isMobileLayout && isDesktopSideBarOpen;
@@ -102,7 +136,10 @@ export const App = () => {
         <div className={styles.sidebarContent}>
           <ChatHistory
             chatHistories={conversationHistories}
-            onSelectConversation={(id: string) => setActiveConversationId(id)}
+            onSelectConversation={setActiveConversationId}
+            activeConversationId={activeConversationId}
+            onDeleteConversation={handleDeleteConversation}
+            onUpdateConversationTitle={handleUpdateConversationTitle}
           />
         </div>
       </div>
