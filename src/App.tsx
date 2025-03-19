@@ -3,11 +3,12 @@ import { ChatInput } from './ChatInput';
 import styles from './App.module.css';
 import { useIsMobileLayout } from './theme/useIsMobileLayout';
 import { MobileSideBar } from './MobileSideBar';
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useCallback } from 'react';
 import hardDiamondLogo from './assets/hardDiamondLogo.svg';
 import { DesktopSideBar } from './DesktopSideBar';
 import { NavBar } from './NavBar';
-import { mockConversationHistory } from './mocks/conversationHistory';
+import { ChatMessage, ConversationHistories } from './types';
+import { mockConversationHistories } from './mocks/conversationHistory';
 import { ChatHistory } from './ChatHistory';
 import { Conversation } from './Conversation';
 
@@ -15,20 +16,64 @@ export const App = () => {
   const [isMobileSideBarOpen, setIsMobileSideBarOpen] = useState(false);
   const [isDesktopSideBarOpen, setIsDesktopSideBarOpen] = useState(true);
 
+  const [conversationHistories, setConversationHistories] =
+    useState<ConversationHistories>(mockConversationHistories);
+
   const [activeConversationId, setActiveConversationId] = useState<
     string | null
   >(null);
 
-  const hasActiveConversation = activeConversationId !== null;
-
   const activeConversationMessages = useMemo(() => {
     if (!activeConversationId) return [];
 
-    const activeConversation = mockConversationHistory[activeConversationId];
+    const activeConversation = conversationHistories[activeConversationId];
     if (!activeConversation) return [];
 
     return activeConversation.conversation;
-  }, [activeConversationId]);
+  }, [activeConversationId, conversationHistories]);
+
+  const handleSubmitMessage = useCallback(
+    (message: ChatMessage) => {
+      //  if this is the first message in the conversation, assign it an ID
+      if (!activeConversationId) {
+        const newConversationId = `conv-${new Date().toISOString()}`;
+        setActiveConversationId(newConversationId);
+
+        const systemPrompt: ChatMessage = {
+          role: 'system',
+          content: 'You are a helpful AI assistant.',
+        };
+
+        //  then add it to the conversation
+        setConversationHistories((prev) => ({
+          ...prev,
+          [newConversationId]: {
+            id: newConversationId,
+            model: 'gpt-4o',
+            title: 'New Chat',
+            conversation: [systemPrompt, message],
+            lastSaved: Date.now(),
+            tokensRemaining: 8000,
+          },
+        }));
+      } else {
+        //  Update existing conversation
+        setConversationHistories((prev) => {
+          const currentConversation = prev[activeConversationId];
+
+          return {
+            ...prev,
+            [activeConversationId]: {
+              ...currentConversation,
+              conversation: [...currentConversation.conversation, message],
+              lastSaved: Date.now(),
+            },
+          };
+        });
+      }
+    },
+    [activeConversationId],
+  );
 
   const isMobileLayout = useIsMobileLayout();
   const showMobileSideBar = isMobileLayout && isMobileSideBarOpen;
@@ -56,7 +101,7 @@ export const App = () => {
 
         <div className={styles.sidebarContent}>
           <ChatHistory
-            chatHistories={mockConversationHistory}
+            chatHistories={conversationHistories}
             onSelectConversation={(id: string) => setActiveConversationId(id)}
           />
         </div>
@@ -74,17 +119,17 @@ export const App = () => {
             </div>
             <div className={styles.chatContainer}>
               <div
-                className={`${styles.chatContent} ${hasActiveConversation ? styles.fullHeight : ''}`}
+                className={`${styles.chatContent} ${activeConversationId ? styles.fullHeight : ''}`}
               >
-                {hasActiveConversation && (
+                {activeConversationId && (
                   <Conversation messages={activeConversationMessages} />
                 )}
               </div>
               <div
-                className={`${styles.controlsContainer} ${hasActiveConversation ? styles.positionSticky : ''}`}
+                className={`${styles.controlsContainer} ${activeConversationId ? styles.positionSticky : ''}`}
               >
-                {!hasActiveConversation && <LandingContent />}
-                <ChatInput />
+                {!activeConversationId && <LandingContent />}
+                <ChatInput onSubmitMessage={handleSubmitMessage} />
               </div>
             </div>
           </div>

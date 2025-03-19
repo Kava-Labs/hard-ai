@@ -1,15 +1,20 @@
 import styles from './ChatInput.module.css';
 import { ChangeEvent, useCallback, useEffect, useRef, useState } from 'react';
 import { SendChatIcon } from './SendChatIcon';
+import { ChatMessage } from './types';
 
 const DEFAULT_HEIGHT = '30px';
 
-export const ChatInput = () => {
+type ChatInputProps = {
+  onSubmitMessage: (message: ChatMessage) => void;
+};
+
+export const ChatInput = ({ onSubmitMessage }: ChatInputProps) => {
   const [inputValue, setInputValue] = useState('');
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
 
-  //  focus the input on mount
+  // Focus the input on mount
   useEffect(() => {
     if (inputRef.current) {
       inputRef.current.focus();
@@ -33,10 +38,23 @@ export const ChatInput = () => {
   );
 
   const onSubmitClick = () => {
-    setInputValue('');
+    onSubmitMessage({
+      role: 'user',
+      content: inputValue,
+    });
 
+    setInputValue('');
     if (inputRef.current) {
       inputRef.current.style.height = DEFAULT_HEIGHT;
+    }
+  };
+
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (event.key === 'Enter' && !event.shiftKey) {
+      event.preventDefault();
+      if (inputValue.trim() !== '') {
+        onSubmitClick();
+      }
     }
   };
 
@@ -49,7 +67,7 @@ export const ChatInput = () => {
             rows={1}
             value={inputValue}
             onChange={handleInputChange}
-            onKeyDown={() => ({})}
+            onKeyDown={handleKeyDown}
             ref={inputRef}
             placeholder="Ask anything..."
           />
@@ -59,13 +77,12 @@ export const ChatInput = () => {
             type="submit"
             onClick={onSubmitClick}
             aria-label="Send Chat"
-            disabled={inputValue.length === 0}
+            disabled={inputValue.trim() === ''}
           >
             <SendChatIcon />
           </button>
         </div>
       </div>
-
       <div className={styles.importantInfo}>
         <span>Hard AI can make mistakes. Check important info.</span>
       </div>

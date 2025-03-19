@@ -1,6 +1,6 @@
-import { ConversationHistory } from '../types';
+import { ConversationHistories } from '../types';
 
-export const mockConversationHistory: Record<string, ConversationHistory> = {
+export const mockConversationHistories: ConversationHistories = {
   'conv-2025-03-15-001': {
     id: 'conv-2025-03-15-001',
     model: 'gpt-4-turbo',

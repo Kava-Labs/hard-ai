@@ -1,5 +1,6 @@
 import { ConversationHistory } from '../types';
 
+//  Conversations indexed by time group label
 type GroupedConversations = Record<string, ConversationHistory[]>;
 
 /**
@@ -31,12 +32,12 @@ export const groupConversationsByTime = (
 ): GroupedConversations => {
   return Object.values(conversations)
     .sort((a, b) => b.lastSaved - a.lastSaved)
-    .reduce((groups, conversation) => {
+    .reduce<GroupedConversations>((groups, conversation) => {
       const timeGroup = getTimeGroup(conversation.lastSaved);
       if (!groups[timeGroup]) {
         groups[timeGroup] = [];
       }
       groups[timeGroup].push(conversation);
       return groups;
-    }, {} as GroupedConversations);
+    }, {});
 };
