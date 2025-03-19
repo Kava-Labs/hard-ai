@@ -4,7 +4,7 @@ import { EllipsisVertical } from 'lucide-react';
 import styles from './ChatHistoryItem.module.css';
 import { ConversationHistory } from './types';
 
-interface ChatHistoryItemProps {
+export interface ChatHistoryItemProps {
   conversation: ConversationHistory;
   onHistoryItemClick: () => void;
 }
