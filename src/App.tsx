@@ -23,8 +23,6 @@ export const App = () => {
     string | null
   >(null);
 
-  const hasActiveConversation = activeConversationId !== null;
-
   const activeConversationMessages = useMemo(() => {
     if (!activeConversationId) return [];
 
@@ -37,24 +35,23 @@ export const App = () => {
   const handleSubmitMessage = useCallback(
     (message: ChatMessage) => {
       //  if this is the first message in the conversation, assign it an ID
-      if (!hasActiveConversation) {
+      if (!activeConversationId) {
         const newConversationId = `conv-${new Date().toISOString()}`;
         setActiveConversationId(newConversationId);
 
-        //  then add it to conversation
+        const systemPrompt: ChatMessage = {
+          role: 'system',
+          content: 'You are a helpful AI assistant.',
+        };
+
+        //  then add it to the conversation
         setConversationHistories((prev) => ({
           ...prev,
           [newConversationId]: {
             id: newConversationId,
             model: 'gpt-4o',
             title: 'New Chat',
-            conversation: [
-              {
-                role: 'system',
-                content: 'You are a helpful AI assistant.',
-              },
-              message,
-            ],
+            conversation: [systemPrompt, message],
             lastSaved: Date.now(),
             tokensRemaining: 8000,
           },
@@ -75,7 +72,7 @@ export const App = () => {
         });
       }
     },
-    [activeConversationId, hasActiveConversation],
+    [activeConversationId],
   );
 
   const isMobileLayout = useIsMobileLayout();
@@ -122,16 +119,16 @@ export const App = () => {
             </div>
             <div className={styles.chatContainer}>
               <div
-                className={`${styles.chatContent} ${hasActiveConversation ? styles.fullHeight : ''}`}
+                className={`${styles.chatContent} ${activeConversationId ? styles.fullHeight : ''}`}
               >
-                {hasActiveConversation && (
+                {activeConversationId && (
                   <Conversation messages={activeConversationMessages} />
                 )}
               </div>
               <div
-                className={`${styles.controlsContainer} ${hasActiveConversation ? styles.positionSticky : ''}`}
+                className={`${styles.controlsContainer} ${activeConversationId ? styles.positionSticky : ''}`}
               >
-                {!hasActiveConversation && <LandingContent />}
+                {!activeConversationId && <LandingContent />}
                 <ChatInput onSubmitMessage={handleSubmitMessage} />
               </div>
             </div>
