@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach, Mock } from 'vitest';
 import { fireEvent, render, screen } from '@testing-library/react';
 import { ChatHistory } from './ChatHistory';
 import { groupConversationsByTime } from './utils/helpers';
-import { ConversationHistory } from './types';
+import { ConversationHistories } from './types';
 
 vi.mock('./utils/helpers', () => ({
   groupConversationsByTime: vi.fn(),
@@ -18,7 +18,7 @@ describe('ChatHistory Component', () => {
   it('should display empty state when no conversations exist', () => {
     render(
       <ChatHistory
-        conversations={[]}
+        chatHistories={{}}
         onSelectConversation={mockOnSelectConversation}
       />,
     );
@@ -27,8 +27,8 @@ describe('ChatHistory Component', () => {
   });
 
   it('should group and display conversations when they exist', () => {
-    const mockConversations: ConversationHistory[] = [
-      {
+    const mockHistories: ConversationHistories = {
+      'conv-2025-03-15-001': {
         id: 'conv-2025-03-15-001',
         model: 'gpt-4-turbo',
         title: 'Project Planning Discussion',
@@ -42,7 +42,7 @@ describe('ChatHistory Component', () => {
         lastSaved: Date.now(),
         tokensRemaining: 6453,
       },
-      {
+      'conv-2025-03-16-002': {
         id: 'conv-2025-03-16-002',
         model: 'claude-3-opus',
         title: 'Recipe Ideas for Dinner Party',
@@ -56,10 +56,10 @@ describe('ChatHistory Component', () => {
         lastSaved: Date.now(),
         tokensRemaining: 4821,
       },
-    ];
+    };
 
     const mockGroupedConversations = {
-      Today: mockConversations,
+      Today: Object.values(mockHistories),
     };
 
     (groupConversationsByTime as Mock).mockReturnValue(
@@ -68,7 +68,7 @@ describe('ChatHistory Component', () => {
 
     render(
       <ChatHistory
-        conversations={mockConversations}
+        chatHistories={mockHistories}
         onSelectConversation={mockOnSelectConversation}
       />,
     );
@@ -81,8 +81,8 @@ describe('ChatHistory Component', () => {
   });
 
   it('should handle multiple time groups', () => {
-    const todayConversations: ConversationHistory[] = [
-      {
+    const mockHistories: ConversationHistories = {
+      'conv-2025-03-19-001': {
         id: 'conv-2025-03-19-001',
         model: 'gpt-4-turbo',
         title: 'Today Conversation',
@@ -93,10 +93,7 @@ describe('ChatHistory Component', () => {
         lastSaved: Date.now(),
         tokensRemaining: 6453,
       },
-    ];
-
-    const yesterdayConversations: ConversationHistory[] = [
-      {
+      'conv-2025-03-18-001': {
         id: 'conv-2025-03-18-001',
         model: 'claude-3-opus',
         title: 'Yesterday Conversation',
@@ -110,13 +107,11 @@ describe('ChatHistory Component', () => {
         lastSaved: Date.now() - 86400000, // 1 day ago
         tokensRemaining: 4821,
       },
-    ];
-
-    const allConversations = [...todayConversations, ...yesterdayConversations];
+    };
 
     const mockGroupedConversations = {
-      Today: todayConversations,
-      Yesterday: yesterdayConversations,
+      Today: [mockHistories['conv-2025-03-19-001']],
+      Yesterday: [mockHistories['conv-2025-03-18-001']],
     };
 
     (groupConversationsByTime as Mock).mockReturnValue(
@@ -125,7 +120,7 @@ describe('ChatHistory Component', () => {
 
     render(
       <ChatHistory
-        conversations={allConversations}
+        chatHistories={mockHistories}
         onSelectConversation={mockOnSelectConversation}
       />,
     );
@@ -137,8 +132,8 @@ describe('ChatHistory Component', () => {
   });
 
   it('should call onSelectConversation with correct ID when conversation is clicked', async () => {
-    const mockConversations: ConversationHistory[] = [
-      {
+    const mockHistories: ConversationHistories = {
+      'conv-2025-03-19-001': {
         id: 'conv-2025-03-19-001',
         model: 'gpt-4-turbo',
         title: 'Today Conversation',
@@ -149,10 +144,10 @@ describe('ChatHistory Component', () => {
         lastSaved: Date.now(),
         tokensRemaining: 6453,
       },
-    ];
+    };
 
     const mockGroupedConversations = {
-      Today: mockConversations,
+      Today: [mockHistories['conv-2025-03-19-001']],
     };
 
     (groupConversationsByTime as Mock).mockReturnValue(
@@ -161,7 +156,7 @@ describe('ChatHistory Component', () => {
 
     render(
       <ChatHistory
-        conversations={mockConversations}
+        chatHistories={mockHistories}
         onSelectConversation={mockOnSelectConversation}
       />,
     );
@@ -173,8 +168,8 @@ describe('ChatHistory Component', () => {
   });
 
   it('should properly memoize the grouped conversations', () => {
-    const mockConversations: ConversationHistory[] = [
-      {
+    const mockHistories: ConversationHistories = {
+      'conv-2025-03-19-001': {
         id: 'conv-2025-03-19-001',
         model: 'gpt-4-turbo',
         title: 'Test Conversation',
@@ -185,10 +180,10 @@ describe('ChatHistory Component', () => {
         lastSaved: Date.now(),
         tokensRemaining: 6453,
       },
-    ];
+    };
 
     const mockGroupedConversations = {
-      Today: mockConversations,
+      Today: [mockHistories['conv-2025-03-19-001']],
     };
 
     (groupConversationsByTime as Mock).mockReturnValue(
@@ -197,7 +192,7 @@ describe('ChatHistory Component', () => {
 
     const { rerender } = render(
       <ChatHistory
-        conversations={mockConversations}
+        chatHistories={mockHistories}
         onSelectConversation={mockOnSelectConversation}
       />,
     );
@@ -208,7 +203,7 @@ describe('ChatHistory Component', () => {
     //  Rerender with the same props
     rerender(
       <ChatHistory
-        conversations={mockConversations}
+        chatHistories={mockHistories}
         onSelectConversation={mockOnSelectConversation}
       />,
     );
@@ -216,22 +211,28 @@ describe('ChatHistory Component', () => {
     //  Function should not be called again due to memoization
     expect(groupConversationsByTime).toHaveBeenCalledTimes(1);
 
-    const newConversation: ConversationHistory = {
-      id: 'conv-2025-03-19-002',
-      model: 'claude-3-opus',
-      title: 'New Conversation',
-      conversation: [
-        { role: 'system', content: 'You are Claude, a helpful AI assistant.' },
-        { role: 'user', content: 'Hello Claude!' },
-      ],
-      lastSaved: Date.now(),
-      tokensRemaining: 4821,
+    const updatedMockHistories: ConversationHistories = {
+      ...mockHistories,
+      'conv-2025-03-19-002': {
+        id: 'conv-2025-03-19-002',
+        model: 'claude-3-opus',
+        title: 'New Conversation',
+        conversation: [
+          {
+            role: 'system',
+            content: 'You are Claude, a helpful AI assistant.',
+          },
+          { role: 'user', content: 'Hello Claude!' },
+        ],
+        lastSaved: Date.now(),
+        tokensRemaining: 4821,
+      },
     };
 
     //  Rerender with new conversations
     rerender(
       <ChatHistory
-        conversations={[...mockConversations, newConversation]}
+        chatHistories={updatedMockHistories}
         onSelectConversation={mockOnSelectConversation}
       />,
     );

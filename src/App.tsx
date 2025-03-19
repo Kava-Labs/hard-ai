@@ -7,7 +7,6 @@ import { useMemo, useState } from 'react';
 import hardDiamondLogo from './assets/hardDiamondLogo.svg';
 import { DesktopSideBar } from './DesktopSideBar';
 import { NavBar } from './NavBar';
-import { ConversationHistory } from './types';
 import { mockConversationHistory } from './mocks/conversationHistory';
 import { ChatHistory } from './ChatHistory';
 import { Conversation } from './Conversation';
@@ -15,8 +14,6 @@ import { Conversation } from './Conversation';
 export const App = () => {
   const [isMobileSideBarOpen, setIsMobileSideBarOpen] = useState(false);
   const [isDesktopSideBarOpen, setIsDesktopSideBarOpen] = useState(true);
-
-  const conversations: ConversationHistory[] = mockConversationHistory;
 
   const [activeConversationId, setActiveConversationId] = useState<
     string | null
@@ -27,13 +24,11 @@ export const App = () => {
   const activeConversationMessages = useMemo(() => {
     if (!activeConversationId) return [];
 
-    const activeConversation = conversations.find(
-      (c) => c.id === activeConversationId,
-    );
+    const activeConversation = mockConversationHistory[activeConversationId];
     if (!activeConversation) return [];
 
     return activeConversation.conversation;
-  }, [activeConversationId, conversations]);
+  }, [activeConversationId]);
 
   const isMobileLayout = useIsMobileLayout();
   const showMobileSideBar = isMobileLayout && isMobileSideBarOpen;
@@ -61,7 +56,7 @@ export const App = () => {
 
         <div className={styles.sidebarContent}>
           <ChatHistory
-            conversations={conversations}
+            chatHistories={mockConversationHistory}
             onSelectConversation={(id: string) => setActiveConversationId(id)}
           />
         </div>

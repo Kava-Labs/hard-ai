@@ -1,27 +1,27 @@
 import styles from './ChatHistory.module.css';
 import { Bot } from 'lucide-react';
-import { ConversationHistory } from './types';
+import { ConversationHistories } from './types';
 import { useMemo } from 'react';
 import { groupConversationsByTime } from './utils/helpers';
 import { ChatHistoryItem } from './ChatHistoryItem';
 
 interface ChatHistoryProps {
-  conversations: ConversationHistory[];
+  chatHistories: ConversationHistories;
   onSelectConversation: (id: string) => void;
 }
 
 export const ChatHistory = ({
-  conversations,
+  chatHistories,
   onSelectConversation,
 }: ChatHistoryProps) => {
   const groupedHistories = useMemo(
-    () => groupConversationsByTime(conversations),
-    [conversations],
+    () => groupConversationsByTime(chatHistories),
+    [chatHistories],
   );
 
   return (
     <div className={styles.chatHistoryContainer}>
-      {conversations.length === 0 ? (
+      {Object.values(chatHistories).length === 0 ? (
         <div className={styles.emptyState}>
           <Bot className={styles.emptyStateIcon} size={24} />
           <small className={styles.emptyStateText}>
