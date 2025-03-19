@@ -11,6 +11,7 @@ import {
   MessageHistoryStore,
   useMessageHistoryStore,
 } from './stores/messageHistoryStore';
+import { TextStreamStore, useTextStreamStore } from './stores/textStreamStore';
 
 export type ChatMessage =
   | ChatCompletionMessageParam
@@ -19,10 +20,21 @@ export type ChatMessage =
 
 export interface ConversationProps {
   messageHistoryStore: MessageHistoryStore;
+  progressStore: TextStreamStore;
+  messageStore: TextStreamStore;
+  errorStore: TextStreamStore;
+  isRequesting: boolean;
 }
 
-const ConversationComponent = ({ messageHistoryStore }: ConversationProps) => {
+const ConversationComponent = ({
+  messageHistoryStore,
+  isRequesting,
+  progressStore,
+  errorStore,
+  messageStore,
+}: ConversationProps) => {
   const messages = useMessageHistoryStore(messageHistoryStore);
+  const errorText = useTextStreamStore(errorStore);
 
   return (
     <div className={styles.conversationContainer}>
@@ -46,6 +58,43 @@ const ConversationComponent = ({ messageHistoryStore }: ConversationProps) => {
 
         return null;
       })}
+
+      {isRequesting && (
+        <StreamingMessage
+          progressStore={progressStore}
+          messageStore={messageStore}
+        />
+      )}
+
+      {errorText.length > 0 && (
+        <div className={styles.assistantOutputContainer}>
+          <div className={styles.assistantContainer}>
+            <Content content={errorText} role="assistant" />
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+const StreamingMessage = ({
+  progressStore,
+  messageStore,
+}: {
+  progressStore: TextStreamStore;
+  messageStore: TextStreamStore;
+}) => {
+  const progressText = useTextStreamStore(progressStore);
+  const assistantStream = useTextStreamStore(messageStore);
+
+  return (
+    <div className={styles.assistantOutputContainer}>
+      <div className={styles.assistantContainer}>
+        {progressText.length ? (
+          <Content content={progressText} role="assistant" />
+        ) : null}
+        {<Content content={assistantStream} role="assistant" />}
+      </div>
     </div>
   );
 };
