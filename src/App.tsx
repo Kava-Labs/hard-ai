@@ -23,6 +23,7 @@ export const App = () => {
     handleDeleteConversation,
     handleUpdateConversationTitle,
     onSelectConversation,
+    handleNewChat,
   } = useChat();
 
   const hasActiveConversation = activeChat.isConversationStarted === true;
@@ -70,6 +71,7 @@ export const App = () => {
                 onMobileMenuClick={() => setIsMobileSideBarOpen(true)}
                 onDesktopMenuClick={() => setIsDesktopSideBarOpen(true)}
                 isDesktopSideBarOpen={isDesktopSideBarOpen}
+                onNewChatClick={handleNewChat}
               />
             </div>
             <div className={styles.chatContainer}>

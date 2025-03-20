@@ -119,6 +119,22 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
     [],
   );
 
+  //  handler specific to the New Chat button
+  const handleNewChat = useCallback(() => {
+    setActiveChat({
+      id: uuidv4(),
+      isRequesting: false,
+      isConversationStarted: false,
+      model: initModel ? initModel : 'gpt-4o',
+      abortController: new AbortController(),
+      client: client,
+      messageHistoryStore: new MessageHistoryStore(),
+      messageStore: new TextStreamStore(),
+      progressStore: new TextStreamStore(),
+      errorStore: new TextStreamStore(),
+    });
+  }, []);
+
   return useMemo(
     () => ({
       activeChat,
@@ -128,6 +144,7 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
       handleUpdateConversationTitle,
       handleChatCompletion,
       handleCancel,
+      handleNewChat,
     }),
     [
       activeChat,
@@ -137,6 +154,7 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
       handleUpdateConversationTitle,
       handleCancel,
       onSelectConversation,
+      handleNewChat,
     ],
   );
 };
