@@ -52,6 +52,9 @@ export const App = () => {
 
         <div className={styles.sidebarContent}>
           <ChatHistory
+            activeConversationId={activeChat.id}
+            onDeleteConversation={() => {}} // todo: re-implement
+            onUpdateConversationTitle={() => {}} // todo: re-implement
             chatHistories={savedConversations.reduce((acc, cur) => {
               acc[cur.id] = cur;
               return acc;
