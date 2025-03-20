@@ -1,7 +1,7 @@
 import { TextSearch, X as CloseX } from 'lucide-react';
 import ButtonIcon from './ButtonIcon';
 
-export interface MobileSideBarProps {
+interface MobileSideBarProps {
   onCloseClick: () => void;
 }
 

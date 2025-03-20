@@ -2,18 +2,16 @@ import { render, screen } from '@testing-library/react';
 import { describe, test, expect, beforeEach, vi } from 'vitest';
 import { SideBar } from './SideBar';
 import { useIsMobileLayout } from './theme/useIsMobileLayout';
-import { MobileSideBarProps } from './MobileSideBar';
-import { DesktopSideBarProps } from './DesktopSideBar';
 
 vi.mock('./MobileSideBar', () => ({
-  MobileSideBar: ({ onCloseClick }: MobileSideBarProps) => (
+  MobileSideBar: ({ onCloseClick }: { onCloseClick: () => void }) => (
     <button data-testid="mobile-sidebar-close" onClick={onCloseClick}>
       Mobile Close
     </button>
   ),
 }));
 vi.mock('./DesktopSideBar', () => ({
-  DesktopSideBar: ({ onCloseClick }: DesktopSideBarProps) => (
+  DesktopSideBar: ({ onCloseClick }: { onCloseClick: () => void }) => (
     <button data-testid="desktop-sidebar-close" onClick={onCloseClick}>
       Desktop Close
     </button>

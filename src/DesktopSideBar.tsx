@@ -1,7 +1,7 @@
 import ButtonIcon from './ButtonIcon';
 import { PanelLeftClose, TextSearch } from 'lucide-react';
 
-export interface DesktopSideBarProps {
+interface DesktopSideBarProps {
   onCloseClick: () => void;
 }
 
