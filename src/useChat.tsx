@@ -1,6 +1,11 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { MessageHistoryStore } from './stores/messageHistoryStore';
-import { ChatMessage, ActiveChat, ConversationHistories } from './types';
+import {
+  ChatMessage,
+  ActiveChat,
+  ConversationHistories,
+  ConversationHistory,
+} from './types';
 import { TextStreamStore } from './stores/textStreamStore';
 import { v4 as uuidv4 } from 'uuid';
 import OpenAI from 'openai/index';
@@ -10,6 +15,7 @@ import { getConversationMessages } from './api/getConversationMessages';
 import { deleteConversation } from './api/deleteConversation';
 import { updateConversation } from './api/updateConversation';
 import { getAllConversations } from './api/getAllConversations';
+import { saveConversation } from './api/saveConversation';
 
 export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
   const [client] = useState(() => {
@@ -72,17 +78,40 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
         ...newMessages,
       ]);
 
+      const defaultNewChatTitle = 'New Chat';
       // todo: sync local storage before response
+      const conversation: ConversationHistory = {
+        id: activeChat.id,
+        model: activeChat.model,
+        title: defaultNewChatTitle,
+        lastSaved: Date.now(),
+        tokensRemaining: 1024 * 12, // todo: implement real tokens remaining
+      };
 
-      // no need to .catch
-      // doChat won't throw and automatically sets errors in the activeChat's errorStore
-      doChat(newActiveChat).finally(() => {
-        setActiveChat((prev) => ({
-          ...prev,
-          isRequesting: false,
-        }));
-        // todo: sync local storage after response
-      });
+      saveConversation(
+        conversation,
+        newActiveChat.messageHistoryStore.getSnapshot(),
+      )
+        .catch((err) => {
+          console.warn('failed to saveConversations', err);
+        })
+        .finally(() => {
+          // no need to .catch
+          // doChat won't throw and automatically sets errors in the activeChat's errorStore
+          doChat(newActiveChat).finally(() => {
+            setActiveChat((prev) => ({
+              ...prev,
+              isRequesting: false,
+            }));
+
+            saveConversation(
+              conversation,
+              newActiveChat.messageHistoryStore.getSnapshot(),
+            ).catch((err) => {
+              console.warn('failed to saveConversations', err);
+            });
+          });
+        });
     },
     [activeChat],
   );
