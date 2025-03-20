@@ -1,5 +1,5 @@
 import { render, screen, waitFor } from '@testing-library/react';
-import { describe, vi, beforeEach, it, expect } from 'vitest';
+import { describe, vi, beforeEach, it, expect, Mock } from 'vitest';
 import { Content, ContentComponent } from './Content';
 import { sanitizeContent } from './utils/sanitize';
 
@@ -12,9 +12,7 @@ describe('Content Component', () => {
   beforeEach(() => {
     vi.clearAllMocks();
 
-    (sanitizeContent as unknown as ReturnType<typeof vi.fn>).mockResolvedValue(
-      mockSanitizedContent,
-    );
+    (sanitizeContent as Mock).mockResolvedValue(mockSanitizedContent);
 
     vi.spyOn(console, 'error').mockImplementation(() => {});
   });
@@ -44,7 +42,7 @@ describe('Content Component', () => {
   });
 
   it('displays error message when sanitization fails', async () => {
-    (sanitizeContent as unknown as ReturnType<typeof vi.fn>).mockRejectedValue(
+    (sanitizeContent as Mock).mockRejectedValue(
       new Error('Sanitization failed'),
     );
 
@@ -58,12 +56,10 @@ describe('Content Component', () => {
     expect(console.error).toHaveBeenCalled();
   });
 
-  it('memoizes correctly', async () => {
+  it('memoizes correctly', () => {
     const { rerender } = render(<Content content={mockContent} role="user" />);
 
-    await waitFor(() => {
-      expect(sanitizeContent).toHaveBeenCalledTimes(1);
-    });
+    expect(sanitizeContent).toHaveBeenCalledTimes(1);
 
     //  Rerender with the same props
     rerender(<Content content={mockContent} role="user" />);
