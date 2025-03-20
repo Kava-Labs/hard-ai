@@ -51,7 +51,7 @@ export const ContentComponent = ({
   }
 
   return (
-    <div data-testid="conversation-message" data-chat-role={role}>
+    <div data-chat-role={role}>
       {sanitizedContent !== '' && (
         <span
           className={styles.content}
