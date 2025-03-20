@@ -128,8 +128,7 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
       model: initModel ? initModel : 'gpt-4o',
       abortController: new AbortController(),
       client: client,
-
-      messageHistoryStore: new MessageHistoryStore(initValues),
+      messageHistoryStore: new MessageHistoryStore(),
       messageStore: new TextStreamStore(),
       progressStore: new TextStreamStore(),
       errorStore: new TextStreamStore(),
