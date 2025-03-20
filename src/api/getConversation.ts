@@ -3,7 +3,7 @@ import type { ConversationHistory } from '../types';
 
 export async function getConversation(
   id: string,
-): Promise<Omit<ConversationHistory, 'conversation'> | null> {
+): Promise<ConversationHistory | null> {
   const db = await idbDatabase();
   const tx = db.transaction(CONVERSATION_STORE_NAME, 'readonly');
   const store = tx.objectStore(CONVERSATION_STORE_NAME);
