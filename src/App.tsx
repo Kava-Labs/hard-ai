@@ -1,11 +1,8 @@
-import { LandingContent } from './LandingContent';
-import { ChatInput } from './ChatInput';
 import styles from './App.module.css';
 import { useState } from 'react';
-import { NavBar } from './NavBar';
 import { useChat } from './useChat';
-import { ConversationWrapper } from './ConversationWrapper';
 import { SideBar } from './SideBar';
+import { ChatInterface } from './ChatInterface';
 
 export const App = () => {
   const [isMobileSideBarOpen, setIsMobileSideBarOpen] = useState(false);
@@ -22,8 +19,6 @@ export const App = () => {
     onUpdateConversationTitle,
   } = useChat();
 
-  const hasActiveConversation = activeChat.isConversationStarted === true;
-
   return (
     <div className={styles.app}>
       <SideBar
@@ -37,38 +32,15 @@ export const App = () => {
         onMobileCloseClick={() => setIsMobileSideBarOpen(false)}
         onDesktopCloseClick={() => setIsDesktopSideBarOpen(false)}
       />
-      <div className={styles.content}>
-        <div className={styles.chatview}>
-          <div className={styles.scrollContainer}>
-            <div className={styles.chatHeader}>
-              <NavBar
-                onMobileMenuClick={() => setIsMobileSideBarOpen(true)}
-                onDesktopMenuClick={() => setIsDesktopSideBarOpen(true)}
-                isDesktopSideBarOpen={isDesktopSideBarOpen}
-                onNewChatClick={handleNewChat}
-              />
-            </div>
-            <div className={styles.chatContainer}>
-              <div
-                className={`${styles.chatContent} ${hasActiveConversation ? styles.fullHeight : ''}`}
-              >
-                {hasActiveConversation && (
-                  <ConversationWrapper activeChat={activeChat} />
-                )}
-              </div>
-              <div
-                className={`${styles.controlsContainer} ${hasActiveConversation ? styles.positionSticky : ''}`}
-              >
-                {!hasActiveConversation && <LandingContent />}
-                <ChatInput
-                  handleChatCompletion={handleChatCompletion}
-                  handleCancel={handleCancel}
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+      <ChatInterface
+        activeChat={activeChat}
+        handleChatCompletion={handleChatCompletion}
+        handleCancel={handleCancel}
+        handleNewChat={handleNewChat}
+        isDesktopSideBarOpen={isDesktopSideBarOpen}
+        setIsMobileSideBarOpen={setIsMobileSideBarOpen}
+        setIsDesktopSideBarOpen={setIsDesktopSideBarOpen}
+      />
     </div>
   );
 };
