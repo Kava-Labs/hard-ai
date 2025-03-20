@@ -20,6 +20,8 @@ export const App = () => {
     conversationHistories,
     handleChatCompletion,
     handleCancel,
+    handleDeleteConversation,
+    handleUpdateConversationTitle,
     onSelectConversation,
   } = useChat();
 
@@ -52,8 +54,8 @@ export const App = () => {
         <div className={styles.sidebarContent}>
           <ChatHistory
             activeConversationId={activeChat.id}
-            onDeleteConversation={() => {}} // todo: re-implement
-            onUpdateConversationTitle={() => {}} // todo: re-implement
+            onDeleteConversation={handleDeleteConversation}
+            onUpdateConversationTitle={handleUpdateConversationTitle}
             chatHistories={conversationHistories}
             onSelectConversation={onSelectConversation}
           />
