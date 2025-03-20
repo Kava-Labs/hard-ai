@@ -1,11 +1,11 @@
 import ButtonIcon from './ButtonIcon';
 import { PanelLeftClose, TextSearch } from 'lucide-react';
 
-interface MobileSideBarProps {
+export interface DesktopSideBarProps {
   onCloseClick: () => void;
 }
 
-export const DesktopSideBar = ({ onCloseClick }: MobileSideBarProps) => {
+export const DesktopSideBar = ({ onCloseClick }: DesktopSideBarProps) => {
   return (
     <>
       <ButtonIcon
