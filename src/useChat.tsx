@@ -9,7 +9,7 @@ import {
 import { TextStreamStore } from './stores/textStreamStore';
 import { v4 as uuidv4 } from 'uuid';
 import OpenAI from 'openai/index';
-import { doChat } from './api/chat';
+import { doChat, generateConversationTitle } from './api/chat';
 import { idbEventTarget } from './api/idb';
 import { getConversationMessages } from './api/getConversationMessages';
 import { deleteConversation } from './api/deleteConversation';
@@ -75,13 +75,20 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
 
       const defaultNewChatTitle = 'New Chat';
       // todo: sync local storage before response
-      const conversation: ConversationHistory = {
-        id: activeChat.id,
-        model: activeChat.model,
-        title: defaultNewChatTitle,
-        lastSaved: Date.now(),
-        tokensRemaining: 1024 * 12, // todo: implement real tokens remaining
-      };
+      let conversation: ConversationHistory;
+
+      if (conversationHistories[activeChat.id]) {
+        conversation = conversationHistories[activeChat.id];
+        conversation.lastSaved = Date.now();
+      } else {
+        conversation = {
+          id: activeChat.id,
+          model: activeChat.model,
+          title: defaultNewChatTitle,
+          lastSaved: Date.now(),
+          tokensRemaining: 1024 * 12, // todo: implement real tokens remaining
+        };
+      }
 
       saveConversation(
         conversation,
@@ -99,12 +106,28 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
               isRequesting: false,
             }));
 
-            saveConversation(
-              conversation,
-              newActiveChat.messageHistoryStore.getSnapshot(),
-            ).catch((err) => {
-              console.warn('failed to saveConversations', err);
-            });
+            if (conversation.title === defaultNewChatTitle) {
+              generateConversationTitle(activeChat)
+                .then((title) => {
+                  conversation.title = title;
+                  saveConversation(
+                    conversation,
+                    newActiveChat.messageHistoryStore.getSnapshot(),
+                  ).catch((err) => {
+                    console.warn('failed to saveConversations', err);
+                  });
+                })
+                .catch((err) => {
+                  console.warn('failed to generate a conversation title', err);
+                });
+            } else {
+              saveConversation(
+                conversation,
+                newActiveChat.messageHistoryStore.getSnapshot(),
+              ).catch((err) => {
+                console.warn('failed to saveConversations', err);
+              });
+            }
           });
         });
     },

@@ -1,5 +1,6 @@
 import type { ActiveChat } from '../types';
 import type { ChatCompletionChunk } from 'openai/resources/index';
+import { formatConversationTitle } from '../utils/helpers';
 
 export const doChat = async (activeChat: ActiveChat) => {
   activeChat.progressStore.setText('Thinking');
@@ -76,4 +77,45 @@ export const isContentChunk = (result: ChatCompletionChunk): boolean => {
   const delta = result.choices[0].delta;
   //  Sometimes content is an empty string, so we check if content is a string property.
   return delta && 'content' in delta && typeof delta.content === 'string';
+};
+
+export const generateConversationTitle = async (
+  activeChat: ActiveChat,
+): Promise<string> => {
+  let title = 'New Chat';
+  try {
+    const data = await activeChat.client.chat.completions.create({
+      stream: false,
+      messages: [
+        {
+          role: 'system',
+          content:
+            'your task is to generate a title for a conversation using 3 to 4 words',
+        },
+        {
+          role: 'user',
+          content: `Please generate a title for this conversation (max 4 words):
+                    ${activeChat.messageHistoryStore
+                      .getSnapshot()
+                      .map((msg) => {
+                        // only keep user/assistant messages
+                        if (msg.role !== 'user' && msg.role !== 'assistant')
+                          return;
+                        return `Role: ${msg.role} 
+                                    ${msg.content}
+                      `;
+                      })}
+                    `,
+        },
+      ],
+      model: 'gpt-4o-mini',
+    });
+
+    title = data.choices[0].message.content ?? 'New Chat';
+  } catch (err) {
+    console.error(err);
+  }
+
+  // Apply truncation only when we get the AI-generated title
+  return formatConversationTitle(title, 34);
 };
