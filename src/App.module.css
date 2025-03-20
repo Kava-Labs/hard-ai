@@ -76,12 +76,6 @@
   flex: 1;
 }
 
-.app {
-  height: 100vh;
-  height: 100dvh;
-  display: flex;
-}
-
 .sidebarContent {
   position: relative;
   flex: 1;
@@ -91,6 +85,12 @@
   scrollbar-color: var(--colors-bgTertiary) var(--colors-bgSecondary);
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
+}
+
+.app {
+  height: 100vh;
+  height: 100dvh;
+  display: flex;
 }
 
 .sidebar {
@@ -112,10 +112,6 @@
   transform: translateX(0);
 }
 
-.sidebar.isHidden {
-  transform: translateX(calc(var(--layout-sidebarWidth) * -1));
-}
-
 .sidebarHeader {
   height: var(--layout-headerHeight);
   flex-shrink: 0;
@@ -126,7 +122,6 @@
   padding-left: var(--spacing-md);
   padding-right: calc(var(--spacing-md) - var(--spacing-sm));
 }
-
 
 .sidebarContent::-webkit-scrollbar {
   background-color: var(--colors-bgSecondary);
