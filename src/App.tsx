@@ -23,6 +23,7 @@ export const App = () => {
     onSelectConversation,
     onDeleteConversation,
     onUpdateConversationTitle,
+    handleNewChat,
   } = useChat();
 
   const hasActiveConversation = activeChat.isConversationStarted === true;

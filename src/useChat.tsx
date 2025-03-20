@@ -141,6 +141,22 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
     setActiveChat((prev) => ({ ...prev, isRequesting: false }));
   }, [activeChat]);
 
+  //  handler specific to the New Chat button
+  const handleNewChat = useCallback(() => {
+    setActiveChat({
+      id: uuidv4(),
+      isRequesting: false,
+      isConversationStarted: false,
+      model: initModel ? initModel : 'gpt-4o',
+      abortController: new AbortController(),
+      client: client,
+      messageHistoryStore: new MessageHistoryStore(),
+      messageStore: new TextStreamStore(),
+      progressStore: new TextStreamStore(),
+      errorStore: new TextStreamStore(),
+    });
+  }, [initModel]);
+
   const onSelectConversation = useCallback(
     async (id: string) => {
       const selectedConversation = conversationHistories[id];
@@ -165,19 +181,7 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
     async (id: string) => {
       await deleteConversation(id);
       if (id === activeChat.id) {
-        setActiveChat({
-          id: uuidv4(),
-          isRequesting: false,
-          isConversationStarted: false,
-          model: initModel ? initModel : 'gpt-4o',
-          abortController: new AbortController(),
-          client: client,
-
-          messageHistoryStore: new MessageHistoryStore(),
-          messageStore: new TextStreamStore(),
-          progressStore: new TextStreamStore(),
-          errorStore: new TextStreamStore(),
-        });
+        handleNewChat();
       }
     },
     [activeChat, client, initModel],
@@ -205,6 +209,7 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
       activeChat,
       conversationHistories,
       onSelectConversation,
+      handleNewChat,
       handleChatCompletion,
       handleCancel,
       onDeleteConversation,
@@ -214,6 +219,7 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
       activeChat,
       conversationHistories,
       handleChatCompletion,
+      handleNewChat,
       handleCancel,
       onSelectConversation,
       onDeleteConversation,
