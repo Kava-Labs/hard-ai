@@ -195,11 +195,11 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
   );
 
   useEffect(() => {
-    idbEventTarget.addEventListener('indexeddb-update', (event: Event) => {
-      const { stores, operation, id } = (event as CustomEvent).detail;
-      console.log(
-        `Store Updated: ${stores}, Operation: ${operation}, ID: ${id}`,
-      );
+    idbEventTarget.addEventListener('indexeddb-update', (_event: Event) => {
+      // const { stores, operation, id } = (_event as CustomEvent).detail;
+      // console.log(
+      //   `Store Updated: ${stores}, Operation: ${operation}, ID: ${id}`,
+      // );
       fetchConversations();
     });
   }, [fetchConversations]);
