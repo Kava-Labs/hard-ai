@@ -106,11 +106,26 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
     [conversationHistories],
   );
 
+  //  todo: implement
+  const handleDeleteConversation = useCallback((id: string) => {
+    console.log(id);
+  }, []);
+
+  //  todo: implement
+  const handleUpdateConversationTitle = useCallback(
+    (id: string, updatedTitle: string) => {
+      console.log(id, updatedTitle);
+    },
+    [],
+  );
+
   return useMemo(
     () => ({
       activeChat,
       conversationHistories,
       onSelectConversation,
+      handleDeleteConversation,
+      handleUpdateConversationTitle,
       handleChatCompletion,
       handleCancel,
     }),
@@ -118,6 +133,8 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
       activeChat,
       conversationHistories,
       handleChatCompletion,
+      handleDeleteConversation,
+      handleUpdateConversationTitle,
       handleCancel,
       onSelectConversation,
     ],
