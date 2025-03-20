@@ -6,6 +6,10 @@ import { v4 as uuidv4 } from 'uuid';
 import OpenAI from 'openai/index';
 import { doChat } from './api/chat';
 import { idbEventTarget } from './api/idb';
+import { getConversationMessages } from './api/getConversationMessages';
+import { deleteConversation } from './api/deleteConversation';
+import { updateConversation } from './api/updateConversation';
+import { getAllConversations } from './api/getAllConversations';
 
 export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
   const [client] = useState(() => {
@@ -33,23 +37,24 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
     errorStore: new TextStreamStore(),
   });
 
-  useEffect(() => {
-    const id = setInterval(() => {
-      setConversationHistories((prev) => {
-        const storedConversations = JSON.parse(
-          localStorage.getItem('conversations') ?? '{}',
-        ) as ConversationHistories;
-
-        if (JSON.stringify(prev) !== JSON.stringify(storedConversations)) {
-          return storedConversations;
-        }
-        return prev;
+  const fetchConversations = useCallback(() => {
+    getAllConversations()
+      .then((conversations) => {
+        setConversationHistories(
+          conversations.reduce((acc, cur) => {
+            acc[cur.id] = cur;
+            return acc;
+          }, {} as ConversationHistories),
+        );
+      })
+      .catch((err) => {
+        console.error(err);
       });
-    }, 1000);
-    return () => {
-      clearInterval(id);
-    };
   }, []);
+
+  useEffect(() => {
+    fetchConversations();
+  }, [fetchConversations]);
 
   const handleChatCompletion = useCallback(
     (newMessages: ChatMessage[]) => {
@@ -90,21 +95,34 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
   }, [activeChat]);
 
   const onSelectConversation = useCallback(
-    (_id: string) => {
-      // const selectedConversation = conversationHistories[id];
-      // if (selectedConversation) {
-      //   setActiveChat((prev) => ({
-      //     ...prev,
-      //     id: selectedConversation.id,
-      //     model: selectedConversation.model,
-      //     isConversationStarted: true,
-      //     messageHistoryStore: new MessageHistoryStore(
-      //       selectedConversation.conversation as ChatMessage[],
-      //     ),
-      //   }));
-      // }
+    async (id: string) => {
+      const selectedConversation = conversationHistories[id];
+      if (selectedConversation) {
+        const messages = await getConversationMessages(id);
+
+        setActiveChat((prev) => ({
+          ...prev,
+          id: selectedConversation.id,
+          model: selectedConversation.model,
+          isConversationStarted: true,
+          messageHistoryStore: new MessageHistoryStore(
+            messages ? messages : [],
+          ),
+        }));
+      }
     },
     [conversationHistories],
+  );
+
+  const onDeleteConversation = useCallback(async (id: string) => {
+    await deleteConversation(id);
+  }, []);
+
+  const onUpdateConversationTitle = useCallback(
+    async (id: string, newTitle: string) => {
+      await updateConversation(id, { title: newTitle, lastSaved: Date.now() });
+    },
+    [],
   );
 
   useEffect(() => {
@@ -113,6 +131,7 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
       console.log(
         `Store Updated: ${stores}, Operation: ${operation}, ID: ${id}`,
       );
+      fetchConversations();
     });
   }, []);
 
@@ -121,21 +140,19 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
       activeChat,
       conversationHistories,
       onSelectConversation,
-      handleDeleteConversation,
-      handleUpdateConversationTitle,
       handleChatCompletion,
       handleCancel,
-      handleNewChat,
+      onDeleteConversation,
+      onUpdateConversationTitle,
     }),
     [
       activeChat,
       conversationHistories,
       handleChatCompletion,
-      handleDeleteConversation,
-      handleUpdateConversationTitle,
       handleCancel,
       onSelectConversation,
-      handleNewChat,
+      onDeleteConversation,
+      onUpdateConversationTitle,
     ],
   );
 };

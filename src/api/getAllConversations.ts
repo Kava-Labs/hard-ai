@@ -1,9 +1,7 @@
 import { idbDatabase, CONVERSATION_STORE_NAME } from './idb';
 import type { ConversationHistory } from '../types';
 
-export async function getAllConversations(): Promise<
-  Omit<ConversationHistory, 'conversation'>[]
-> {
+export async function getAllConversations(): Promise<ConversationHistory[]> {
   const db = await idbDatabase();
   const tx = db.transaction(CONVERSATION_STORE_NAME, 'readonly');
   const store = tx.objectStore(CONVERSATION_STORE_NAME);
