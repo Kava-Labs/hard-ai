@@ -7,12 +7,14 @@ interface NavBarProps {
   onMobileMenuClick(): void;
   onDesktopMenuClick(): void;
   isDesktopSideBarOpen: boolean;
+  onNewChatClick: () => void;
 }
 
 export const NavBar = ({
   onMobileMenuClick,
   onDesktopMenuClick,
   isDesktopSideBarOpen,
+  onNewChatClick,
 }: NavBarProps) => {
   const isMobileLayout = useIsMobileLayout();
 
@@ -39,6 +41,7 @@ export const NavBar = ({
                 position: 'bottom',
               }}
               aria-label="New Chat"
+              onClick={onNewChatClick}
             />
           </div>
         ) : (
