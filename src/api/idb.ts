@@ -7,6 +7,8 @@ export const DATABASE_VERSION = 1;
 export const CONVERSATION_STORE_NAME = 'conversations';
 export const CONVERSATION_MESSAGES_STORE_NAME = 'conversation_messages';
 
+export const idbEventTarget = new EventTarget();
+
 let initPromise: Promise<IDBDatabase> | null = null;
 
 export async function idbDatabase(): Promise<IDBDatabase> {
@@ -92,4 +94,16 @@ export async function idbDatabase(): Promise<IDBDatabase> {
   });
 
   return initPromise;
+}
+
+export function emitStoreUpdate(
+  storeNames: string[],
+  operation: string,
+  id?: string,
+) {
+  idbEventTarget.dispatchEvent(
+    new CustomEvent('indexeddb-update', {
+      detail: { stores: storeNames, operation, id },
+    }),
+  );
 }

@@ -2,6 +2,7 @@ import {
   idbDatabase,
   CONVERSATION_MESSAGES_STORE_NAME,
   CONVERSATION_STORE_NAME,
+  emitStoreUpdate,
 } from './idb';
 import type { ChatMessage, ConversationHistory } from '../types';
 
@@ -40,6 +41,11 @@ export async function saveConversation(
     tx.addEventListener('complete', () => {
       if (conversationSaved && messagesSaved) {
         resolve(conversation.id);
+        emitStoreUpdate(
+          [CONVERSATION_MESSAGES_STORE_NAME, CONVERSATION_STORE_NAME],
+          'saveConversation',
+          conversation.id,
+        );
       } else {
         reject(new Error(`indexedDB: request to save conversation failed`));
       }

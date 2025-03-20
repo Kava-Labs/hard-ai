@@ -1,4 +1,4 @@
-import { idbDatabase, CONVERSATION_STORE_NAME } from './idb';
+import { idbDatabase, CONVERSATION_STORE_NAME, emitStoreUpdate } from './idb';
 import type { ConversationHistory } from '../types';
 
 export async function updateConversation(
@@ -17,7 +17,10 @@ export async function updateConversation(
       const updatedData = { ...request.result, ...updates };
       store.put(updatedData);
 
-      tx.addEventListener('complete', () => resolve(true));
+      tx.addEventListener('complete', () => {
+        resolve(true);
+        emitStoreUpdate([CONVERSATION_STORE_NAME], 'saveConversation', id);
+      });
     });
 
     request.addEventListener('error', () =>

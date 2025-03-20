@@ -5,6 +5,7 @@ import { TextStreamStore } from './stores/textStreamStore';
 import { v4 as uuidv4 } from 'uuid';
 import OpenAI from 'openai/index';
 import { doChat } from './api/chat';
+import { idbEventTarget } from './api/idb';
 
 export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
   const [client] = useState(() => {
@@ -89,49 +90,29 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
   }, [activeChat]);
 
   const onSelectConversation = useCallback(
-    (id: string) => {
-      const selectedConversation = conversationHistories[id];
-      if (selectedConversation) {
-        setActiveChat((prev) => ({
-          ...prev,
-          id: selectedConversation.id,
-          model: selectedConversation.model,
-          isConversationStarted: true,
-          messageHistoryStore: new MessageHistoryStore(
-            selectedConversation.conversation as ChatMessage[],
-          ),
-        }));
-      }
+    (_id: string) => {
+      // const selectedConversation = conversationHistories[id];
+      // if (selectedConversation) {
+      //   setActiveChat((prev) => ({
+      //     ...prev,
+      //     id: selectedConversation.id,
+      //     model: selectedConversation.model,
+      //     isConversationStarted: true,
+      //     messageHistoryStore: new MessageHistoryStore(
+      //       selectedConversation.conversation as ChatMessage[],
+      //     ),
+      //   }));
+      // }
     },
     [conversationHistories],
   );
 
-  //  todo: implement
-  const handleDeleteConversation = useCallback((id: string) => {
-    console.log(id);
-  }, []);
-
-  //  todo: implement
-  const handleUpdateConversationTitle = useCallback(
-    (id: string, updatedTitle: string) => {
-      console.log(id, updatedTitle);
-    },
-    [],
-  );
-
-  //  handler specific to the New Chat button
-  const handleNewChat = useCallback(() => {
-    setActiveChat({
-      id: uuidv4(),
-      isRequesting: false,
-      isConversationStarted: false,
-      model: initModel ? initModel : 'gpt-4o',
-      abortController: new AbortController(),
-      client: client,
-      messageHistoryStore: new MessageHistoryStore(),
-      messageStore: new TextStreamStore(),
-      progressStore: new TextStreamStore(),
-      errorStore: new TextStreamStore(),
+  useEffect(() => {
+    idbEventTarget.addEventListener('indexeddb-update', (event: Event) => {
+      const { stores, operation, id } = (event as CustomEvent).detail;
+      console.log(
+        `Store Updated: ${stores}, Operation: ${operation}, ID: ${id}`,
+      );
     });
   }, []);
 
