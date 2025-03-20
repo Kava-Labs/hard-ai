@@ -1,4 +1,4 @@
-import type { ChatMessage, ConversationHistory } from '../../types';
+import type { ChatMessage } from '../../types';
 
 type Listener = () => void;
 
@@ -34,11 +34,6 @@ export class MessageHistoryStore {
 
   public getSnapshot = () => {
     return this.currentValue;
-  };
-
-  public loadConversation = (conversationHistory: ConversationHistory) => {
-    this.currentValue = conversationHistory.conversation;
-    this.emitChange();
   };
 
   public reset() {

@@ -8,10 +8,6 @@ describe('ChatHistoryItem Component', () => {
     id: 'conv-2025-03-19-001',
     model: 'gpt-4-turbo',
     title: 'Test Conversation',
-    conversation: [
-      { role: 'system', content: 'You are a helpful AI assistant.' },
-      { role: 'user', content: 'Hello!' },
-    ],
     lastSaved: Date.now(),
     tokensRemaining: 6453,
   };

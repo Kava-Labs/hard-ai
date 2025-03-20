@@ -25,7 +25,6 @@ export type ConversationHistory = {
   id: string;
   model: string;
   title: string;
-  conversation: ChatCompletionMessageParam[];
   lastSaved: number;
   tokensRemaining: number;
 };

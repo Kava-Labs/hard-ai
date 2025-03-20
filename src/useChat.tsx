@@ -1,10 +1,21 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { MessageHistoryStore } from './stores/messageHistoryStore';
-import { ChatMessage, ActiveChat, ConversationHistories } from './types';
+import {
+  ChatMessage,
+  ActiveChat,
+  ConversationHistories,
+  ConversationHistory,
+} from './types';
 import { TextStreamStore } from './stores/textStreamStore';
 import { v4 as uuidv4 } from 'uuid';
 import OpenAI from 'openai/index';
-import { doChat } from './api/chat';
+import { doChat, generateConversationTitle } from './api/chat';
+import { idbEventTarget } from './api/idb';
+import { getConversationMessages } from './api/getConversationMessages';
+import { deleteConversation } from './api/deleteConversation';
+import { updateConversation } from './api/updateConversation';
+import { getAllConversations } from './api/getAllConversations';
+import { saveConversation } from './api/saveConversation';
 
 export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
   const [client] = useState(() => {
@@ -32,23 +43,19 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
     errorStore: new TextStreamStore(),
   });
 
-  useEffect(() => {
-    const id = setInterval(() => {
-      setConversationHistories((prev) => {
-        const storedConversations = JSON.parse(
-          localStorage.getItem('conversations') ?? '{}',
-        ) as ConversationHistories;
-
-        if (JSON.stringify(prev) !== JSON.stringify(storedConversations)) {
-          return storedConversations;
-        }
-        return prev;
+  const fetchConversations = useCallback(() => {
+    getAllConversations()
+      .then((conversations) => {
+        setConversationHistories(conversations);
+      })
+      .catch((err) => {
+        console.error(err);
       });
-    }, 1000);
-    return () => {
-      clearInterval(id);
-    };
   }, []);
+
+  useEffect(() => {
+    fetchConversations();
+  }, [fetchConversations]);
 
   const handleChatCompletion = useCallback(
     (newMessages: ChatMessage[]) => {
@@ -66,19 +73,65 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
         ...newMessages,
       ]);
 
+      const defaultNewChatTitle = 'New Chat';
       // todo: sync local storage before response
+      let conversation: ConversationHistory;
 
-      // no need to .catch
-      // doChat won't throw and automatically sets errors in the activeChat's errorStore
-      doChat(newActiveChat).finally(() => {
-        setActiveChat((prev) => ({
-          ...prev,
-          isRequesting: false,
-        }));
-        // todo: sync local storage after response
-      });
+      if (conversationHistories[activeChat.id]) {
+        conversation = conversationHistories[activeChat.id];
+        conversation.lastSaved = Date.now();
+      } else {
+        conversation = {
+          id: activeChat.id,
+          model: activeChat.model,
+          title: defaultNewChatTitle,
+          lastSaved: Date.now(),
+          tokensRemaining: 1024 * 12, // todo: implement real tokens remaining
+        };
+      }
+
+      saveConversation(
+        conversation,
+        newActiveChat.messageHistoryStore.getSnapshot(),
+      )
+        .catch((err) => {
+          console.warn('failed to saveConversations', err);
+        })
+        .finally(() => {
+          // no need to .catch
+          // doChat won't throw and automatically sets errors in the activeChat's errorStore
+          doChat(newActiveChat).finally(() => {
+            setActiveChat((prev) => ({
+              ...prev,
+              isRequesting: false,
+            }));
+
+            if (conversation.title === defaultNewChatTitle) {
+              generateConversationTitle(activeChat)
+                .then((title) => {
+                  conversation.title = title;
+                  saveConversation(
+                    conversation,
+                    newActiveChat.messageHistoryStore.getSnapshot(),
+                  ).catch((err) => {
+                    console.warn('failed to saveConversations', err);
+                  });
+                })
+                .catch((err) => {
+                  console.warn('failed to generate a conversation title', err);
+                });
+            } else {
+              saveConversation(
+                conversation,
+                newActiveChat.messageHistoryStore.getSnapshot(),
+              ).catch((err) => {
+                console.warn('failed to saveConversations', err);
+              });
+            }
+          });
+        });
     },
-    [activeChat],
+    [activeChat, conversationHistories],
   );
 
   const handleCancel = useCallback(() => {
@@ -87,37 +140,6 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
     activeChat.progressStore.setText('');
     setActiveChat((prev) => ({ ...prev, isRequesting: false }));
   }, [activeChat]);
-
-  const onSelectConversation = useCallback(
-    (id: string) => {
-      const selectedConversation = conversationHistories[id];
-      if (selectedConversation) {
-        setActiveChat((prev) => ({
-          ...prev,
-          id: selectedConversation.id,
-          model: selectedConversation.model,
-          isConversationStarted: true,
-          messageHistoryStore: new MessageHistoryStore(
-            selectedConversation.conversation as ChatMessage[],
-          ),
-        }));
-      }
-    },
-    [conversationHistories],
-  );
-
-  //  todo: implement
-  const handleDeleteConversation = useCallback((id: string) => {
-    console.log(id);
-  }, []);
-
-  //  todo: implement
-  const handleUpdateConversationTitle = useCallback(
-    (id: string, updatedTitle: string) => {
-      console.log(id, updatedTitle);
-    },
-    [],
-  );
 
   //  handler specific to the New Chat button
   const handleNewChat = useCallback(() => {
@@ -133,28 +155,75 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
       progressStore: new TextStreamStore(),
       errorStore: new TextStreamStore(),
     });
-  }, []);
+  }, [initModel, client]);
+
+  const onSelectConversation = useCallback(
+    async (id: string) => {
+      const selectedConversation = conversationHistories[id];
+      if (selectedConversation) {
+        const messages = await getConversationMessages(id);
+
+        setActiveChat((prev) => ({
+          ...prev,
+          id: selectedConversation.id,
+          model: selectedConversation.model,
+          isConversationStarted: true,
+          messageHistoryStore: new MessageHistoryStore(
+            messages ? messages : [],
+          ),
+        }));
+      }
+    },
+    [conversationHistories],
+  );
+
+  const onDeleteConversation = useCallback(
+    async (id: string) => {
+      await deleteConversation(id);
+      if (id === activeChat.id) {
+        handleNewChat();
+      }
+    },
+    [activeChat, handleNewChat],
+  );
+
+  const onUpdateConversationTitle = useCallback(
+    async (id: string, newTitle: string) => {
+      await updateConversation(id, { title: newTitle, lastSaved: Date.now() });
+    },
+    [],
+  );
+
+  useEffect(() => {
+    idbEventTarget.addEventListener('indexeddb-update', (_event: Event) => {
+      // const { stores, operation, id } = (_event as CustomEvent).detail;
+      // console.log(
+      //   `Store Updated: ${stores}, Operation: ${operation}, ID: ${id}`,
+      // );
+      fetchConversations();
+    });
+  }, [fetchConversations]);
 
   return useMemo(
     () => ({
       activeChat,
       conversationHistories,
       onSelectConversation,
-      handleDeleteConversation,
-      handleUpdateConversationTitle,
+      handleNewChat,
       handleChatCompletion,
       handleCancel,
-      handleNewChat,
+      onDeleteConversation,
+      onUpdateConversationTitle,
     }),
     [
       activeChat,
       conversationHistories,
       handleChatCompletion,
-      handleDeleteConversation,
-      handleUpdateConversationTitle,
+      handleNewChat,
       handleCancel,
       onSelectConversation,
-      handleNewChat,
+      onDeleteConversation,
+      onUpdateConversationTitle,
     ],
   );
 };

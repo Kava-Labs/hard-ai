@@ -20,9 +20,9 @@ export const App = () => {
     conversationHistories,
     handleChatCompletion,
     handleCancel,
-    handleDeleteConversation,
-    handleUpdateConversationTitle,
     onSelectConversation,
+    onDeleteConversation,
+    onUpdateConversationTitle,
     handleNewChat,
   } = useChat();
 
@@ -55,8 +55,8 @@ export const App = () => {
         <div className={styles.sidebarContent}>
           <ChatHistory
             activeConversationId={activeChat.id}
-            onDeleteConversation={handleDeleteConversation}
-            onUpdateConversationTitle={handleUpdateConversationTitle}
+            onDeleteConversation={onDeleteConversation}
+            onUpdateConversationTitle={onUpdateConversationTitle}
             chatHistories={conversationHistories}
             onSelectConversation={onSelectConversation}
           />
