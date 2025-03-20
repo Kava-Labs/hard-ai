@@ -46,12 +46,7 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
   const fetchConversations = useCallback(() => {
     getAllConversations()
       .then((conversations) => {
-        setConversationHistories(
-          conversations.reduce((acc, cur) => {
-            acc[cur.id] = cur;
-            return acc;
-          }, {} as ConversationHistories),
-        );
+        setConversationHistories(conversations);
       })
       .catch((err) => {
         console.error(err);
@@ -143,9 +138,27 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
     [conversationHistories],
   );
 
-  const onDeleteConversation = useCallback(async (id: string) => {
-    await deleteConversation(id);
-  }, []);
+  const onDeleteConversation = useCallback(
+    async (id: string) => {
+      await deleteConversation(id);
+      if (id === activeChat.id) {
+        setActiveChat({
+          id: uuidv4(),
+          isRequesting: false,
+          isConversationStarted: false,
+          model: initModel ? initModel : 'gpt-4o',
+          abortController: new AbortController(),
+          client: client,
+
+          messageHistoryStore: new MessageHistoryStore(initValues),
+          messageStore: new TextStreamStore(),
+          progressStore: new TextStreamStore(),
+          errorStore: new TextStreamStore(),
+        });
+      }
+    },
+    [activeChat],
+  );
 
   const onUpdateConversationTitle = useCallback(
     async (id: string, newTitle: string) => {
