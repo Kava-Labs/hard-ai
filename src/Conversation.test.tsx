@@ -1,11 +1,12 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { Conversation, ChatMessage } from './Conversation';
-import { MessageHistoryStore } from './stores/messageHistoryStore';
 
-const getAllByRole = (container: HTMLElement, role: string) => {
-  return Array.from(container.querySelectorAll(`[data-chat-role="${role}"]`));
-};
+vi.mock('./Content', () => ({
+  Content: ({ content, role }: { content: string; role: string }) => (
+    <div data-testid={`${role}-content`}>{content}</div>
+  ),
+}));
 
 describe('Conversation Component', () => {
   it('renders an empty conversation when no messages are provided', () => {
@@ -22,14 +23,12 @@ describe('Conversation Component', () => {
     expect(container.firstChild?.childNodes.length).toBe(0);
   });
 
-  it.skip('renders assistant message correctly', () => {
+  it('renders assistant message correctly', () => {
     const messages: ChatMessage[] = [
       { role: 'assistant', content: 'Hello, human!' },
     ];
-    const messageHistoryStore = new MessageHistoryStore();
-    messageHistoryStore.setMessages(messages);
 
-    const { container } = render(
+    render(
       <Conversation
         isRequesting={false}
         messages={messages}
@@ -39,22 +38,21 @@ describe('Conversation Component', () => {
       />,
     );
 
-    const assistantMessages = getAllByRole(container, 'assistant');
-    expect(assistantMessages).toHaveLength(1);
-    expect(assistantMessages[0]).toHaveTextContent('Hello, human!');
+    expect(screen.getByTestId('assistant-content')).toHaveTextContent(
+      'Hello, human!',
+    );
     expect(screen.getByAltText('Hard AI logo')).toBeInTheDocument();
   });
 
-  it.skip('renders a conversation', () => {
+  it('renders a conversation', () => {
     const messages: ChatMessage[] = [
       { role: 'user', content: 'Hello AI!' },
       { role: 'assistant', content: 'Hello human!' },
       { role: 'user', content: 'What can you do?' },
       { role: 'assistant', content: 'I can help with many tasks.' },
     ];
-    const messageHistoryStore = new MessageHistoryStore();
-    messageHistoryStore.setMessages(messages);
-    const { container } = render(
+
+    render(
       <Conversation
         isRequesting={false}
         messages={messages}
@@ -64,17 +62,20 @@ describe('Conversation Component', () => {
       />,
     );
 
-    const userMessages = getAllByRole(container, 'user');
+    const userMessages = screen.getAllByTestId('user-content');
     expect(userMessages).toHaveLength(2);
+
+    const assistantMessages = screen.getAllByTestId('assistant-content');
+    expect(assistantMessages).toHaveLength(2);
+
+    const assistantLogos = screen.getAllByAltText('Hard AI logo');
+    expect(assistantLogos).toHaveLength(2);
+
     expect(userMessages[0]).toHaveTextContent('Hello AI!');
     expect(userMessages[1]).toHaveTextContent('What can you do?');
-
-    const assistantMessages = getAllByRole(container, 'assistant');
-    expect(assistantMessages).toHaveLength(2);
     expect(assistantMessages[0]).toHaveTextContent('Hello human!');
     expect(assistantMessages[1]).toHaveTextContent(
       'I can help with many tasks.',
     );
-    expect(screen.getAllByAltText('Hard AI logo')).toHaveLength(2);
   });
 });
