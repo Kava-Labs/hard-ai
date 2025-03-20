@@ -2,7 +2,6 @@ import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { Conversation, ChatMessage } from './Conversation';
 import { MessageHistoryStore } from './stores/messageHistoryStore';
-import { TextStreamStore } from './stores/textStreamStore';
 
 const getAllByRole = (container: HTMLElement, role: string) => {
   return Array.from(container.querySelectorAll(`[data-chat-role="${role}"]`));
