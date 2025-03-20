@@ -120,7 +120,7 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
   );
 
   //  handler specific to the New Chat button
-  const handleNewChat = () => {
+  const handleNewChat = useCallback(() => {
     setActiveChat({
       id: uuidv4(),
       isRequesting: false,
@@ -133,7 +133,7 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
       progressStore: new TextStreamStore(),
       errorStore: new TextStreamStore(),
     });
-  };
+  }, []);
 
   return useMemo(
     () => ({
