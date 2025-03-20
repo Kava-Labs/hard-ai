@@ -1,4 +1,4 @@
-import styles from './SideBar.module.css';
+import styles from './App.module.css';
 import hardDiamondLogo from './assets/hardDiamondLogo.svg';
 import { MobileSideBar } from './MobileSideBar';
 import { DesktopSideBar } from './DesktopSideBar';
