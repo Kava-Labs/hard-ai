@@ -5,7 +5,6 @@ import { useState } from 'react';
 import { NavBar } from './NavBar';
 import { useChat } from './useChat';
 import { ConversationWrapper } from './ConversationWrapper';
-
 import { SideBar } from './SideBar';
 
 export const App = () => {
