@@ -13,10 +13,10 @@ describe('Conversation Component', () => {
     const { container } = render(
       <Conversation
         isRequesting={false}
-        messageStore={new TextStreamStore()}
-        progressStore={new TextStreamStore()}
-        errorStore={new TextStreamStore()}
-        messageHistoryStore={new MessageHistoryStore()}
+        messages={[]}
+        progressText=""
+        errorText=""
+        assistantStream=""
       />,
     );
     expect(container.firstChild).toHaveClass('_conversationContainer_768897');
@@ -33,10 +33,10 @@ describe('Conversation Component', () => {
     const { container } = render(
       <Conversation
         isRequesting={false}
-        messageStore={new TextStreamStore()}
-        progressStore={new TextStreamStore()}
-        errorStore={new TextStreamStore()}
-        messageHistoryStore={messageHistoryStore}
+        messages={messages}
+        progressText=""
+        errorText=""
+        assistantStream=""
       />,
     );
 
@@ -58,10 +58,10 @@ describe('Conversation Component', () => {
     const { container } = render(
       <Conversation
         isRequesting={false}
-        messageStore={new TextStreamStore()}
-        progressStore={new TextStreamStore()}
-        errorStore={new TextStreamStore()}
-        messageHistoryStore={messageHistoryStore}
+        messages={messages}
+        progressText=""
+        errorText=""
+        assistantStream=""
       />,
     );
 

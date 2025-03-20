@@ -7,11 +7,6 @@ import {
 } from 'openai/resources/index';
 import AssistantMessage from './AssistantMessage';
 import { Content } from './Content';
-import {
-  MessageHistoryStore,
-  useMessageHistoryStore,
-} from './stores/messageHistoryStore';
-import { TextStreamStore, useTextStreamStore } from './stores/textStreamStore';
 
 export type ChatMessage =
   | ChatCompletionMessageParam
@@ -19,23 +14,20 @@ export type ChatMessage =
   | ChatCompletionAssistantMessageParam;
 
 export interface ConversationProps {
-  messageHistoryStore: MessageHistoryStore;
-  progressStore: TextStreamStore;
-  messageStore: TextStreamStore;
-  errorStore: TextStreamStore;
+  messages: ChatMessage[];
+  progressText: string;
+  assistantStream: string;
+  errorText: string;
   isRequesting: boolean;
 }
 
 const ConversationComponent = ({
-  messageHistoryStore,
+  messages,
   isRequesting,
-  progressStore,
-  errorStore,
-  messageStore,
+  progressText,
+  errorText,
+  assistantStream,
 }: ConversationProps) => {
-  const messages = useMessageHistoryStore(messageHistoryStore);
-  const errorText = useTextStreamStore(errorStore);
-
   return (
     <div className={styles.conversationContainer}>
       {messages.map((message, index) => {
@@ -60,10 +52,14 @@ const ConversationComponent = ({
       })}
 
       {isRequesting && (
-        <StreamingMessage
-          progressStore={progressStore}
-          messageStore={messageStore}
-        />
+        <div className={styles.assistantOutputContainer}>
+          <div className={styles.assistantContainer}>
+            {progressText.length ? (
+              <Content content={progressText} role="assistant" />
+            ) : null}
+            {<Content content={assistantStream} role="assistant" />}
+          </div>
+        </div>
       )}
 
       {errorText.length > 0 && (
@@ -73,28 +69,6 @@ const ConversationComponent = ({
           </div>
         </div>
       )}
-    </div>
-  );
-};
-
-const StreamingMessage = ({
-  progressStore,
-  messageStore,
-}: {
-  progressStore: TextStreamStore;
-  messageStore: TextStreamStore;
-}) => {
-  const progressText = useTextStreamStore(progressStore);
-  const assistantStream = useTextStreamStore(messageStore);
-
-  return (
-    <div className={styles.assistantOutputContainer}>
-      <div className={styles.assistantContainer}>
-        {progressText.length ? (
-          <Content content={progressText} role="assistant" />
-        ) : null}
-        {<Content content={assistantStream} role="assistant" />}
-      </div>
     </div>
   );
 };
