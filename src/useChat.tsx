@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { MessageHistoryStore } from './stores/messageHistoryStore';
-import { ChatMessage, ActiveChat, ConversationHistory } from './types';
+import { ChatMessage, ActiveChat, ConversationHistories } from './types';
 import { TextStreamStore } from './stores/textStreamStore';
 import { v4 as uuidv4 } from 'uuid';
 import OpenAI from 'openai/index';
@@ -15,9 +15,8 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
     });
   });
 
-  const [savedConversations, setSavedConversations] = useState<
-    ConversationHistory[]
-  >([]);
+  const [conversationHistories, setConversationHistories] =
+    useState<ConversationHistories>({});
 
   const [activeChat, setActiveChat] = useState<ActiveChat>({
     id: uuidv4(), // add uuid v4 for conversation id
@@ -35,10 +34,10 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
 
   useEffect(() => {
     const id = setInterval(() => {
-      setSavedConversations((prev) => {
-        const storedConversations = Object.values(
-          JSON.parse(localStorage.getItem('conversations') ?? '{}'),
-        ) as ConversationHistory[];
+      setConversationHistories((prev) => {
+        const storedConversations = JSON.parse(
+          localStorage.getItem('conversations') ?? '{}',
+        ) as ConversationHistories;
 
         if (JSON.stringify(prev) !== JSON.stringify(storedConversations)) {
           return storedConversations;
@@ -89,22 +88,35 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
     setActiveChat((prev) => ({ ...prev, isRequesting: false }));
   }, [activeChat]);
 
-  const onSelectConversation = useCallback((_id: string) => {
-    console.warn('onSelectConversation:: unimplemented');
-  }, []);
+  const onSelectConversation = useCallback(
+    (id: string) => {
+      const selectedConversation = conversationHistories[id];
+      if (selectedConversation) {
+        setActiveChat((prev) => ({
+          ...prev,
+          id: selectedConversation.id,
+          model: selectedConversation.model,
+          isConversationStarted: true,
+          messageHistoryStore: new MessageHistoryStore(
+            selectedConversation.conversation as ChatMessage[],
+          ),
+        }));
+      }
+    },
+    [conversationHistories],
+  );
 
   return useMemo(
     () => ({
       activeChat,
-      savedConversations,
-
+      conversationHistories,
       onSelectConversation,
       handleChatCompletion,
       handleCancel,
     }),
     [
       activeChat,
-      savedConversations,
+      conversationHistories,
       handleChatCompletion,
       handleCancel,
       onSelectConversation,

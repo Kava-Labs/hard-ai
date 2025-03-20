@@ -9,7 +9,6 @@ import { DesktopSideBar } from './DesktopSideBar';
 import { NavBar } from './NavBar';
 import { ChatHistory } from './ChatHistory';
 import { useChat } from './useChat';
-import { ConversationHistories } from './types';
 import { ConversationWrapper } from './ConversationWrapper';
 
 export const App = () => {
@@ -18,7 +17,7 @@ export const App = () => {
 
   const {
     activeChat,
-    savedConversations,
+    conversationHistories,
     handleChatCompletion,
     handleCancel,
     onSelectConversation,
@@ -55,10 +54,7 @@ export const App = () => {
             activeConversationId={activeChat.id}
             onDeleteConversation={() => {}} // todo: re-implement
             onUpdateConversationTitle={() => {}} // todo: re-implement
-            chatHistories={savedConversations.reduce((acc, cur) => {
-              acc[cur.id] = cur;
-              return acc;
-            }, {} as ConversationHistories)}
+            chatHistories={conversationHistories}
             onSelectConversation={onSelectConversation}
           />
         </div>
