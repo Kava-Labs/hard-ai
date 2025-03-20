@@ -150,14 +150,14 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
           abortController: new AbortController(),
           client: client,
 
-          messageHistoryStore: new MessageHistoryStore(initValues),
+          messageHistoryStore: new MessageHistoryStore(),
           messageStore: new TextStreamStore(),
           progressStore: new TextStreamStore(),
           errorStore: new TextStreamStore(),
         });
       }
     },
-    [activeChat],
+    [activeChat, client, initModel],
   );
 
   const onUpdateConversationTitle = useCallback(
@@ -175,7 +175,7 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
       );
       fetchConversations();
     });
-  }, []);
+  }, [fetchConversations]);
 
   return useMemo(
     () => ({

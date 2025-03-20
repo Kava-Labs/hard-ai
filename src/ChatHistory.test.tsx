@@ -53,10 +53,6 @@ describe('ChatHistory Component', () => {
         id: 'conv-today',
         model: 'gpt-4-turbo',
         title: 'Today Conversation',
-        conversation: [
-          { role: 'system', content: 'You are a helpful AI assistant.' },
-          { role: 'user', content: 'Hello!' },
-        ],
         lastSaved: today,
         tokensRemaining: 6453,
       },
@@ -64,13 +60,6 @@ describe('ChatHistory Component', () => {
         id: 'conv-yesterday',
         model: 'claude-3-opus',
         title: 'Yesterday Conversation',
-        conversation: [
-          {
-            role: 'system',
-            content: 'You are Claude, a helpful AI assistant.',
-          },
-          { role: 'user', content: 'I have a question from yesterday.' },
-        ],
         lastSaved: yesterday,
         tokensRemaining: 4821,
       },
@@ -78,13 +67,6 @@ describe('ChatHistory Component', () => {
         id: 'conv-older',
         model: 'claude-3-opus',
         title: 'Older Conversation',
-        conversation: [
-          {
-            role: 'system',
-            content: 'You are Claude, a helpful AI assistant.',
-          },
-          { role: 'user', content: 'This is an older conversation.' },
-        ],
         lastSaved: older,
         tokensRemaining: 5000,
       },
@@ -113,10 +95,6 @@ describe('ChatHistory Component', () => {
         id: 'conv-2025-03-19-001',
         model: 'gpt-4-turbo',
         title: 'Today Conversation',
-        conversation: [
-          { role: 'system', content: 'You are a helpful AI assistant.' },
-          { role: 'user', content: 'Hello!' },
-        ],
         lastSaved: Date.now(),
         tokensRemaining: 6453,
       },
@@ -142,10 +120,6 @@ describe('ChatHistory Component', () => {
         id: 'conv-2025-03-19-001',
         model: 'gpt-4-turbo',
         title: 'Active Conversation',
-        conversation: [
-          { role: 'system', content: 'You are a helpful AI assistant.' },
-          { role: 'user', content: 'Hello!' },
-        ],
         lastSaved: Date.now(),
         tokensRemaining: 6453,
       },
@@ -153,10 +127,6 @@ describe('ChatHistory Component', () => {
         id: 'conv-2025-03-19-002',
         model: 'claude-3-opus',
         title: 'Inactive Conversation',
-        conversation: [
-          { role: 'system', content: 'You are a helpful AI assistant.' },
-          { role: 'user', content: 'Hello!' },
-        ],
         lastSaved: Date.now() - 10000,
         tokensRemaining: 6453,
       },
@@ -183,7 +153,6 @@ describe('ChatHistory Component', () => {
         id: 'conv-today-1',
         model: 'gpt-4-turbo',
         title: 'First Today Conversation',
-        conversation: [],
         lastSaved: Date.now(),
         tokensRemaining: 6000,
       },
@@ -191,7 +160,6 @@ describe('ChatHistory Component', () => {
         id: 'conv-today-2',
         model: 'gpt-4-turbo',
         title: 'Second Today Conversation',
-        conversation: [],
         lastSaved: Date.now() - 3600000, // 1 hour ago
         tokensRemaining: 6000,
       },
@@ -199,7 +167,6 @@ describe('ChatHistory Component', () => {
         id: 'conv-yesterday',
         model: 'claude-3-opus',
         title: 'Yesterday Conversation',
-        conversation: [],
         lastSaved: Date.now() - 86400000, // 24 hours ago
         tokensRemaining: 5000,
       },

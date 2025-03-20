@@ -57,7 +57,6 @@ describe('groupConversationsByTime', () => {
         id: '1',
         title: 'Today Chat',
         lastSaved: now - 1000 * 60 * 60 * 2, // 2 hours ago
-        conversation: [],
         model: 'gpt-4o-mini',
         tokensRemaining: 128000,
       },
@@ -65,7 +64,6 @@ describe('groupConversationsByTime', () => {
         id: '2',
         title: 'Yesterday Chat',
         lastSaved: now - 1000 * 60 * 60 * 25, // 25 hours ago
-        conversation: [],
         model: 'gpt-4o-mini',
         tokensRemaining: 128000,
       },
@@ -73,7 +71,6 @@ describe('groupConversationsByTime', () => {
         id: '3',
         title: 'Last Week Chat',
         lastSaved: now - 1000 * 60 * 60 * 24 * 5, // 5 days ago
-        conversation: [],
         model: 'gpt-4o-mini',
         tokensRemaining: 128000,
       },
