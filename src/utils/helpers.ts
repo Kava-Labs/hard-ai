@@ -41,3 +41,9 @@ export const groupConversationsByTime = (
       return groups;
     }, {});
 };
+
+export const deepCopy = <T>(obj: T) => {
+  return window.structuredClone
+    ? window.structuredClone(obj)
+    : JSON.parse(JSON.stringify(obj));
+};

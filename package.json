@@ -13,15 +13,16 @@
     "test:e2e": "playwright test"
   },
   "dependencies": {
+    "@streamparser/json": "^0.0.21",
     "dompurify": "^3.2.4",
     "highlight.js": "^11.11.1",
     "lucide-react": "^0.482.0",
     "marked": "^15.0.7",
-    "@streamparser/json": "^0.0.21",
     "marked-highlight": "^2.2.1",
-    "openai": "^4.87.3",
+    "openai": "^4.73.1",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "uuid": "^11.1.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.21.0",

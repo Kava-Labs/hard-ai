@@ -11,7 +11,8 @@ Object.defineProperty(HTMLElement.prototype, 'scrollHeight', {
   },
 });
 
-const onSubmitMessage = vi.fn();
+const handleCancel = vi.fn();
+const handleChatCompletion = vi.fn();
 
 describe('ChatInput', () => {
   beforeEach(() => {
@@ -19,7 +20,12 @@ describe('ChatInput', () => {
   });
 
   it('should resize textarea correctly after sending a message', () => {
-    const wrapper = render(<ChatInput onSubmitMessage={onSubmitMessage} />);
+    const wrapper = render(
+      <ChatInput
+        handleCancel={handleCancel}
+        handleChatCompletion={handleChatCompletion}
+      />,
+    );
 
     const textarea = wrapper.getByPlaceholderText(
       'Ask anything...',
@@ -49,7 +55,12 @@ describe('ChatInput', () => {
   });
 
   it('should disable the send button when input is empty', () => {
-    const wrapper = render(<ChatInput onSubmitMessage={onSubmitMessage} />);
+    const wrapper = render(
+      <ChatInput
+        handleCancel={handleCancel}
+        handleChatCompletion={handleChatCompletion}
+      />,
+    );
 
     const sendButton = wrapper.getByRole('button', { name: 'Send Chat' });
     expect(sendButton).toBeDisabled();
@@ -67,14 +78,24 @@ describe('ChatInput', () => {
   });
 
   it('textarea should be focused by default', () => {
-    const wrapper = render(<ChatInput onSubmitMessage={onSubmitMessage} />);
+    const wrapper = render(
+      <ChatInput
+        handleCancel={handleCancel}
+        handleChatCompletion={handleChatCompletion}
+      />,
+    );
 
     const textarea = wrapper.getByPlaceholderText('Ask anything...');
     expect(textarea).toHaveFocus();
   });
 
   it('should call onSubmitMessage with the message when send button is clicked', () => {
-    const wrapper = render(<ChatInput onSubmitMessage={onSubmitMessage} />);
+    const wrapper = render(
+      <ChatInput
+        handleCancel={handleCancel}
+        handleChatCompletion={handleChatCompletion}
+      />,
+    );
 
     const textarea = wrapper.getByPlaceholderText('Ask anything...');
     const testMessage = 'This is a test message';
@@ -82,10 +103,12 @@ describe('ChatInput', () => {
     fireEvent.change(textarea, { target: { value: testMessage } });
     fireEvent.click(wrapper.getByRole('button', { name: 'Send Chat' }));
 
-    expect(onSubmitMessage).toHaveBeenCalledTimes(1);
-    expect(onSubmitMessage).toHaveBeenCalledWith({
-      role: 'user',
-      content: testMessage,
-    });
+    expect(handleChatCompletion).toHaveBeenCalledTimes(1);
+    expect(handleChatCompletion).toHaveBeenCalledWith([
+      {
+        role: 'user',
+        content: testMessage,
+      },
+    ]);
   });
 });

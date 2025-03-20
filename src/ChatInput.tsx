@@ -6,10 +6,11 @@ import { ChatMessage } from './types';
 const DEFAULT_HEIGHT = '30px';
 
 type ChatInputProps = {
-  onSubmitMessage: (message: ChatMessage) => void;
+  handleChatCompletion: (newMessages: ChatMessage[]) => void;
+  handleCancel: () => void;
 };
 
-export const ChatInput = ({ onSubmitMessage }: ChatInputProps) => {
+export const ChatInput = ({ handleChatCompletion }: ChatInputProps) => {
   const [inputValue, setInputValue] = useState('');
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
@@ -38,11 +39,8 @@ export const ChatInput = ({ onSubmitMessage }: ChatInputProps) => {
   );
 
   const onSubmitClick = () => {
-    onSubmitMessage({
-      role: 'user',
-      content: inputValue,
-    });
-
+    const newMessages: ChatMessage[] = [{ role: 'user', content: inputValue }];
+    handleChatCompletion(newMessages);
     setInputValue('');
     if (inputRef.current) {
       inputRef.current.style.height = DEFAULT_HEIGHT;

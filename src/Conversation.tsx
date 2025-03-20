@@ -15,9 +15,19 @@ export type ChatMessage =
 
 export interface ConversationProps {
   messages: ChatMessage[];
+  progressText: string;
+  assistantStream: string;
+  errorText: string;
+  isRequesting: boolean;
 }
 
-const ConversationComponent = ({ messages }: ConversationProps) => {
+const ConversationComponent = ({
+  messages,
+  isRequesting,
+  progressText,
+  errorText,
+  assistantStream,
+}: ConversationProps) => {
   return (
     <div className={styles.conversationContainer}>
       {messages.map((message, index) => {
@@ -40,6 +50,25 @@ const ConversationComponent = ({ messages }: ConversationProps) => {
 
         return null;
       })}
+
+      {isRequesting && (
+        <div className={styles.assistantOutputContainer}>
+          <div className={styles.assistantContainer}>
+            {progressText.length ? (
+              <Content content={progressText} role="assistant" />
+            ) : null}
+            {<Content content={assistantStream} role="assistant" />}
+          </div>
+        </div>
+      )}
+
+      {errorText.length > 0 && (
+        <div className={styles.assistantOutputContainer}>
+          <div className={styles.assistantContainer}>
+            <Content content={errorText} role="assistant" />
+          </div>
+        </div>
+      )}
     </div>
   );
 };
