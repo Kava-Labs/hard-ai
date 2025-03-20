@@ -131,7 +131,7 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
           });
         });
     },
-    [activeChat],
+    [activeChat, conversationHistories],
   );
 
   const handleCancel = useCallback(() => {
@@ -155,7 +155,7 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
       progressStore: new TextStreamStore(),
       errorStore: new TextStreamStore(),
     });
-  }, [initModel]);
+  }, [initModel, client]);
 
   const onSelectConversation = useCallback(
     async (id: string) => {
@@ -184,7 +184,7 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
         handleNewChat();
       }
     },
-    [activeChat, client, initModel],
+    [activeChat, handleNewChat],
   );
 
   const onUpdateConversationTitle = useCallback(
