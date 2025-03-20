@@ -16,10 +16,10 @@ export const App = () => {
     conversationHistories,
     handleChatCompletion,
     handleCancel,
-    handleDeleteConversation,
-    handleUpdateConversationTitle,
     handleNewChat,
-    handleSelectConversation,
+    onSelectConversation,
+    onDeleteConversation,
+    onUpdateConversationTitle,
   } = useChat();
 
   const hasActiveConversation = activeChat.isConversationStarted === true;
@@ -28,10 +28,10 @@ export const App = () => {
     <div className={styles.app}>
       <SideBar
         conversationHistories={conversationHistories}
-        onSelectConversation={handleSelectConversation}
+        onSelectConversation={onSelectConversation}
         activeConversationId={activeChat.id}
-        onDeleteConversation={handleDeleteConversation}
-        onUpdateConversationTitle={handleUpdateConversationTitle}
+        onDeleteConversation={onDeleteConversation}
+        onUpdateConversationTitle={onUpdateConversationTitle}
         isMobileSideBarOpen={isMobileSideBarOpen}
         isDesktopSideBarOpen={isDesktopSideBarOpen}
         onMobileCloseClick={() => setIsMobileSideBarOpen(false)}

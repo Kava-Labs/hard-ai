@@ -141,24 +141,6 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
     setActiveChat((prev) => ({ ...prev, isRequesting: false }));
   }, [activeChat]);
 
-  //  todo: implement
-  const handleDeleteConversation = useCallback((id: string) => {
-    console.log(id);
-  }, []);
-
-  //  todo: implement
-  const handleUpdateConversationTitle = useCallback(
-    (id: string, updatedTitle: string) => {
-      console.log(id, updatedTitle);
-    },
-    [],
-  );
-
-  //  todo: implement
-  const handleSelectConversation = useCallback((id: string) => {
-    console.log(id);
-  }, []);
-
   //  handler specific to the New Chat button
   const handleNewChat = useCallback(() => {
     setActiveChat({
@@ -207,7 +189,7 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
 
   const onUpdateConversationTitle = useCallback(
     async (id: string, newTitle: string) => {
-      await updateConversation(id, { title: newTitle, lastSaved: Date.now() });
+      await updateConversation(id, { title: newTitle });
     },
     [],
   );
@@ -226,13 +208,10 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
     () => ({
       activeChat,
       conversationHistories,
-      onSelectConversation,
       handleNewChat,
-      handleDeleteConversation,
-      handleUpdateConversationTitle,
-      handleSelectConversation,
       handleChatCompletion,
       handleCancel,
+      onSelectConversation,
       onDeleteConversation,
       onUpdateConversationTitle,
     }),
@@ -241,9 +220,6 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
       conversationHistories,
       handleChatCompletion,
       handleNewChat,
-      handleDeleteConversation,
-      handleUpdateConversationTitle,
-      handleSelectConversation,
       handleCancel,
       onSelectConversation,
       onDeleteConversation,
