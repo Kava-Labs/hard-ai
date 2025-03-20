@@ -1,12 +1,11 @@
-import React, { ReactNode, useEffect } from 'react';
+import React, { ReactNode, useInsertionEffect } from 'react';
 import { theme } from './themes';
 import { ThemeContext } from './themeContext';
 
 export const ThemeProvider: React.FC<{ children: ReactNode }> = ({
   children,
 }) => {
-  // Apply CSS variables dynamically
-  useEffect(() => {
+  useInsertionEffect(() => {
     const root = document.documentElement;
     Object.entries(theme).forEach(([section, values]) => {
       if (typeof values === 'object') {
@@ -15,7 +14,7 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({
         });
       }
     });
-  }, []);
+  }, [theme]);
 
   return (
     <ThemeContext.Provider value={{ theme: theme }}>
