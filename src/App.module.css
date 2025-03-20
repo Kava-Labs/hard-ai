@@ -144,6 +144,11 @@
   cursor: pointer;
 }
 
+.buttonGroup {
+  display: flex;
+  gap: var(--spacing-xs);
+}
+
 @media (min-width: 768px) {
   .sidebar {
     transform: translateX(0);
@@ -157,9 +162,4 @@
   .sidebar.isHidden + .content {
     margin-left: 0;
   }
-}
-
-.buttonGroup {
-  display: flex;
-  gap: var(--spacing-xs);
 }

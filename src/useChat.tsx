@@ -189,7 +189,7 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
 
   const onUpdateConversationTitle = useCallback(
     async (id: string, newTitle: string) => {
-      await updateConversation(id, { title: newTitle, lastSaved: Date.now() });
+      await updateConversation(id, { title: newTitle });
     },
     [],
   );
@@ -208,10 +208,10 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
     () => ({
       activeChat,
       conversationHistories,
-      onSelectConversation,
       handleNewChat,
       handleChatCompletion,
       handleCancel,
+      onSelectConversation,
       onDeleteConversation,
       onUpdateConversationTitle,
     }),
