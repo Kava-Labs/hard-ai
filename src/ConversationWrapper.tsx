@@ -2,6 +2,7 @@ import { Conversation } from './Conversation';
 import { useMessageHistoryStore } from './stores/messageHistoryStore';
 import { useTextStreamStore } from './stores/textStreamStore';
 import { ActiveChat } from './types';
+import { useCallback } from 'react';
 
 export const ConversationWrapper = ({
   activeChat,

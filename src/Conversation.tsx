@@ -1,5 +1,5 @@
 import styles from './Conversation.module.css';
-import { memo } from 'react';
+import { memo, useCallback, useEffect } from 'react';
 import {
   ChatCompletionAssistantMessageParam,
   ChatCompletionMessageParam,
@@ -55,9 +55,19 @@ const ConversationComponent = ({
         <div className={styles.assistantOutputContainer}>
           <div className={styles.assistantContainer}>
             {progressText.length ? (
-              <Content content={progressText} role="assistant" />
+              <Content
+                content={progressText}
+                role="assistant"
+                onRendered={onRendered}
+              />
             ) : null}
-            {<Content content={assistantStream} role="assistant" />}
+            {
+              <Content
+                content={assistantStream}
+                role="assistant"
+                onRendered={onRendered}
+              />
+            }
           </div>
         </div>
       )}
@@ -65,7 +75,11 @@ const ConversationComponent = ({
       {errorText.length > 0 && (
         <div className={styles.assistantOutputContainer}>
           <div className={styles.assistantContainer}>
-            <Content content={errorText} role="assistant" />
+            <Content
+              content={errorText}
+              role="assistant"
+              onRendered={handleContentRendered}
+            />
           </div>
         </div>
       )}

@@ -5,12 +5,13 @@ import { sanitizeContent } from './utils/sanitize';
 export interface ContentProps {
   content: string;
   role: string;
+  onRendered?: () => void;
 }
 
 export const ContentComponent = ({
   content,
-
   role,
+  onRendered,
 }: ContentProps) => {
   const [hasError, setHasError] = useState(false);
   const [sanitizedContent, setSanitizedContent] = useState<string>('');
@@ -45,6 +46,12 @@ export const ContentComponent = ({
       cancel = true;
     };
   }, [content]);
+
+  useEffect(() => {
+    if (onRendered) {
+      requestAnimationFrame(onRendered);
+    }
+  }, [sanitizedContent, onRendered]);
 
   if (hasError) {
     return <span>Error: Could not render content!</span>;
