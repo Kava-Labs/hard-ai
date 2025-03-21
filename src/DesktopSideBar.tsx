@@ -2,15 +2,20 @@ import ButtonIcon from './ButtonIcon';
 import { PanelLeftClose, TextSearch } from 'lucide-react';
 
 interface DesktopSideBarProps {
+  isSearchHistoryOpen: boolean;
   onCloseClick: () => void;
+  onClickSearchHistory: () => void;
 }
 
-export const DesktopSideBar = ({ onCloseClick }: DesktopSideBarProps) => {
+export const DesktopSideBar = ({
+  onCloseClick,
+  onClickSearchHistory,
+}: DesktopSideBarProps) => {
   return (
     <>
       <ButtonIcon
         disabled={false}
-        onClick={() => ({})}
+        onClick={onClickSearchHistory}
         icon={TextSearch}
         tooltip={{
           text: 'Search History',
