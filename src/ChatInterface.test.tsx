@@ -72,7 +72,6 @@ describe('ChatInterface', () => {
       id: 'test-chat-id',
       isConversationStarted: false,
       messages: [],
-      isRequesting: false,
     } as unknown as ActiveChat,
     handleChatCompletion: vi.fn(),
     handleCancel: vi.fn(),
