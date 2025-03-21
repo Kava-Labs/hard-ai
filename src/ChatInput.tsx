@@ -21,13 +21,6 @@ export const ChatInput = ({
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
 
-  // Focus the input on mount
-  useEffect(() => {
-    if (inputRef.current) {
-      inputRef.current.focus();
-    }
-  }, []);
-
   const handleInputChange = useCallback(
     (event: ChangeEvent<HTMLTextAreaElement>) => {
       /**
@@ -77,6 +70,7 @@ export const ChatInput = ({
             onKeyDown={handleKeyDown}
             ref={inputRef}
             placeholder="Ask anything..."
+            autoFocus
           />
           <button
             ref={buttonRef}
