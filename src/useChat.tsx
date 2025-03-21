@@ -46,11 +46,6 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
     errorStore: new TextStreamStore(),
   });
 
-  useEffect(() => {
-    if (activeChat.isConversationStarted) {
-      activeChats[activeChat.id] = activeChat;
-    }
-  }, [activeChat]);
   // **********
 
   const fetchConversations = useCallback(() => {
@@ -77,6 +72,7 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
       };
       // update isRequesting state and create a new abortController
       setActiveChat(newActiveChat);
+      activeChats[activeChat.id] = newActiveChat;
       // add new messages to history
       newActiveChat.messageHistoryStore.setMessages([
         ...newActiveChat.messageHistoryStore.getSnapshot(),
@@ -116,6 +112,7 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
         ...prev,
         isRequesting: false,
       }));
+      activeChats[activeChat.id] = { ...newActiveChat, isRequesting: false };
 
       if (conversation.title === defaultNewChatTitle) {
         try {
@@ -129,9 +126,13 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
       saveConversation(
         conversation,
         newActiveChat.messageHistoryStore.getSnapshot(),
-      ).catch((err) => {
-        console.warn('failed to saveConversations', err);
-      });
+      )
+        .catch((err) => {
+          console.warn('failed to saveConversations', err);
+        })
+        .finally(() => {
+          delete activeChats[activeChat.id];
+        });
     },
     [activeChat, conversationHistories],
   );
@@ -170,18 +171,24 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
         const selectedConversation = conversationHistories[id];
         if (selectedConversation) {
           const messages = await getConversationMessages(id);
-
-          setActiveChat((prev) => ({
-            ...prev,
+          const newActiveChat: ActiveChat = {
             id: selectedConversation.id,
             model: selectedConversation.model,
+            isRequesting: false,
             isConversationStarted:
               Array.isArray(messages) &&
               messages.find((msg) => msg.role === 'assistant') !== undefined,
             messageHistoryStore: new MessageHistoryStore(
               messages ? messages : [],
             ),
-          }));
+            progressStore: new TextStreamStore(),
+            errorStore: new TextStreamStore(),
+            messageStore: new TextStreamStore(),
+            client: activeChat.client,
+            abortController: new AbortController(),
+          };
+
+          setActiveChat(newActiveChat);
         }
       }
     },
