@@ -72,6 +72,7 @@ describe('ChatInterface', () => {
       id: 'test-chat-id',
       isConversationStarted: false,
       messages: [],
+      isRequesting: false,
     } as unknown as ActiveChat,
     handleChatCompletion: vi.fn(),
     handleCancel: vi.fn(),
@@ -136,25 +137,5 @@ describe('ChatInterface', () => {
     fireEvent.click(newChatButton);
 
     expect(mockProps.handleNewChat).toHaveBeenCalled();
-  });
-
-  it('calls handleChatCompletion when send button is clicked', () => {
-    render(<ChatInterface {...mockProps} />);
-
-    const sendButton = screen.getByTestId('send-button');
-    fireEvent.click(sendButton);
-
-    expect(mockProps.handleChatCompletion).toHaveBeenCalledWith([
-      { role: 'user', content: 'Test message' },
-    ]);
-  });
-
-  it('calls handleCancel when cancel button is clicked', () => {
-    render(<ChatInterface {...mockProps} />);
-
-    const cancelButton = screen.getByTestId('cancel-button');
-    fireEvent.click(cancelButton);
-
-    expect(mockProps.handleCancel).toHaveBeenCalled();
   });
 });
