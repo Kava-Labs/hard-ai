@@ -7,6 +7,7 @@ import {
 } from 'openai/resources/index';
 import AssistantMessage from './AssistantMessage';
 import { Content } from './Content';
+import hardDiamondLogo from './assets/hardDiamondLogo.svg';
 
 export type ChatMessage =
   | ChatCompletionMessageParam
@@ -55,21 +56,26 @@ const ConversationComponent = ({
 
       {isRequesting && (
         <div className={styles.assistantOutputContainer}>
+          <img
+            className={styles.conversationChatIcon}
+            src={hardDiamondLogo}
+            alt="Hard AI logo"
+          />
           <div className={styles.assistantContainer}>
             {progressText.length ? (
-              <Content
-                content={progressText}
-                role="assistant"
-                onRendered={onRendered}
-              />
+              <div className={styles.progressStream}>
+                <Content
+                  content={progressText}
+                  role="assistant"
+                  onRendered={onRendered}
+                />
+              </div>
             ) : null}
-            {
-              <Content
-                content={assistantStream}
-                role="assistant"
-                onRendered={onRendered}
-              />
-            }
+            <Content
+              content={assistantStream}
+              role="assistant"
+              onRendered={onRendered}
+            />
           </div>
         </div>
       )}
