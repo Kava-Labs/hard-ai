@@ -1,5 +1,5 @@
 import styles from './ChatInput.module.css';
-import { ChangeEvent, useCallback, useEffect, useRef, useState } from 'react';
+import { ChangeEvent, useCallback, useRef, useState } from 'react';
 import { SendChatIcon } from './SendChatIcon';
 import { ChatMessage } from './types';
 import { CancelChatIcon } from './CancelChatIcon';
