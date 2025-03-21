@@ -2,15 +2,21 @@ import styles from './ChatInput.module.css';
 import { ChangeEvent, useCallback, useEffect, useRef, useState } from 'react';
 import { SendChatIcon } from './SendChatIcon';
 import { ChatMessage } from './types';
+import { CancelChatIcon } from './CancelChatIcon';
 
 const DEFAULT_HEIGHT = '30px';
 
 type ChatInputProps = {
   handleChatCompletion: (newMessages: ChatMessage[]) => void;
-  handleCancel: () => void;
+  onCancelClick: () => void;
+  isRequesting: boolean;
 };
 
-export const ChatInput = ({ handleChatCompletion }: ChatInputProps) => {
+export const ChatInput = ({
+  handleChatCompletion,
+  onCancelClick,
+  isRequesting,
+}: ChatInputProps) => {
   const [inputValue, setInputValue] = useState('');
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
@@ -56,6 +62,9 @@ export const ChatInput = ({ handleChatCompletion }: ChatInputProps) => {
     }
   };
 
+  const onActionButtonClick = isRequesting ? onCancelClick : onSubmitClick;
+  const actionButtonLabel = isRequesting ? 'Cancel Chat' : 'Send Chat';
+
   return (
     <>
       <div className={styles.controls}>
@@ -73,11 +82,11 @@ export const ChatInput = ({ handleChatCompletion }: ChatInputProps) => {
             ref={buttonRef}
             className={styles.sendChatButton}
             type="submit"
-            onClick={onSubmitClick}
-            aria-label="Send Chat"
-            disabled={inputValue.trim() === ''}
+            onClick={onActionButtonClick}
+            aria-label={actionButtonLabel}
+            disabled={inputValue.trim() === '' && !isRequesting}
           >
-            <SendChatIcon />
+            {isRequesting ? <CancelChatIcon /> : <SendChatIcon />}
           </button>
         </div>
       </div>

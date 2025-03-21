@@ -11,7 +11,7 @@ Object.defineProperty(HTMLElement.prototype, 'scrollHeight', {
   },
 });
 
-const handleCancel = vi.fn();
+const onCancelClick = vi.fn();
 const handleChatCompletion = vi.fn();
 
 describe('ChatInput', () => {
@@ -22,8 +22,9 @@ describe('ChatInput', () => {
   it('should resize textarea correctly after sending a message', () => {
     const wrapper = render(
       <ChatInput
-        handleCancel={handleCancel}
+        onCancelClick={onCancelClick}
         handleChatCompletion={handleChatCompletion}
+        isRequesting={false}
       />,
     );
 
@@ -57,8 +58,9 @@ describe('ChatInput', () => {
   it('should disable the send button when input is empty', () => {
     const wrapper = render(
       <ChatInput
-        handleCancel={handleCancel}
+        onCancelClick={onCancelClick}
         handleChatCompletion={handleChatCompletion}
+        isRequesting={false}
       />,
     );
 
@@ -80,8 +82,9 @@ describe('ChatInput', () => {
   it('textarea should be focused by default', () => {
     const wrapper = render(
       <ChatInput
-        handleCancel={handleCancel}
+        onCancelClick={onCancelClick}
         handleChatCompletion={handleChatCompletion}
+        isRequesting={false}
       />,
     );
 
@@ -92,8 +95,9 @@ describe('ChatInput', () => {
   it('should call onSubmitMessage with the message when send button is clicked', () => {
     const wrapper = render(
       <ChatInput
-        handleCancel={handleCancel}
+        onCancelClick={onCancelClick}
         handleChatCompletion={handleChatCompletion}
+        isRequesting={false}
       />,
     );
 
@@ -110,5 +114,94 @@ describe('ChatInput', () => {
         content: testMessage,
       },
     ]);
+  });
+
+  it('should show cancel button when isRequesting is true', () => {
+    const wrapper = render(
+      <ChatInput
+        onCancelClick={onCancelClick}
+        handleChatCompletion={handleChatCompletion}
+        isRequesting={true}
+      />,
+    );
+
+    const cancelButton = wrapper.getByRole('button', { name: 'Cancel Chat' });
+    expect(cancelButton).toBeInTheDocument();
+  });
+
+  it('should call onCancelClick when cancel button is clicked (not handleChatCompletion)', () => {
+    const wrapper = render(
+      <ChatInput
+        onCancelClick={onCancelClick}
+        handleChatCompletion={handleChatCompletion}
+        isRequesting={true}
+      />,
+    );
+
+    expect(onCancelClick).toHaveBeenCalledTimes(0);
+
+    const cancelButton = wrapper.getByRole('button', { name: 'Cancel Chat' });
+    fireEvent.click(cancelButton);
+
+    expect(onCancelClick).toHaveBeenCalledTimes(1);
+  });
+
+  it('should enable the cancel button even when input is empty', () => {
+    const wrapper = render(
+      <ChatInput
+        onCancelClick={onCancelClick}
+        handleChatCompletion={handleChatCompletion}
+        isRequesting={true}
+      />,
+    );
+
+    const cancelButton = wrapper.getByRole('button', { name: 'Cancel Chat' });
+    expect(cancelButton).not.toBeDisabled();
+  });
+
+  it('should switch from send to cancel button when isRequesting changes', () => {
+    const { rerender, getByRole } = render(
+      <ChatInput
+        onCancelClick={onCancelClick}
+        handleChatCompletion={handleChatCompletion}
+        isRequesting={false}
+      />,
+    );
+
+    expect(getByRole('button', { name: 'Send Chat' })).toBeInTheDocument();
+
+    rerender(
+      <ChatInput
+        onCancelClick={onCancelClick}
+        handleChatCompletion={handleChatCompletion}
+        isRequesting={true}
+      />,
+    );
+
+    expect(getByRole('button', { name: 'Cancel Chat' })).toBeInTheDocument();
+  });
+
+  it('should not call handleChatCompletion when in requesting state', () => {
+    const wrapper = render(
+      <ChatInput
+        onCancelClick={onCancelClick}
+        handleChatCompletion={handleChatCompletion}
+        isRequesting={true}
+      />,
+    );
+
+    const textarea = wrapper.getByPlaceholderText('Ask anything...');
+    const testMessage = 'This is a test message';
+
+    fireEvent.change(textarea, { target: { value: testMessage } });
+
+    expect(onCancelClick).toHaveBeenCalledTimes(0);
+
+    //  Even with content, clicking the button should call onCancelClick not handleChatCompletion
+    const cancelButton = wrapper.getByRole('button', { name: 'Cancel Chat' });
+    fireEvent.click(cancelButton);
+
+    expect(onCancelClick).toHaveBeenCalledTimes(1);
+    expect(handleChatCompletion).not.toHaveBeenCalled();
   });
 });
