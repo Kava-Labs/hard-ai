@@ -177,10 +177,8 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
             isRequesting: false,
             isConversationStarted:
               Array.isArray(messages) &&
-              messages.find((msg) => msg.role === 'assistant') !== undefined,
-            messageHistoryStore: new MessageHistoryStore(
-              messages ? messages : [],
-            ),
+              messages.some((msg) => msg.role === 'assistant'),
+            messageHistoryStore: new MessageHistoryStore(messages ?? []),
             progressStore: new TextStreamStore(),
             errorStore: new TextStreamStore(),
             messageStore: new TextStreamStore(),
