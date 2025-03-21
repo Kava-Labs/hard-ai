@@ -104,7 +104,8 @@ export const ChatInterface = ({
               {!hasActiveConversation && <LandingContent />}
               <ChatInput
                 handleChatCompletion={handleChatCompletion}
-                handleCancel={handleCancel}
+                onCancelClick={handleCancel}
+                isRequesting={activeChat.isRequesting}
               />
             </div>
           </div>
