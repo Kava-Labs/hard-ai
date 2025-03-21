@@ -2,13 +2,16 @@ import { Conversation } from './Conversation';
 import { useMessageHistoryStore } from './stores/messageHistoryStore';
 import { useTextStreamStore } from './stores/textStreamStore';
 import { ActiveChat } from './types';
-import { useCallback } from 'react';
+
+interface ConversationWrapperProps {
+  activeChat: ActiveChat;
+  onRendered: () => void;
+}
 
 export const ConversationWrapper = ({
   activeChat,
-}: {
-  activeChat: ActiveChat;
-}) => {
+  onRendered,
+}: ConversationWrapperProps) => {
   const messages = useMessageHistoryStore(activeChat.messageHistoryStore);
   const assistantStream = useTextStreamStore(activeChat.messageStore);
   const progressText = useTextStreamStore(activeChat.progressStore);
@@ -22,6 +25,7 @@ export const ConversationWrapper = ({
       progressText={progressText}
       errorText={errorText}
       isRequesting={isRequesting}
+      onRendered={onRendered}
     />
   );
 };

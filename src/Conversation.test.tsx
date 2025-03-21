@@ -17,6 +17,7 @@ describe('Conversation Component', () => {
         progressText=""
         errorText=""
         assistantStream=""
+        onRendered={vi.fn()}
       />,
     );
     expect(container.firstChild).toHaveClass('_conversationContainer_768897');
@@ -35,6 +36,7 @@ describe('Conversation Component', () => {
         progressText=""
         errorText=""
         assistantStream=""
+        onRendered={vi.fn()}
       />,
     );
 
@@ -59,6 +61,7 @@ describe('Conversation Component', () => {
         progressText=""
         errorText=""
         assistantStream=""
+        onRendered={vi.fn()}
       />,
     );
 
