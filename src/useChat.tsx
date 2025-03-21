@@ -17,6 +17,8 @@ import { updateConversation } from './api/updateConversation';
 import { getAllConversations } from './api/getAllConversations';
 import { saveConversation } from './api/saveConversation';
 
+const activeChats: Record<string, ActiveChat> = {};
+
 export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
   const [client] = useState(() => {
     return new OpenAI({
@@ -29,6 +31,7 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
   const [conversationHistories, setConversationHistories] =
     useState<ConversationHistories>({});
 
+  // **********
   const [activeChat, setActiveChat] = useState<ActiveChat>({
     id: uuidv4(), // add uuid v4 for conversation id
     isRequesting: false,
@@ -42,6 +45,13 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
     progressStore: new TextStreamStore(),
     errorStore: new TextStreamStore(),
   });
+
+  useEffect(() => {
+    if (activeChat.isConversationStarted) {
+      activeChats[activeChat.id] = activeChat;
+    }
+  }, [activeChat]);
+  // **********
 
   const fetchConversations = useCallback(() => {
     getAllConversations()
@@ -151,27 +161,37 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
 
   const onSelectConversation = useCallback(
     async (id: string) => {
-      const selectedConversation = conversationHistories[id];
-      if (selectedConversation) {
-        const messages = await getConversationMessages(id);
+      // already selected
+      if (id === activeChat.id) return;
 
-        setActiveChat((prev) => ({
-          ...prev,
-          id: selectedConversation.id,
-          model: selectedConversation.model,
-          isConversationStarted: true,
-          messageHistoryStore: new MessageHistoryStore(
-            messages ? messages : [],
-          ),
-        }));
+      if (activeChats[id]) {
+        setActiveChat(activeChats[id]);
+      } else {
+        const selectedConversation = conversationHistories[id];
+        if (selectedConversation) {
+          const messages = await getConversationMessages(id);
+
+          setActiveChat((prev) => ({
+            ...prev,
+            id: selectedConversation.id,
+            model: selectedConversation.model,
+            isConversationStarted:
+              Array.isArray(messages) &&
+              messages.find((msg) => msg.role === 'assistant') !== undefined,
+            messageHistoryStore: new MessageHistoryStore(
+              messages ? messages : [],
+            ),
+          }));
+        }
       }
     },
-    [conversationHistories],
+    [conversationHistories, activeChat],
   );
 
   const onDeleteConversation = useCallback(
     async (id: string) => {
       await deleteConversation(id);
+      delete activeChats[id];
       if (id === activeChat.id) {
         handleNewChat();
       }
