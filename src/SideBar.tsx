@@ -6,7 +6,7 @@ import { ChatHistory } from './ChatHistory';
 import { useIsMobileLayout } from './theme/useIsMobileLayout';
 import { ConversationHistories } from './types';
 
-interface SideBarContainerProps {
+export interface SideBarProps {
   conversationHistories: ConversationHistories;
   onSelectConversation: (id: string) => void;
   activeConversationId: string | null;
@@ -16,6 +16,8 @@ interface SideBarContainerProps {
   onMobileCloseClick: () => void;
   isMobileSideBarOpen: boolean;
   isDesktopSideBarOpen: boolean;
+  isSearchHistoryOpen: boolean;
+  onClickSearchHistory: () => void;
 }
 
 export const SideBar = ({
@@ -28,7 +30,9 @@ export const SideBar = ({
   onDesktopCloseClick,
   isMobileSideBarOpen,
   isDesktopSideBarOpen,
-}: SideBarContainerProps) => {
+  isSearchHistoryOpen,
+  onClickSearchHistory,
+}: SideBarProps) => {
   const isMobileLayout = useIsMobileLayout();
   const showMobileSideBar = isMobileLayout && isMobileSideBarOpen;
   const showDesktopSideBar = !isMobileLayout && isDesktopSideBarOpen;
@@ -39,10 +43,18 @@ export const SideBar = ({
         <img src={hardDiamondLogo} alt="Hard Diamond logo" height={40} />
         <div className={styles.buttonGroup}>
           {showMobileSideBar && (
-            <MobileSideBar onCloseClick={onMobileCloseClick} />
+            <MobileSideBar
+              isSearchHistoryOpen={isSearchHistoryOpen}
+              onClickSearchHistory={onClickSearchHistory}
+              onCloseClick={onMobileCloseClick}
+            />
           )}
           {showDesktopSideBar && (
-            <DesktopSideBar onCloseClick={onDesktopCloseClick} />
+            <DesktopSideBar
+              isSearchHistoryOpen={isSearchHistoryOpen}
+              onClickSearchHistory={onClickSearchHistory}
+              onCloseClick={onDesktopCloseClick}
+            />
           )}
         </div>
       </div>

@@ -2,15 +2,20 @@ import { TextSearch, X as CloseX } from 'lucide-react';
 import ButtonIcon from './ButtonIcon';
 
 interface MobileSideBarProps {
+  isSearchHistoryOpen: boolean;
   onCloseClick: () => void;
+  onClickSearchHistory: () => void;
 }
 
-export const MobileSideBar = ({ onCloseClick }: MobileSideBarProps) => {
+export const MobileSideBar = ({
+  onCloseClick,
+  onClickSearchHistory,
+}: MobileSideBarProps) => {
   return (
     <>
       <ButtonIcon
         disabled={false}
-        onClick={() => ({})}
+        onClick={onClickSearchHistory}
         icon={TextSearch}
         tooltip={{
           text: 'Search History',
