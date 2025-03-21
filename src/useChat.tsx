@@ -58,7 +58,7 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
   }, [fetchConversations]);
 
   const handleChatCompletion = useCallback(
-    (newMessages: ChatMessage[]) => {
+    async (newMessages: ChatMessage[]) => {
       const newActiveChat: ActiveChat = {
         ...activeChat,
         isRequesting: true,
@@ -90,46 +90,38 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
         };
       }
 
+      try {
+        await saveConversation(
+          conversation,
+          newActiveChat.messageHistoryStore.getSnapshot(),
+        );
+      } catch (err) {
+        console.warn('failed to saveConversations', err);
+      }
+
+      // no need to catch
+      // doChat won't throw and automatically sets errors in the activeChat's errorStore
+      await doChat(newActiveChat);
+      setActiveChat((prev) => ({
+        ...prev,
+        isRequesting: false,
+      }));
+
+      if (conversation.title === defaultNewChatTitle) {
+        try {
+          const title = await generateConversationTitle(activeChat);
+          conversation.title = title;
+        } catch (err) {
+          console.warn('failed to generate a conversation title', err);
+        }
+      }
+
       saveConversation(
         conversation,
         newActiveChat.messageHistoryStore.getSnapshot(),
-      )
-        .catch((err) => {
-          console.warn('failed to saveConversations', err);
-        })
-        .finally(() => {
-          // no need to .catch
-          // doChat won't throw and automatically sets errors in the activeChat's errorStore
-          doChat(newActiveChat).finally(() => {
-            setActiveChat((prev) => ({
-              ...prev,
-              isRequesting: false,
-            }));
-
-            if (conversation.title === defaultNewChatTitle) {
-              generateConversationTitle(activeChat)
-                .then((title) => {
-                  conversation.title = title;
-                  saveConversation(
-                    conversation,
-                    newActiveChat.messageHistoryStore.getSnapshot(),
-                  ).catch((err) => {
-                    console.warn('failed to saveConversations', err);
-                  });
-                })
-                .catch((err) => {
-                  console.warn('failed to generate a conversation title', err);
-                });
-            } else {
-              saveConversation(
-                conversation,
-                newActiveChat.messageHistoryStore.getSnapshot(),
-              ).catch((err) => {
-                console.warn('failed to saveConversations', err);
-              });
-            }
-          });
-        });
+      ).catch((err) => {
+        console.warn('failed to saveConversations', err);
+      });
     },
     [activeChat, conversationHistories],
   );
