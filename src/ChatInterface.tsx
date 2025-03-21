@@ -4,7 +4,14 @@ import styles from './App.module.css';
 import { NavBar } from './NavBar';
 import { ConversationWrapper } from './ConversationWrapper';
 import { ActiveChat, ChatMessage } from './types';
-import { Dispatch, SetStateAction } from 'react';
+import {
+  Dispatch,
+  SetStateAction,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from 'react';
 
 interface ChatInterfaceProps {
   activeChat: ActiveChat;
@@ -26,11 +33,52 @@ export const ChatInterface = ({
   setIsDesktopSideBarOpen,
 }: ChatInterfaceProps) => {
   const hasActiveConversation = activeChat.isConversationStarted === true;
+  const containerRef = useRef<HTMLDivElement>(null);
+  // Track if we should auto-scroll
+  const [shouldAutoScroll, setShouldAutoScroll] = useState(true);
 
+  // Handle scroll events
+  const handleScroll = useCallback(() => {
+    if (!containerRef.current) return;
+
+    const { scrollTop, scrollHeight, clientHeight } = containerRef.current;
+    const isAtBottom = Math.abs(scrollHeight - clientHeight - scrollTop) < 10;
+
+    // Only update auto-scroll if we're not at the bottom, like if the user scrolls up in the chat
+    if (!isAtBottom) {
+      setShouldAutoScroll(false);
+    } else {
+      setShouldAutoScroll(true);
+    }
+  }, []);
+
+  const scrollToBottom = useCallback(() => {
+    if (!containerRef.current) return;
+    containerRef.current.scrollTop = containerRef.current.scrollHeight;
+  }, []);
+
+  // Add scroll event listener
+  useEffect(() => {
+    const container = containerRef.current;
+    if (container) {
+      container.addEventListener('scroll', handleScroll);
+      return () => container.removeEventListener('scroll', handleScroll);
+    }
+  }, [handleScroll]);
+
+  const handleContentRendered = useCallback(() => {
+    if (!containerRef.current) return;
+
+    if (shouldAutoScroll) {
+      requestAnimationFrame(() => {
+        scrollToBottom();
+      });
+    }
+  }, [shouldAutoScroll, scrollToBottom]);
   return (
     <div className={styles.content}>
       <div className={styles.chatview}>
-        <div className={styles.scrollContainer}>
+        <div ref={containerRef} className={styles.scrollContainer}>
           <div className={styles.chatHeader}>
             <NavBar
               onMobileMenuClick={() => setIsMobileSideBarOpen(true)}
@@ -44,7 +92,10 @@ export const ChatInterface = ({
               className={`${styles.chatContent} ${hasActiveConversation ? styles.fullHeight : ''}`}
             >
               {hasActiveConversation && (
-                <ConversationWrapper activeChat={activeChat} />
+                <ConversationWrapper
+                  activeChat={activeChat}
+                  onRendered={handleContentRendered}
+                />
               )}
             </div>
             <div

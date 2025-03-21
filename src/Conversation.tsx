@@ -19,6 +19,7 @@ export interface ConversationProps {
   assistantStream: string;
   errorText: string;
   isRequesting: boolean;
+  onRendered: () => void;
 }
 
 const ConversationComponent = ({
@@ -27,6 +28,7 @@ const ConversationComponent = ({
   progressText,
   errorText,
   assistantStream,
+  onRendered,
 }: ConversationProps) => {
   return (
     <div className={styles.conversationContainer}>
@@ -55,9 +57,19 @@ const ConversationComponent = ({
         <div className={styles.assistantOutputContainer}>
           <div className={styles.assistantContainer}>
             {progressText.length ? (
-              <Content content={progressText} role="assistant" />
+              <Content
+                content={progressText}
+                role="assistant"
+                onRendered={onRendered}
+              />
             ) : null}
-            {<Content content={assistantStream} role="assistant" />}
+            {
+              <Content
+                content={assistantStream}
+                role="assistant"
+                onRendered={onRendered}
+              />
+            }
           </div>
         </div>
       )}
@@ -65,7 +77,11 @@ const ConversationComponent = ({
       {errorText.length > 0 && (
         <div className={styles.assistantOutputContainer}>
           <div className={styles.assistantContainer}>
-            <Content content={errorText} role="assistant" />
+            <Content
+              content={errorText}
+              role="assistant"
+              onRendered={onRendered}
+            />
           </div>
         </div>
       )}
