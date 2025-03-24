@@ -25,7 +25,7 @@ export const ChatInterface = ({
   onMobileMenuClick,
   onDesktopMenuClick,
 }: ChatInterfaceProps) => {
-  const { isConversationStarted } = activeChat;
+  const { isConversationStarted, isRequesting } = activeChat;
   const containerRef = useRef<HTMLDivElement>(null);
   // Track if we should auto-scroll
   const [shouldAutoScroll, setShouldAutoScroll] = useState(true);
@@ -98,7 +98,7 @@ export const ChatInterface = ({
               <ChatInput
                 handleChatCompletion={handleChatCompletion}
                 onCancelClick={handleCancel}
-                isRequesting={activeChat.isRequesting}
+                isRequesting={isRequesting}
               />
             </div>
           </div>
