@@ -12,5 +12,5 @@
 
 .introText {
   color: var(--colors-textSecondary);
-  padding-top: var(--spacing-sm);
+  font-size: 2.8rem;
 }
