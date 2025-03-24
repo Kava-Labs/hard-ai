@@ -8,9 +8,11 @@ test('renders the page with correct displayed & meta title', async ({
 
   await expect(page).toHaveTitle(/Hard AI/);
 
-  const hardAILogo = page.getByRole('img', { name: 'Hard AI logo' });
+  //  Welcome text and top left icon
+  const hardAILogos = page.getByRole('img', { name: 'Hard AI logo' });
   const welcomeText = page.getByText('How can I help you with Web3?');
 
-  await expect(hardAILogo).toBeVisible();
+  await expect(hardAILogos.nth(0)).toBeVisible();
+  await expect(hardAILogos.nth(0)).toBeVisible();
   await expect(welcomeText).toBeVisible();
 });
