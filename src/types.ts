@@ -35,3 +35,10 @@ export type ChatMessage =
   | ChatCompletionMessageParam
   | ChatCompletionToolMessageParam
   | ChatCompletionAssistantMessageParam;
+
+export type MessageHistory = { id: string; messages: ChatMessage[] };
+
+export type SearchableChatHistories = Record<
+  string,
+  { title: string; messages: ChatMessage[] }
+>;
