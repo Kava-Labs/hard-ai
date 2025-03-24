@@ -40,7 +40,6 @@ export const SideBar = ({
       const history = await getSearchableHistory();
       setSearchableHistory(history);
       setIsSearchHistoryOpen(true);
-      console.log('Searchable history loaded:', history);
     } catch (error) {
       console.error('Failed to load search history:', error);
     }
