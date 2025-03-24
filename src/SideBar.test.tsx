@@ -1,27 +1,58 @@
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { describe, test, expect, beforeEach, vi } from 'vitest';
 import { SideBar, SideBarProps } from './SideBar';
 import { useIsMobileLayout } from './theme/useIsMobileLayout';
+import * as api from './api/getSearchableHistory';
+import { SearchableChatHistories } from './types';
+
+vi.mock('./api/getSearchableHistory', () => ({
+  getSearchableHistory: vi.fn(),
+}));
 
 vi.mock('./MobileSideBar', () => ({
-  MobileSideBar: ({ onCloseClick }: { onCloseClick: () => void }) => (
+  MobileSideBar: ({
+    onCloseClick,
+    onClickSearchHistory,
+  }: {
+    onCloseClick: () => void;
+    onClickSearchHistory: () => void;
+  }) => (
     <div>
       <button data-testid="mobile-sidebar-close" onClick={onCloseClick}>
         Mobile Close
+      </button>
+      <button
+        data-testid="search-history-button"
+        onClick={onClickSearchHistory}
+      >
+        Search History
       </button>
     </div>
   ),
 }));
 
 vi.mock('./DesktopSideBar', () => ({
-  DesktopSideBar: ({ onCloseClick }: { onCloseClick: () => void }) => (
+  DesktopSideBar: ({
+    onCloseClick,
+    onClickSearchHistory,
+  }: {
+    onCloseClick: () => void;
+    onClickSearchHistory: () => void;
+  }) => (
     <div>
       <button data-testid="desktop-sidebar-close" onClick={onCloseClick}>
         Desktop Close
       </button>
+      <button
+        data-testid="search-history-button"
+        onClick={onClickSearchHistory}
+      >
+        Search History
+      </button>
     </div>
   ),
 }));
+
 vi.mock('./ChatHistory', () => ({
   ChatHistory: () => <div data-testid="chat-history">Chat History</div>,
 }));
@@ -211,5 +242,31 @@ describe('SideBar', () => {
 
     screen.getByTestId('desktop-sidebar-close').click();
     expect(mockProps.onDesktopCloseClick).toHaveBeenCalledTimes(1);
+  });
+  test('calls getSearchableHistory when search button is clicked', async () => {
+    const mockHistory: SearchableChatHistories = {
+      conversation1: {
+        title: 'First Conversation',
+        messages: [{ role: 'user', content: 'Hello' }],
+      },
+      conversation2: {
+        title: 'Second Conversation',
+        messages: [
+          { role: 'user', content: 'Can you help me?' },
+          { role: 'assistant', content: 'Yes of course!' },
+        ],
+      },
+    };
+
+    vi.mocked(api.getSearchableHistory).mockResolvedValue(mockHistory);
+
+    render(<SideBar {...mockProps} />);
+
+    const searchButton = screen.getByRole('button', { name: 'Search History' });
+    fireEvent.click(searchButton);
+
+    await waitFor(() => {
+      expect(api.getSearchableHistory).toHaveBeenCalledTimes(1);
+    });
   });
 });
