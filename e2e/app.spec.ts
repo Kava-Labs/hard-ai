@@ -13,6 +13,6 @@ test('renders the page with correct displayed & meta title', async ({
   const welcomeText = page.getByText('How can I help you with Web3?');
 
   await expect(hardAILogos.nth(0)).toBeVisible();
-  await expect(hardAILogos.nth(0)).toBeVisible();
+  await expect(hardAILogos.nth(1)).toBeVisible();
   await expect(welcomeText).toBeVisible();
 });
