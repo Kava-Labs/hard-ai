@@ -43,7 +43,6 @@ describe('Conversation Component', () => {
     expect(screen.getByTestId('assistant-content')).toHaveTextContent(
       'Hello, human!',
     );
-    expect(screen.getByAltText('Hard AI logo')).toBeInTheDocument();
   });
 
   it('renders a conversation', () => {
@@ -70,9 +69,6 @@ describe('Conversation Component', () => {
 
     const assistantMessages = screen.getAllByTestId('assistant-content');
     expect(assistantMessages).toHaveLength(2);
-
-    const assistantLogos = screen.getAllByAltText('Hard AI logo');
-    expect(assistantLogos).toHaveLength(2);
 
     expect(userMessages[0]).toHaveTextContent('Hello AI!');
     expect(userMessages[1]).toHaveTextContent('What can you do?');

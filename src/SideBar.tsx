@@ -1,5 +1,5 @@
 import styles from './App.module.css';
-import hardDiamondLogo from './assets/hardDiamondLogo.svg';
+import hardAILogo from './assets/hardAILogo.svg';
 import { MobileSideBar } from './MobileSideBar';
 import { DesktopSideBar } from './DesktopSideBar';
 import { ChatHistory } from './ChatHistory';
@@ -40,7 +40,7 @@ export const SideBar = ({
   return (
     <div className={sideBarStyles}>
       <div className={styles.sidebarHeader}>
-        <img src={hardDiamondLogo} alt="Hard Diamond logo" height={40} />
+        <img src={hardAILogo} alt="Hard AI logo" height={18} />
         <div className={styles.buttonGroup}>
           {showMobileSideBar && (
             <MobileSideBar
