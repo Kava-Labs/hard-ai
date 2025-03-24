@@ -7,7 +7,6 @@ import { ChatInterface } from './ChatInterface';
 export const App = () => {
   const [isMobileSideBarOpen, setIsMobileSideBarOpen] = useState(false);
   const [isDesktopSideBarOpen, setIsDesktopSideBarOpen] = useState(true);
-  const [isSearchHistoryOpen, setIsSearchHistoryOpen] = useState(false);
 
   const openMobileSideBar = () => {
     setIsMobileSideBarOpen(true);
@@ -40,8 +39,6 @@ export const App = () => {
         isDesktopSideBarOpen={isDesktopSideBarOpen}
         onMobileCloseClick={() => setIsMobileSideBarOpen(false)}
         onDesktopCloseClick={() => setIsDesktopSideBarOpen(false)}
-        isSearchHistoryOpen={isSearchHistoryOpen}
-        onClickSearchHistory={() => setIsSearchHistoryOpen(true)}
       />
       <ChatInterface
         activeChat={activeChat}

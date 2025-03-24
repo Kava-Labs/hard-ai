@@ -4,44 +4,20 @@ import { SideBar, SideBarProps } from './SideBar';
 import { useIsMobileLayout } from './theme/useIsMobileLayout';
 
 vi.mock('./MobileSideBar', () => ({
-  MobileSideBar: ({
-    onCloseClick,
-    onClickSearchHistory,
-  }: {
-    onCloseClick: () => void;
-    onClickSearchHistory: () => void;
-  }) => (
+  MobileSideBar: ({ onCloseClick }: { onCloseClick: () => void }) => (
     <div>
       <button data-testid="mobile-sidebar-close" onClick={onCloseClick}>
         Mobile Close
-      </button>
-      <button
-        data-testid="mobile-search-history"
-        onClick={onClickSearchHistory}
-      >
-        Mobile Search
       </button>
     </div>
   ),
 }));
 
 vi.mock('./DesktopSideBar', () => ({
-  DesktopSideBar: ({
-    onCloseClick,
-    onClickSearchHistory,
-  }: {
-    onCloseClick: () => void;
-    onClickSearchHistory: () => void;
-  }) => (
+  DesktopSideBar: ({ onCloseClick }: { onCloseClick: () => void }) => (
     <div>
       <button data-testid="desktop-sidebar-close" onClick={onCloseClick}>
         Desktop Close
-      </button>
-      <button
-        data-testid="desktop-search-history"
-        onClick={onClickSearchHistory}
-      >
-        Desktop Search
       </button>
     </div>
   ),
@@ -60,10 +36,8 @@ describe('SideBar', () => {
     onUpdateConversationTitle: vi.fn(),
     onDesktopCloseClick: vi.fn(),
     onMobileCloseClick: vi.fn(),
-    onClickSearchHistory: vi.fn(),
     isMobileSideBarOpen: false,
     isDesktopSideBarOpen: true,
-    isSearchHistoryOpen: false,
   };
 
   beforeEach(() => {
@@ -237,23 +211,5 @@ describe('SideBar', () => {
 
     screen.getByTestId('desktop-sidebar-close').click();
     expect(mockProps.onDesktopCloseClick).toHaveBeenCalledTimes(1);
-  });
-
-  test('calls onClickSearchHistory when mobile search history button is clicked', () => {
-    vi.mocked(useIsMobileLayout).mockReturnValue(true);
-
-    render(<SideBar {...mockProps} isMobileSideBarOpen={true} />);
-
-    screen.getByTestId('mobile-search-history').click();
-    expect(mockProps.onClickSearchHistory).toHaveBeenCalledTimes(1);
-  });
-
-  test('calls onClickSearchHistory when desktop search history button is clicked', () => {
-    vi.mocked(useIsMobileLayout).mockReturnValue(false);
-
-    render(<SideBar {...mockProps} isDesktopSideBarOpen={true} />);
-
-    screen.getByTestId('desktop-search-history').click();
-    expect(mockProps.onClickSearchHistory).toHaveBeenCalledTimes(1);
   });
 });

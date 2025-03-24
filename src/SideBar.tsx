@@ -5,6 +5,7 @@ import { DesktopSideBar } from './DesktopSideBar';
 import { ChatHistory } from './ChatHistory';
 import { useIsMobileLayout } from './theme/useIsMobileLayout';
 import { ConversationHistories } from './types';
+import { useState } from 'react';
 
 export interface SideBarProps {
   conversationHistories: ConversationHistories;
@@ -16,8 +17,6 @@ export interface SideBarProps {
   onMobileCloseClick: () => void;
   isMobileSideBarOpen: boolean;
   isDesktopSideBarOpen: boolean;
-  isSearchHistoryOpen: boolean;
-  onClickSearchHistory: () => void;
 }
 
 export const SideBar = ({
@@ -30,9 +29,9 @@ export const SideBar = ({
   onDesktopCloseClick,
   isMobileSideBarOpen,
   isDesktopSideBarOpen,
-  isSearchHistoryOpen,
-  onClickSearchHistory,
 }: SideBarProps) => {
+  const [isSearchHistoryOpen, setIsSearchHistoryOpen] = useState(false);
+
   const isMobileLayout = useIsMobileLayout();
   const showMobileSideBar = isMobileLayout && isMobileSideBarOpen;
   const showDesktopSideBar = !isMobileLayout && isDesktopSideBarOpen;
@@ -45,14 +44,14 @@ export const SideBar = ({
           {showMobileSideBar && (
             <MobileSideBar
               isSearchHistoryOpen={isSearchHistoryOpen}
-              onClickSearchHistory={onClickSearchHistory}
+              onClickSearchHistory={() => setIsSearchHistoryOpen(true)}
               onCloseClick={onMobileCloseClick}
             />
           )}
           {showDesktopSideBar && (
             <DesktopSideBar
               isSearchHistoryOpen={isSearchHistoryOpen}
-              onClickSearchHistory={onClickSearchHistory}
+              onClickSearchHistory={() => setIsSearchHistoryOpen(true)}
               onCloseClick={onDesktopCloseClick}
             />
           )}
