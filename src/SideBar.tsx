@@ -6,6 +6,7 @@ import { ChatHistory } from './ChatHistory';
 import { useIsMobileLayout } from './theme/useIsMobileLayout';
 import { ConversationHistories } from './types';
 import { useState } from 'react';
+import SearchHistoryModal from './SearchHistoryModal';
 
 export interface SideBarProps {
   conversationHistories: ConversationHistories;
@@ -67,6 +68,13 @@ export const SideBar = ({
           onUpdateConversationTitle={onUpdateConversationTitle}
         />
       </div>
+      {isSearchHistoryOpen && (
+        <SearchHistoryModal
+          isSearchHistoryOpen={isSearchHistoryOpen}
+          setIsSearchHistoryOpen={setIsSearchHistoryOpen}
+          onMobileSidebaq={setIsMobileSideBarOpen}
+        />
+      )}
     </div>
   );
 };
