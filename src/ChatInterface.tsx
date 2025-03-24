@@ -4,14 +4,7 @@ import styles from './App.module.css';
 import { NavBar } from './NavBar';
 import { ConversationWrapper } from './ConversationWrapper';
 import { ActiveChat, ChatMessage } from './types';
-import {
-  Dispatch,
-  SetStateAction,
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-} from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 interface ChatInterfaceProps {
   activeChat: ActiveChat;
@@ -19,8 +12,8 @@ interface ChatInterfaceProps {
   handleCancel: () => void;
   handleNewChat: () => void;
   isDesktopSideBarOpen: boolean;
-  setIsMobileSideBarOpen: Dispatch<SetStateAction<boolean>>;
-  setIsDesktopSideBarOpen: Dispatch<SetStateAction<boolean>>;
+  onMobileMenuClick: () => void;
+  onDesktopMenuClick: () => void;
 }
 
 export const ChatInterface = ({
@@ -29,10 +22,10 @@ export const ChatInterface = ({
   handleCancel,
   handleNewChat,
   isDesktopSideBarOpen,
-  setIsMobileSideBarOpen,
-  setIsDesktopSideBarOpen,
+  onMobileMenuClick,
+  onDesktopMenuClick,
 }: ChatInterfaceProps) => {
-  const hasActiveConversation = activeChat.isConversationStarted === true;
+  const { isConversationStarted, isRequesting } = activeChat;
   const containerRef = useRef<HTMLDivElement>(null);
   // Track if we should auto-scroll
   const [shouldAutoScroll, setShouldAutoScroll] = useState(true);
@@ -81,17 +74,17 @@ export const ChatInterface = ({
         <div ref={containerRef} className={styles.scrollContainer}>
           <div className={styles.chatHeader}>
             <NavBar
-              onMobileMenuClick={() => setIsMobileSideBarOpen(true)}
-              onDesktopMenuClick={() => setIsDesktopSideBarOpen(true)}
+              onMobileMenuClick={onMobileMenuClick}
+              onDesktopMenuClick={onDesktopMenuClick}
               isDesktopSideBarOpen={isDesktopSideBarOpen}
               onNewChatClick={handleNewChat}
             />
           </div>
           <div className={styles.chatContainer}>
             <div
-              className={`${styles.chatContent} ${hasActiveConversation ? styles.fullHeight : ''}`}
+              className={`${styles.chatContent} ${isConversationStarted ? styles.fullHeight : ''}`}
             >
-              {hasActiveConversation && (
+              {isConversationStarted && (
                 <ConversationWrapper
                   activeChat={activeChat}
                   onRendered={handleContentRendered}
@@ -99,13 +92,13 @@ export const ChatInterface = ({
               )}
             </div>
             <div
-              className={`${styles.controlsContainer} ${hasActiveConversation ? styles.positionSticky : ''}`}
+              className={`${styles.controlsContainer} ${isConversationStarted ? styles.positionSticky : ''}`}
             >
-              {!hasActiveConversation && <LandingContent />}
+              {!isConversationStarted && <LandingContent />}
               <ChatInput
                 handleChatCompletion={handleChatCompletion}
                 onCancelClick={handleCancel}
-                isRequesting={activeChat.isRequesting}
+                isRequesting={isRequesting}
               />
             </div>
           </div>

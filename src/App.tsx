@@ -9,6 +9,14 @@ export const App = () => {
   const [isDesktopSideBarOpen, setIsDesktopSideBarOpen] = useState(true);
   const [isSearchHistoryOpen, setIsSearchHistoryOpen] = useState(false);
 
+  const openMobileSideBar = () => {
+    setIsMobileSideBarOpen(true);
+  };
+
+  const openDesktopSideBar = () => {
+    setIsDesktopSideBarOpen(true);
+  };
+
   const {
     activeChat,
     conversationHistories,
@@ -41,8 +49,8 @@ export const App = () => {
         handleCancel={handleCancel}
         handleNewChat={handleNewChat}
         isDesktopSideBarOpen={isDesktopSideBarOpen}
-        setIsMobileSideBarOpen={setIsMobileSideBarOpen}
-        setIsDesktopSideBarOpen={setIsDesktopSideBarOpen}
+        onMobileMenuClick={openMobileSideBar}
+        onDesktopMenuClick={openDesktopSideBar}
       />
     </div>
   );
