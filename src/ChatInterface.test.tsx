@@ -39,8 +39,8 @@ vi.mock('./NavBar', () => ({
     onDesktopMenuClick,
     onNewChatClick,
   }: {
-    onMobileMenuClick(): void;
-    onDesktopMenuClick(): void;
+    onMobileMenuClick: () => void;
+    onDesktopMenuClick: () => void;
     isDesktopSideBarOpen: boolean;
     onNewChatClick: () => void;
   }) => (
@@ -77,8 +77,8 @@ describe('ChatInterface', () => {
     handleCancel: vi.fn(),
     handleNewChat: vi.fn(),
     isDesktopSideBarOpen: true,
-    setIsMobileSideBarOpen: vi.fn(),
-    setIsDesktopSideBarOpen: vi.fn(),
+    onMobileMenuClick: vi.fn(),
+    onDesktopMenuClick: vi.fn(),
   };
 
   beforeEach(() => {
@@ -117,7 +117,7 @@ describe('ChatInterface', () => {
     const mobileMenuButton = screen.getByTestId('mobile-menu-button');
     fireEvent.click(mobileMenuButton);
 
-    expect(mockProps.setIsMobileSideBarOpen).toHaveBeenCalledWith(true);
+    expect(mockProps.onMobileMenuClick).toHaveBeenCalledTimes(1);
   });
 
   it('calls setIsDesktopSideBarOpen when desktop menu button is clicked', () => {
@@ -126,7 +126,7 @@ describe('ChatInterface', () => {
     const desktopMenuButton = screen.getByTestId('desktop-menu-button');
     fireEvent.click(desktopMenuButton);
 
-    expect(mockProps.setIsDesktopSideBarOpen).toHaveBeenCalledWith(true);
+    expect(mockProps.onDesktopMenuClick).toHaveBeenCalledTimes(1);
   });
 
   it('calls handleNewChat when new chat button is clicked', () => {

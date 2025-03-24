@@ -4,8 +4,8 @@ import ButtonIcon from './ButtonIcon';
 import { useIsMobileLayout } from './theme/useIsMobileLayout';
 
 interface NavBarProps {
-  onMobileMenuClick(): void;
-  onDesktopMenuClick(): void;
+  onMobileMenuClick: () => void;
+  onDesktopMenuClick: () => void;
   isDesktopSideBarOpen: boolean;
   onNewChatClick: () => void;
 }
