@@ -1,4 +1,5 @@
 import { ConversationHistory } from '../types';
+import type { ERC20Record } from '../types/chain';
 
 //  Conversations indexed by time group label
 type GroupedConversations = Record<string, ConversationHistory[]>;
@@ -76,4 +77,20 @@ export const deepCopy = <T>(obj: T) => {
   return window.structuredClone
     ? window.structuredClone(obj)
     : JSON.parse(JSON.stringify(obj));
+};
+
+export const getERC20Record = (
+  denom: string,
+  records: Record<string, ERC20Record>,
+): ERC20Record | null => {
+  if (records[denom]) return records[denom];
+  if (records[denom.toUpperCase()]) return records[denom.toUpperCase()];
+
+  for (const record of Object.values(records)) {
+    if (record.displayName === denom) return record;
+    if (record.displayName === denom.toUpperCase()) return record;
+    if (record.displayName.toUpperCase() === denom.toUpperCase()) return record;
+  }
+
+  return null;
 };
