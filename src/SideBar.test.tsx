@@ -215,7 +215,9 @@ describe('SideBar', () => {
 
     render(<SideBar {...mockProps} />);
 
-    expect(screen.getByAltText('Hard Diamond logo')).toBeInTheDocument();
+    expect(
+      screen.getByRole('img', { name: 'Hard AI logo' }),
+    ).toBeInTheDocument();
     expect(screen.getByTestId('chat-history')).toBeInTheDocument();
   });
 
