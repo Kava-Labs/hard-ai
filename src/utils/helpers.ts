@@ -134,7 +134,7 @@ export const groupAndFilterConversations = (
   const isSearching = searchTerm.trim() !== '';
 
   Object.values(conversations).forEach((conversation) => {
-    // If we aren't searching, we returned all histories, sorted
+    // If we aren't searching, return all histories, sorted by time
     if (isSearching) {
       //  Remove whitespace and lowercase
       const lowercaseSearchTerm = searchTerm.trim().toLowerCase();
@@ -166,10 +166,10 @@ export const groupAndFilterConversations = (
     groupedFilteredResults[timeGroup].push(conversation);
   });
 
-  for (const group in groupedFilteredResults) {
+  for (const tGroup in groupedFilteredResults) {
     //  Only sort if the group has more than one entry
-    if (groupedFilteredResults[group].length > 1) {
-      groupedFilteredResults[group].sort((a, b) => b.lastSaved - a.lastSaved);
+    if (groupedFilteredResults[tGroup].length > 1) {
+      groupedFilteredResults[tGroup].sort((a, b) => b.lastSaved - a.lastSaved);
     }
   }
 
