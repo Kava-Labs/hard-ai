@@ -177,15 +177,16 @@ export const formatContentSnippet = (
 ): string => {
   const messages = removeSystemMessages(conversation.messages);
 
-  if (searchTerm) {
-    // Since we assume messages will match the search term, we can process all matching messages
+  if (searchTerm.trim() !== '') {
     for (const message of messages) {
       const content = extractTextContent(message);
-      const searchIndex = content
-        .toLowerCase()
-        .indexOf(searchTerm.toLowerCase());
+      const regex = new RegExp(searchTerm, 'i'); // 'i' flag for case insensitive
+      const match = content.match(regex);
 
-      if (searchIndex !== -1) {
+      //  If a match is found
+      if (match && match.index !== undefined) {
+        const searchIndex = match.index;
+        //  Find start of snippet considering up to 3 words before match
         let snippetStart = searchIndex;
         if (searchIndex > 0) {
           const beforeMatch = content.slice(0, searchIndex).trim();
