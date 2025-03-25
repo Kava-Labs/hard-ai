@@ -28,11 +28,7 @@ export type ConversationHistory = {
   lastSaved: number;
   tokensRemaining: number;
 };
-export type ConversationsToGroup =
-  | ConversationHistories
-  | SearchableChatHistories;
 
-export type GroupedConversations = Record<string, ConversationsToGroup[]>;
 export type ConversationHistories = Record<string, ConversationHistory>;
 
 export type ChatMessage =

@@ -1,8 +1,6 @@
 import type { ERC20Record } from '../types/chain';
 import {
   ChatMessage,
-  ConversationsToGroup,
-  GroupedConversations,
   GroupedSearchHistories,
   SearchableChatHistories,
   SearchableChatHistory,
@@ -32,12 +30,12 @@ export const getTimeGroup = (timestamp: number): string => {
  * @param conversations - A record of conversation histories keyed by their id, can be either ConversationHistories or SearchableChatHistories
  * @returns An object with time period keys (e.g., "Today", "Yesterday") and arrays of conversations as values
  */
-export const groupConversationsByTime = (
-  conversations: ConversationsToGroup,
-): GroupedConversations => {
+export const groupConversationsByTime = <T extends { lastSaved: number }>(
+  conversations: Record<string, T>,
+): Record<string, T[]> => {
   return Object.values(conversations)
     .sort((a, b) => b.lastSaved - a.lastSaved)
-    .reduce<GroupedConversations>((groups, conversation) => {
+    .reduce<Record<string, T[]>>((groups, conversation) => {
       const timeGroup = getTimeGroup(conversation.lastSaved);
       if (!groups[timeGroup]) {
         groups[timeGroup] = [];
