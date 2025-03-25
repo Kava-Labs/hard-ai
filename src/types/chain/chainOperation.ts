@@ -1,3 +1,4 @@
+import { TextStreamStore } from '../../stores/textStreamStore';
 import { ToolCallStream } from '../../stores/toolCallStreamStore';
 import { WalletTypes, WalletStore } from '../../stores/walletStore/walletStore';
 import { ChainType } from './chainsRegistry';
@@ -42,6 +43,7 @@ export interface ChainOperation<T> {
   /** Optional React component that displays as the model is streaming the tool call arguments */
   inProgressComponent?: () => React.FunctionComponent<{
     toolCall: ToolCallStream;
+    progressStore: TextStreamStore;
     onRendered?: () => void;
   }>;
 }

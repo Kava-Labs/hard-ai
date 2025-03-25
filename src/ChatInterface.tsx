@@ -5,6 +5,7 @@ import { NavBar } from './NavBar';
 import { ConversationWrapper } from './ConversationWrapper';
 import { ActiveChat, ChatMessage } from './types';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { OperationRegistry } from './types/chain';
 
 interface ChatInterfaceProps {
   activeChat: ActiveChat;
@@ -14,6 +15,7 @@ interface ChatInterfaceProps {
   isDesktopSideBarOpen: boolean;
   onMobileMenuClick: () => void;
   onDesktopMenuClick: () => void;
+  operationRegistry: OperationRegistry<unknown>;
 }
 
 export const ChatInterface = ({
@@ -24,6 +26,7 @@ export const ChatInterface = ({
   isDesktopSideBarOpen,
   onMobileMenuClick,
   onDesktopMenuClick,
+  operationRegistry,
 }: ChatInterfaceProps) => {
   const { isConversationStarted, isRequesting } = activeChat;
   const containerRef = useRef<HTMLDivElement>(null);
@@ -86,6 +89,7 @@ export const ChatInterface = ({
             >
               {isConversationStarted && (
                 <ConversationWrapper
+                  operationRegistry={operationRegistry}
                   activeChat={activeChat}
                   onRendered={handleContentRendered}
                 />

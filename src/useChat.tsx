@@ -262,6 +262,7 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
       onUpdateConversationTitle,
       searchableHistory,
       fetchSearchHistory,
+      operationRegistry,
     }),
     [
       activeChat,
@@ -273,6 +274,7 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
       onDeleteConversation,
       onUpdateConversationTitle,
       searchableHistory,
+      operationRegistry,
     ],
   );
 };

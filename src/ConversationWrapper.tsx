@@ -2,15 +2,19 @@ import { Conversation } from './Conversation';
 import { useMessageHistoryStore } from './stores/messageHistoryStore';
 import { useTextStreamStore } from './stores/textStreamStore';
 import { ActiveChat } from './types';
+import { OperationRegistry } from './types/chain';
 
 interface ConversationWrapperProps {
   activeChat: ActiveChat;
   onRendered: () => void;
+
+  operationRegistry: OperationRegistry<unknown>;
 }
 
 export const ConversationWrapper = ({
   activeChat,
   onRendered,
+  operationRegistry,
 }: ConversationWrapperProps) => {
   const messages = useMessageHistoryStore(activeChat.messageHistoryStore);
   const assistantStream = useTextStreamStore(activeChat.messageStore);
@@ -26,6 +30,9 @@ export const ConversationWrapper = ({
       errorText={errorText}
       isRequesting={isRequesting}
       onRendered={onRendered}
+      progressStore={activeChat.progressStore}
+      toolCallStreamStore={activeChat.toolCallStreamStore}
+      operationRegistry={operationRegistry}
     />
   );
 };

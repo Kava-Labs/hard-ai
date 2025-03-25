@@ -46,6 +46,7 @@ export const App = () => {
     onUpdateConversationTitle,
     searchableHistory,
     fetchSearchHistory,
+    operationRegistry,
   } = useChat();
 
   return (
@@ -71,6 +72,7 @@ export const App = () => {
         isDesktopSideBarOpen={isDesktopSideBarOpen}
         onMobileMenuClick={openMobileSideBar}
         onDesktopMenuClick={openDesktopSideBar}
+        operationRegistry={operationRegistry}
       />
       {isSearchHistoryOpen && searchableHistory && (
         <SearchHistoryModal
