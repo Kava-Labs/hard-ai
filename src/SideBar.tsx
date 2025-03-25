@@ -7,6 +7,7 @@ import { useIsMobileLayout } from './theme/useIsMobileLayout';
 import { ConversationHistories, SearchableChatHistories } from './types';
 import { useState } from 'react';
 import { getSearchableHistory } from './api/getSearchableHistory';
+import { SearchHistoryModal } from './SearchHistoryModal';
 
 export interface SideBarProps {
   conversationHistories: ConversationHistories;
@@ -43,6 +44,10 @@ export const SideBar = ({
     } catch (error) {
       console.error('Failed to load search history:', error);
     }
+  };
+
+  const onCloseSearchHistory = () => {
+    setIsSearchHistoryOpen(false);
   };
 
   const isMobileLayout = useIsMobileLayout();
@@ -82,8 +87,13 @@ export const SideBar = ({
         />
       </div>
 
-      {/*todo - implement modal*/}
-      {isSearchHistoryOpen && searchableHistory && <></>}
+      {isSearchHistoryOpen && searchableHistory && (
+        <SearchHistoryModal
+          searchableHistory={searchableHistory}
+          onSelectConversation={onSelectConversation}
+          onCloseSearchHistory={onCloseSearchHistory}
+        />
+      )}
     </div>
   );
 };
