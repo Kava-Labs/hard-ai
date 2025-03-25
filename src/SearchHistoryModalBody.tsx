@@ -22,12 +22,22 @@ export const SearchHistoryModalBody = ({
   onClose,
 }: SearchModalBodyProps) => {
   const inputRef = useRef<HTMLInputElement>(null);
+
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Escape') {
       onClose();
+      return;
+    }
+
+    if (e.key === 'Enter') {
+      //  if there's only one remaining search match, allow it to be selected with the enter key
+      const allConversations = Object.values(groupedConversations).flat();
+      if (allConversations.length === 1) {
+        onSelectConversation(allConversations[0].id);
+        onClose();
+      }
     }
   };
-
   const onHistoryItemClick = (id: string) => {
     onSelectConversation(id);
     onClose();
