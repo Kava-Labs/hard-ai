@@ -46,6 +46,10 @@ export const SideBar = ({
     }
   };
 
+  const onCloseSearchHistory = () => {
+    setIsSearchHistoryOpen(false);
+  };
+
   const isMobileLayout = useIsMobileLayout();
   const showMobileSideBar = isMobileLayout && isMobileSideBarOpen;
   const showDesktopSideBar = !isMobileLayout && isDesktopSideBarOpen;
@@ -86,8 +90,9 @@ export const SideBar = ({
       {isSearchHistoryOpen && searchableHistory && (
         <SearchHistoryModal
           searchableHistory={searchableHistory}
+          onSelectConversation={onSelectConversation}
           isSearchHistoryOpen={isSearchHistoryOpen}
-          setIsSearchHistoryOpen={setIsSearchHistoryOpen}
+          onCloseSearchHistory={onCloseSearchHistory}
           setIsMobileSideBarOpen={onMobileCloseClick}
         />
       )}

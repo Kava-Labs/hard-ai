@@ -6,15 +6,17 @@ import { SearchableChatHistories } from './types';
 
 interface SearchHistoryProps {
   searchableHistory: SearchableChatHistories;
+  onSelectConversation: (id: string) => void;
   isSearchHistoryOpen: boolean;
-  setIsSearchHistoryOpen: (i: boolean) => void;
+  onCloseSearchHistory: () => void;
   setIsMobileSideBarOpen: (i: boolean) => void;
 }
 
 export const SearchHistoryModal = ({
   searchableHistory,
+  onSelectConversation,
   isSearchHistoryOpen,
-  setIsSearchHistoryOpen,
+  onCloseSearchHistory,
   setIsMobileSideBarOpen,
 }: SearchHistoryProps) => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -35,17 +37,17 @@ export const SearchHistoryModal = ({
   }, [isSearchHistoryOpen, setIsMobileSideBarOpen]);
 
   const handleClose = () => {
-    setIsSearchHistoryOpen(false);
+    onCloseSearchHistory();
     setSearchTerm('');
   };
+
   return (
     <div className={styles.container}>
       {isSearchHistoryOpen && (
         <ModalWrapper modalRef={modalRef} onClose={handleClose}>
           <SearchHistoryModalBody
             searchableHistory={searchableHistory}
-            onConversationSelect={() => ({})}
-            setIsOpen={setIsSearchHistoryOpen}
+            onSelectConversation={onSelectConversation}
             searchTerm={searchTerm}
             setSearchTerm={setSearchTerm}
             onClose={handleClose}

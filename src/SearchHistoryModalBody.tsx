@@ -3,7 +3,7 @@ import { useRef } from 'react';
 import { useIsMobileLayout } from './theme/useIsMobileLayout';
 import ButtonIcon from './ButtonIcon';
 import { X } from 'lucide-react';
-import { ConversationHistory, SearchableChatHistories } from './types';
+import { SearchableChatHistories } from './types';
 import {
   formatContentSnippet,
   formatConversationTitle,
@@ -12,26 +12,23 @@ import {
 
 interface SearchModalBodyProps {
   searchableHistory: SearchableChatHistories;
-  onConversationSelect: (conversation: ConversationHistory) => void;
-  setIsOpen: (isOpen: boolean) => void;
+  onSelectConversation: (id: string) => void;
   searchTerm: string;
   setSearchTerm: (searchTerm: string) => void;
   onClose: () => void;
 }
 
 export const SearchHistoryModalBody = ({
-  // conversations,
-  // onConversationSelect,
   searchableHistory,
-  setIsOpen,
+                                         onSelectConversation,
   searchTerm,
   setSearchTerm,
+  onClose,
 }: SearchModalBodyProps) => {
   const inputRef = useRef<HTMLInputElement>(null);
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Escape') {
-      setIsOpen(false);
-      setSearchTerm('');
+      onClose();
     }
   };
 
@@ -59,7 +56,7 @@ export const SearchHistoryModalBody = ({
             className={styles.searchCloseIcon}
             icon={X}
             aria-label="Close search modal"
-            // onClick={closeModalAndResetInput}
+            onClick={onClose}
           />
         )}
       </div>
@@ -72,12 +69,12 @@ export const SearchHistoryModalBody = ({
             ([timeGroup, conversations]) => (
               <div key={timeGroup} className={styles.timeGroup}>
                 <small className={styles.timeGroupTitle}>{timeGroup}</small>
-                {conversations.map((conversation) => (
+                {conversations.map((conversation, index) => (
                   <div
                     data-testid="search-chat-history-entry"
-                    // key={conversation.id}
-                    // className={`${styles.conversationItem} ${conversationID === conversation.id ? styles.selected : ''}`}
-                    // onClick={() => handleConversationClick(conversation)}
+                    key={index}
+                    className={styles.conversationItem}
+                    onClick={() => onSelectConversation(conversation.)}
                   >
                     <p
                       data-testid="search-history-title"
