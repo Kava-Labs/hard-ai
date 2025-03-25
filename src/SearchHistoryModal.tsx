@@ -1,6 +1,6 @@
 import styles from './SearchHistoryModal.module.css';
 import { ModalWrapper } from './ModalWrapper';
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { SearchHistoryModalBody } from './SearchHistoryModalBody';
 import { SearchableChatHistories } from './types';
 import { groupAndFilterConversations } from './utils/helpers';
