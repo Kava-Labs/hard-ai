@@ -125,16 +125,19 @@ describe('groupConversationsByTime', () => {
   it('handles searchable histories', () => {
     const mockSearchableHistories: SearchableChatHistories = {
       1: {
+        id: '1',
         title: 'Bitcoin Discussion',
         lastSaved: now - 1000 * 60 * 60 * 2,
         messages: [{ role: 'user', content: 'Can I have bitcoin advice?' }],
       },
       2: {
+        id: '2',
         title: 'Ethereum Chat',
         lastSaved: now - 1000 * 60 * 60 * 25,
         messages: [{ role: 'user', content: 'Where can I buy ETH?' }],
       },
       3: {
+        id: '3',
         title: 'Blockchain Overview',
         lastSaved: now - 1000 * 60 * 60 * 24 * 5,
         messages: [
@@ -142,6 +145,7 @@ describe('groupConversationsByTime', () => {
         ],
       },
       4: {
+        id: '4',
         title: 'Party planning tips',
         lastSaved: now - 1000 * 60 * 60 * 24 * 6,
         messages: [{ role: 'user', content: 'I need help planning.' }],
@@ -200,16 +204,19 @@ describe('groupAndFilterConversations', () => {
 
   const mockSearchHistories: SearchableChatHistories = {
     1: {
+      id: '1',
       title: 'Bitcoin Discussion',
       lastSaved: now - 1000 * 60 * 60 * 2,
       messages: [{ role: 'user', content: 'Can I have bitcoin advice?' }],
     },
     2: {
+      id: '2',
       title: 'Ethereum Chat',
       lastSaved: now - 1000 * 60 * 60 * 25,
       messages: [{ role: 'user', content: 'Where can I buy ETH?' }],
     },
     3: {
+      id: '3',
       title: 'Blockchain Overview',
       lastSaved: now - 1000 * 60 * 60 * 24 * 5,
       messages: [
@@ -217,6 +224,7 @@ describe('groupAndFilterConversations', () => {
       ],
     },
     4: {
+      id: '4',
       title: 'Party planning tips',
       lastSaved: now - 1000 * 60 * 60 * 24 * 6,
       messages: [{ role: 'user', content: 'I need help planning.' }],
@@ -286,6 +294,7 @@ describe('groupAndFilterConversations', () => {
 
 describe('formatContentSnippet', () => {
   const mockSearchableHistory: SearchableChatHistory = {
+    id: '1',
     title: 'Test Conversation',
     lastSaved: Date.now(),
     messages: [
@@ -349,6 +358,7 @@ describe('formatContentSnippet', () => {
   it('returns empty string when no messages match and no user messages exist', () => {
     const emptyHistory: SearchableChatHistory = {
       title: 'Empty Conversation',
+      id: '1',
       lastSaved: Date.now(),
       messages: [
         {

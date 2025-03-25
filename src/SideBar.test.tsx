@@ -246,12 +246,14 @@ describe('SideBar', () => {
   test('calls getSearchableHistory when search button is clicked', async () => {
     const mockHistory: SearchableChatHistories = {
       conversation1: {
+        id: 'conversation1',
         title: 'First Conversation',
         lastSaved: 123400000000,
         messages: [{ role: 'user', content: 'Hello' }],
       },
       conversation2: {
         title: 'Second Conversation',
+        id: 'conversation2',
         lastSaved: 987860000000,
         messages: [
           { role: 'user', content: 'Can you help me?' },
