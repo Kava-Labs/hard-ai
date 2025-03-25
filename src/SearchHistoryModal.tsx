@@ -2,14 +2,17 @@ import styles from './SearchHistoryModal.module.css';
 import { ModalWrapper } from './ModalWrapper';
 import { useEffect, useRef, useState } from 'react';
 import { SearchHistoryModalBody } from './SearchHistoryModalBody';
+import { SearchableChatHistories } from './types';
 
 interface SearchHistoryProps {
+  searchableHistory: SearchableChatHistories;
   isSearchHistoryOpen: boolean;
   setIsSearchHistoryOpen: (i: boolean) => void;
   setIsMobileSideBarOpen: (i: boolean) => void;
 }
 
 export const SearchHistoryModal = ({
+  searchableHistory,
   isSearchHistoryOpen,
   setIsSearchHistoryOpen,
   setIsMobileSideBarOpen,
@@ -40,7 +43,7 @@ export const SearchHistoryModal = ({
       {isSearchHistoryOpen && (
         <ModalWrapper modalRef={modalRef} onClose={handleClose}>
           <SearchHistoryModalBody
-            conversations={[]}
+            searchableHistory={searchableHistory}
             onConversationSelect={() => ({})}
             setIsOpen={setIsSearchHistoryOpen}
             searchTerm={searchTerm}

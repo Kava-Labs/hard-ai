@@ -85,6 +85,7 @@ export const SideBar = ({
 
       {isSearchHistoryOpen && searchableHistory && (
         <SearchHistoryModal
+          searchableHistory={searchableHistory}
           isSearchHistoryOpen={isSearchHistoryOpen}
           setIsSearchHistoryOpen={setIsSearchHistoryOpen}
           setIsMobileSideBarOpen={onMobileCloseClick}

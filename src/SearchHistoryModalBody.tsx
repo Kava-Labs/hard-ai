@@ -3,10 +3,15 @@ import { useRef } from 'react';
 import { useIsMobileLayout } from './theme/useIsMobileLayout';
 import ButtonIcon from './ButtonIcon';
 import { X } from 'lucide-react';
-import { ConversationHistory } from './types';
+import { ConversationHistory, SearchableChatHistories } from './types';
+import {
+  formatContentSnippet,
+  formatConversationTitle,
+  groupAndFilterConversations,
+} from './utils/helpers';
 
 interface SearchModalBodyProps {
-  conversations: ConversationHistory[];
+  searchableHistory: SearchableChatHistories;
   onConversationSelect: (conversation: ConversationHistory) => void;
   setIsOpen: (isOpen: boolean) => void;
   searchTerm: string;
@@ -17,6 +22,7 @@ interface SearchModalBodyProps {
 export const SearchHistoryModalBody = ({
   // conversations,
   // onConversationSelect,
+  searchableHistory,
   setIsOpen,
   searchTerm,
   setSearchTerm,
@@ -28,6 +34,11 @@ export const SearchHistoryModalBody = ({
       setSearchTerm('');
     }
   };
+
+  const groupedConversations = groupAndFilterConversations(
+    searchableHistory,
+    searchTerm,
+  );
 
   const isMobileLayout = useIsMobileLayout();
   return (
@@ -53,48 +64,42 @@ export const SearchHistoryModalBody = ({
         )}
       </div>
 
-      {/*<div className={styles.results}>*/}
-      {/*  {Object.keys(groupedConversations).length === 0 ? (*/}
-      {/*    <div className={styles.noResults}>No results</div>*/}
-      {/*  ) : (*/}
-      {/*    Object.entries(groupedConversations).map(*/}
-      {/*      ([timeGroup, conversations]) => (*/}
-      {/*        <div key={timeGroup} className={styles.timeGroup}>*/}
-      {/*          <small className={styles.timeGroupTitle}>{timeGroup}</small>*/}
-      {/*          {conversations.map((conversation) => (*/}
-      {/*            <div*/}
-      {/*              data-testid="search-chat-history-entry"*/}
-      {/*              key={conversation.id}*/}
-      {/*              className={`${styles.conversationItem} ${conversationID === conversation.id ? styles.selected : ''}`}*/}
-      {/*              onClick={() => handleConversationClick(conversation)}*/}
-      {/*            >*/}
-      {/*              <p*/}
-      {/*                data-testid="search-history-title"*/}
-      {/*                className={styles.conversationTitle}*/}
-      {/*                dangerouslySetInnerHTML={{*/}
-      {/*                  __html: highlightMatch(*/}
-      {/*                    formatConversationTitle(conversation.title, 50),*/}
-      {/*                    searchTerm,*/}
-      {/*                  ),*/}
-      {/*                }}*/}
-      {/*              />*/}
-      {/*              <p*/}
-      {/*                data-testid="search-history-content"*/}
-      {/*                className={styles.conversationSnippet}*/}
-      {/*                dangerouslySetInnerHTML={{*/}
-      {/*                  __html: highlightMatch(*/}
-      {/*                    formatContentSnippet(conversation, searchTerm),*/}
-      {/*                    searchTerm,*/}
-      {/*                  ),*/}
-      {/*                }}*/}
-      {/*              />*/}
-      {/*            </div>*/}
-      {/*          ))}*/}
-      {/*        </div>*/}
-      {/*      ),*/}
-      {/*    )*/}
-      {/*  )}*/}
-      {/*</div>*/}
+      <div className={styles.results}>
+        {Object.keys(groupedConversations).length === 0 ? (
+          <div className={styles.noResults}>No results</div>
+        ) : (
+          Object.entries(groupedConversations).map(
+            ([timeGroup, conversations]) => (
+              <div key={timeGroup} className={styles.timeGroup}>
+                <small className={styles.timeGroupTitle}>{timeGroup}</small>
+                {conversations.map((conversation) => (
+                  <div
+                    data-testid="search-chat-history-entry"
+                    // key={conversation.id}
+                    // className={`${styles.conversationItem} ${conversationID === conversation.id ? styles.selected : ''}`}
+                    // onClick={() => handleConversationClick(conversation)}
+                  >
+                    <p
+                      data-testid="search-history-title"
+                      className={styles.conversationTitle}
+                      dangerouslySetInnerHTML={{
+                        __html: formatConversationTitle(conversation.title, 50),
+                      }}
+                    />
+                    <p
+                      data-testid="search-history-content"
+                      className={styles.conversationSnippet}
+                      dangerouslySetInnerHTML={{
+                        __html: formatContentSnippet(conversation, searchTerm),
+                      }}
+                    />
+                  </div>
+                ))}
+              </div>
+            ),
+          )
+        )}
+      </div>
     </>
   );
 };
