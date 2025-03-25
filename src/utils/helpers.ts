@@ -5,6 +5,7 @@ import {
   GroupedConversations,
   GroupedSearchHistories,
   SearchableChatHistories,
+  SearchableChatHistory,
 } from '../types';
 
 /**
@@ -164,4 +165,46 @@ export const groupAndFilterConversations = (
   }
 
   return groupedFilteredResults;
+};
+
+const removeSystemMessages = (messages: ChatMessage[]) => {
+  return messages.filter((msg) => msg.role !== 'system');
+};
+
+export const formatContentSnippet = (
+  conversation: SearchableChatHistory,
+  searchTerm: string = '',
+): string => {
+  const messages = removeSystemMessages(conversation.messages);
+
+  if (searchTerm) {
+    // Since we assume messages will match the search term, we can process all matching messages
+    for (const message of messages) {
+      const content = extractTextContent(message);
+      const searchIndex = content
+        .toLowerCase()
+        .indexOf(searchTerm.toLowerCase());
+
+      if (searchIndex !== -1) {
+        let snippetStart = searchIndex;
+        if (searchIndex > 0) {
+          const beforeMatch = content.slice(0, searchIndex).trim();
+          const precedingWords = beforeMatch.split(' ').slice(-3);
+          snippetStart = searchIndex - (precedingWords.join(' ').length + 1);
+          if (snippetStart < 0) snippetStart = 0;
+        }
+
+        return content.slice(snippetStart, snippetStart + 100).trim();
+      }
+    }
+  }
+
+  //  Fallback to the first user message if no search term or no matches
+  const firstUserMessage = messages.find((msg) => msg.role === 'user');
+  if (firstUserMessage) {
+    const content = extractTextContent(firstUserMessage);
+    return content.slice(0, 100);
+  }
+
+  return '';
 };

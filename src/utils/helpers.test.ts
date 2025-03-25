@@ -1,11 +1,16 @@
 import { afterEach, beforeEach, describe, it, vi, expect } from 'vitest';
 import {
+  formatContentSnippet,
   formatConversationTitle,
   getTimeGroup,
   groupAndFilterConversations,
   groupConversationsByTime,
 } from './helpers';
-import { ConversationHistories, SearchableChatHistories } from '../types';
+import {
+  ConversationHistories,
+  SearchableChatHistories,
+  SearchableChatHistory,
+} from '../types';
 
 describe('getTimeGroup', () => {
   beforeEach(() => {
@@ -245,5 +250,157 @@ describe('groupAndFilterConversations', () => {
     expect(filtered['Today'][0].title).toBe('Bitcoin Discussion');
     expect(filtered['Yesterday']).toBeUndefined();
     expect(filtered['Last week']).toBeUndefined();
+  });
+});
+
+describe('formatContentSnippet', () => {
+  const mockSearchableHistory: SearchableChatHistory = {
+    title: 'Test Conversation',
+    lastSaved: Date.now(),
+    messages: [
+      {
+        role: 'system',
+        content: 'System prompt that should be ignored',
+      },
+      {
+        role: 'user',
+        content: 'First user message',
+      },
+      {
+        role: 'assistant',
+        content: 'First assistant response with searchable content',
+      },
+      {
+        role: 'user',
+        content: 'Second user message with different content',
+      },
+    ],
+  };
+
+  it('returns snippet starting with search term when found at start of message', () => {
+    const result = formatContentSnippet(mockSearchableHistory, 'First');
+    expect(result).toBe('First user message');
+  });
+
+  it('includes up to 3 words before search term when found mid-message', () => {
+    const historyWithMidMatch: SearchableChatHistory = {
+      ...mockSearchableHistory,
+      messages: [
+        {
+          role: 'assistant',
+          content: 'The quick brown fox jumps over the lazy dog',
+        },
+      ],
+    };
+    const result = formatContentSnippet(historyWithMidMatch, 'jumps');
+    expect(result).toBe('quick brown fox jumps over the lazy dog');
+  });
+
+  it('includes fewer preceding words if not enough before match', () => {
+    const historyWithShortPrefix: SearchableChatHistory = {
+      ...mockSearchableHistory,
+      messages: [
+        {
+          role: 'assistant',
+          content: 'quick brown jumps over',
+        },
+      ],
+    };
+    const result = formatContentSnippet(historyWithShortPrefix, 'jumps');
+    expect(result).toBe('quick brown jumps over');
+  });
+
+  it('returns first user message when no search term is provided', () => {
+    const result = formatContentSnippet(mockSearchableHistory);
+    expect(result).toBe('First user message');
+  });
+
+  it('returns empty string when no messages match and no user messages exist', () => {
+    const emptyHistory: SearchableChatHistory = {
+      title: 'Empty Conversation',
+      lastSaved: Date.now(),
+      messages: [
+        {
+          role: 'system',
+          content: 'System prompt only',
+        },
+      ],
+    };
+    const result = formatContentSnippet(emptyHistory, 'nonexistent');
+    expect(result).toBe('');
+  });
+
+  it('is case insensitive for search matches', () => {
+    const historyWithMidMatch: SearchableChatHistory = {
+      ...mockSearchableHistory,
+      messages: [
+        {
+          role: 'assistant',
+          content: 'The quick brown fox jumps over the lazy dog',
+        },
+      ],
+    };
+    const result = formatContentSnippet(historyWithMidMatch, 'JUMPS');
+    expect(result).toBe('quick brown fox jumps over the lazy dog');
+  });
+
+  it('truncates long matches to 100 characters', () => {
+    const longHistory: SearchableChatHistory = {
+      ...mockSearchableHistory,
+      messages: [
+        {
+          role: 'assistant',
+          content: 'preceding words match ' + 'a'.repeat(200),
+        },
+      ],
+    };
+    const result = formatContentSnippet(longHistory, 'match');
+    expect(result.length).toBe(100);
+    expect(result).toContain('preceding words match');
+  });
+
+  it('finds matches in any message, not just the first one', () => {
+    const result = formatContentSnippet(mockSearchableHistory, 'different');
+    expect(result).toBe('user message with different content');
+  });
+
+  it('handles search term at the end of content', () => {
+    const historyWithEndMatch: SearchableChatHistory = {
+      ...mockSearchableHistory,
+      messages: [
+        {
+          role: 'assistant',
+          content: 'This is the end',
+        },
+      ],
+    };
+    const result = formatContentSnippet(historyWithEndMatch, 'end');
+    expect(result).toBe('This is the end');
+  });
+
+  it('correctly handles multiple occurrences of search term and returns first match', () => {
+    const historyWithMultipleMatches: SearchableChatHistory = {
+      ...mockSearchableHistory,
+      messages: [
+        {
+          role: 'user',
+          content: 'First mention of search term is here',
+        },
+        {
+          role: 'assistant',
+          content: 'Second mention of search term comes after',
+        },
+      ],
+    };
+    const result = formatContentSnippet(
+      historyWithMultipleMatches,
+      'search term',
+    );
+    expect(result).toBe('First mention of search term is here');
+  });
+
+  it('returns snippet when search term spans multiple words', () => {
+    const result = formatContentSnippet(mockSearchableHistory, 'user message');
+    expect(result).toBe('First user message');
   });
 });
