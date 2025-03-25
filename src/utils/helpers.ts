@@ -76,12 +76,6 @@ export const formatConversationTitle = (title: string, maxLength: number) => {
   return formattedTitle;
 };
 
-export const deepCopy = <T>(obj: T) => {
-  return window.structuredClone
-    ? window.structuredClone(obj)
-    : JSON.parse(JSON.stringify(obj));
-};
-
 export const getERC20Record = (
   denom: string,
   records: Record<string, ERC20Record>,
