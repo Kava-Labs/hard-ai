@@ -4,6 +4,13 @@ import { SearchHistoryModalBody } from './SearchHistoryModalBody';
 import { GroupedSearchHistories, SearchableChatHistory } from './types';
 
 describe('SearchHistoryModalBody', () => {
+  const mockHistory: SearchableChatHistory = {
+    id: 'conv-123',
+    title: 'Test Conversation',
+    messages: [{ role: 'user', content: 'This is a test' }],
+    lastSaved: 1234000000,
+  };
+
   const onSelectConversation = vi.fn();
   const handleSearchTermChange = vi.fn();
   const onClose = vi.fn();
@@ -19,15 +26,8 @@ describe('SearchHistoryModalBody', () => {
   });
 
   it('should select the only conversation when Enter key is pressed', () => {
-    const singleConversation: SearchableChatHistory = {
-      id: 'conv-123',
-      title: 'Test Conversation',
-      messages: [{ role: 'user', content: 'This is a test' }],
-      lastSaved: 1234000000,
-    };
-
     const groupedConversations: GroupedSearchHistories = {
-      Today: [singleConversation],
+      Today: [mockHistory],
     };
 
     render(
@@ -49,17 +49,12 @@ describe('SearchHistoryModalBody', () => {
   it('should not select any conversation when Enter key is pressed with multiple results', () => {
     const groupedConversations: GroupedSearchHistories = {
       Today: [
-        {
-          id: 'conv-123',
-          title: 'First Conversation',
-          messages: [{ role: 'user', content: 'This is a test' }],
-          lastSaved: 1234000000,
-        },
+        mockHistory,
         {
           id: 'conv-456',
           title: 'Second Conversation',
-          messages: [{ role: 'user', content: 'This is a test' }],
           lastSaved: 1234000001,
+          messages: [{ role: 'user', content: 'hello?' }],
         },
       ],
     };
@@ -101,14 +96,7 @@ describe('SearchHistoryModalBody', () => {
 
   it('should close the modal when Escape key is pressed', () => {
     const groupedConversations: GroupedSearchHistories = {
-      Today: [
-        {
-          id: 'conv-123',
-          title: 'Test Conversation',
-          messages: [{ role: 'user', content: 'This is a test' }],
-          lastSaved: 1234000000,
-        },
-      ],
+      Today: [mockHistory],
     };
 
     render(
