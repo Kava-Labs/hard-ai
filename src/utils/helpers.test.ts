@@ -160,36 +160,35 @@ describe('formatConversationTitle', () => {
 });
 
 describe('groupAndFilterConversations', () => {
-  let mockSearchHistories: SearchableChatHistories;
   const now = new Date('2024-02-13T12:00:00Z').getTime();
+
+  const mockSearchHistories: SearchableChatHistories = {
+    1: {
+      title: 'Bitcoin Discussion',
+      lastSaved: now - 1000 * 60 * 60 * 2,
+      messages: [{ role: 'user', content: 'Can I have bitcoin advice?' }],
+    },
+    2: {
+      title: 'Ethereum Chat',
+      lastSaved: now - 1000 * 60 * 60 * 25,
+      messages: [{ role: 'user', content: 'Where can I buy ETH?' }],
+    },
+    3: {
+      title: 'Blockchain Overview',
+      lastSaved: now - 1000 * 60 * 60 * 24 * 5,
+      messages: [
+        { role: 'user', content: 'What is the history of blockchain?' },
+      ],
+    },
+    4: {
+      title: 'Party planning tips',
+      lastSaved: now - 1000 * 60 * 60 * 24 * 6,
+      messages: [{ role: 'user', content: 'I need help planning.' }],
+    },
+  };
 
   beforeEach(() => {
     vi.spyOn(Date.prototype, 'getTime').mockImplementation(() => now);
-
-    mockSearchHistories = {
-      1: {
-        title: 'Bitcoin Discussion',
-        lastSaved: now - 1000 * 60 * 60 * 2,
-        messages: [{ role: 'user', content: 'Can I have bitcoin advice?' }],
-      },
-      2: {
-        title: 'Ethereum Chat',
-        lastSaved: now - 1000 * 60 * 60 * 25,
-        messages: [{ role: 'user', content: 'Where can I buy ETH?' }],
-      },
-      3: {
-        title: 'Blockchain Overview',
-        lastSaved: now - 1000 * 60 * 60 * 24 * 5,
-        messages: [
-          { role: 'user', content: 'What is the history of blockchain?' },
-        ],
-      },
-      4: {
-        title: 'Party planning tips',
-        lastSaved: now - 1000 * 60 * 60 * 24 * 6,
-        messages: [{ role: 'user', content: 'I need help planning.' }],
-      },
-    };
   });
 
   afterEach(() => {
