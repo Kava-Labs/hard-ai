@@ -227,6 +227,12 @@ describe('groupAndFilterConversations', () => {
     expect(filtered['Last week'][1].title).toBe('Party planning tips');
   });
 
+  it('handles multiple content matches', () => {
+    const filtered = groupAndFilterConversations(mockSearchHistories, 'can');
+    expect(filtered['Today'][0].title).toBe('Bitcoin Discussion');
+    expect(filtered['Yesterday'][0].title).toBe('Ethereum Chat');
+  });
+
   it('should return conversations from the correct time groups and remove any empty groups', () => {
     const filtered = groupAndFilterConversations(
       mockSearchHistories,
