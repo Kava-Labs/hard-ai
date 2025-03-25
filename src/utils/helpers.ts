@@ -171,6 +171,18 @@ const removeSystemMessages = (messages: ChatMessage[]) => {
   return messages.filter((msg) => msg.role !== 'system');
 };
 
+/**
+ * Formats a content snippet from a conversation history based on a search term
+ *
+ * @param conversation - The search history object containing messages to search through
+ * @param searchTerm - Optional term to search for within messages (defaults to empty string)
+ * @returns A formatted string snippet showing the context around the search match, or the first user message if no match
+ *
+ * @notes
+ * - If a search term is provided, it returns up to 100 characters including the match and up to 3 preceding words
+ * - If no search term is provided or no matches found, it returns the first 100 characters of the first user message
+ * - System messages are ignored in the search
+ */
 export const formatContentSnippet = (
   conversation: SearchableChatHistory,
   searchTerm: string = '',
