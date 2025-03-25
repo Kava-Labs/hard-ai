@@ -1,8 +1,11 @@
-import { ConversationHistory } from '../types';
 import type { ERC20Record } from '../types/chain';
-
-//  Conversations indexed by time group label
-type GroupedConversations = Record<string, ConversationHistory[]>;
+import {
+  ChatMessage,
+  ConversationHistory,
+  GroupedConversations,
+  GroupedSearchHistories,
+  SearchableChatHistories,
+} from '../types';
 
 /**
  * Determines the time group label for a given timestamp
@@ -73,12 +76,6 @@ export const formatConversationTitle = (title: string, maxLength: number) => {
   return formattedTitle;
 };
 
-export const deepCopy = <T>(obj: T) => {
-  return window.structuredClone
-    ? window.structuredClone(obj)
-    : JSON.parse(JSON.stringify(obj));
-};
-
 export const getERC20Record = (
   denom: string,
   records: Record<string, ERC20Record>,
@@ -93,4 +90,78 @@ export const getERC20Record = (
   }
 
   return null;
+};
+
+export const extractTextContent = (msg: ChatMessage): string => {
+  if (typeof msg.content === 'string') {
+    return msg.content;
+  }
+
+  if (Array.isArray(msg.content)) {
+    return msg.content
+      .filter((item) => item.type === 'text')
+      .map((item) => item.text)
+      .join(' ');
+  }
+
+  return '';
+};
+/**
+ * Groups and filters conversations based on their timestamp and an optional search term.
+ *
+ * This function organizes conversations into time-based groups (Today, Yesterday, etc.)
+ * and can filter them based on a search term that matches either the conversation title
+ * or any message content.
+ *
+ * @param conversations - Collection of conversations to process
+ * @param searchTerm - Optional term to filter conversations (matches title or message content)
+ * @returns An object with time groups as keys and arrays of matching conversations as values
+ */
+export const groupAndFilterConversations = (
+  conversations: SearchableChatHistories,
+  searchTerm = '',
+): GroupedSearchHistories => {
+  const groupedFilteredResults: GroupedSearchHistories = {};
+
+  if (!conversations) return groupedFilteredResults;
+
+  const isSearching = searchTerm.trim() !== '';
+  const searchRegex = isSearching ? new RegExp(searchTerm.trim(), 'i') : null;
+
+  Object.values(conversations).forEach((conversation) => {
+    //  If we aren't searching, return all histories, sorted by time
+    if (isSearching && searchRegex) {
+      //  Primary search is for title match
+      const titleMatches = searchRegex.test(conversation.title);
+
+      //  Secondary search is for content matches
+      if (!titleMatches) {
+        const messageMatches = conversation.messages.some((message) => {
+          const textContent = extractTextContent(message);
+          return searchRegex.test(textContent);
+        });
+
+        //  if we haven't found any title or content matches, return (triggers 'No results')
+        if (!messageMatches) return;
+      }
+    }
+
+    const timeGroup = getTimeGroup(conversation.lastSaved);
+
+    //  Initialize the time group if it doesn't exist yet
+    if (!groupedFilteredResults[timeGroup]) {
+      groupedFilteredResults[timeGroup] = [];
+    }
+
+    groupedFilteredResults[timeGroup].push(conversation);
+  });
+
+  for (const tGroup in groupedFilteredResults) {
+    //  Only sort if the group has more than one entry
+    if (groupedFilteredResults[tGroup].length > 1) {
+      groupedFilteredResults[tGroup].sort((a, b) => b.lastSaved - a.lastSaved);
+    }
+  }
+
+  return groupedFilteredResults;
 };

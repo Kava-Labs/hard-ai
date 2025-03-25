@@ -29,6 +29,8 @@ export type ConversationHistory = {
   tokensRemaining: number;
 };
 
+export type GroupedConversations = Record<string, ConversationHistory[]>;
+
 export type ConversationHistories = Record<string, ConversationHistory>;
 
 export type ChatMessage =
@@ -36,9 +38,18 @@ export type ChatMessage =
   | ChatCompletionToolMessageParam
   | ChatCompletionAssistantMessageParam;
 
+//  type returned from the conversation messages store
 export type MessageHistory = { id: string; messages: ChatMessage[] };
 
-export type SearchableChatHistories = Record<
-  string,
-  { title: string; messages: ChatMessage[]; lastSaved: number }
->;
+//  we need to be able to search all text and sort by time
+export type SearchableChatHistory = {
+  title: string;
+  messages: ChatMessage[];
+  lastSaved: number;
+};
+
+//  type returned from getSearchableHistory
+export type SearchableChatHistories = Record<string, SearchableChatHistory>;
+
+//  Record of searchable histories, indexed by the time group (Today, Yesterday, etc.)
+export type GroupedSearchHistories = Record<string, SearchableChatHistory[]>;

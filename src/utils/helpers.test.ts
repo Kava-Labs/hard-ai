@@ -2,9 +2,10 @@ import { afterEach, beforeEach, describe, it, vi, expect } from 'vitest';
 import {
   formatConversationTitle,
   getTimeGroup,
+  groupAndFilterConversations,
   groupConversationsByTime,
 } from './helpers';
-import { ConversationHistories } from '../types';
+import { ConversationHistories, SearchableChatHistories } from '../types';
 
 describe('getTimeGroup', () => {
   beforeEach(() => {
@@ -155,5 +156,94 @@ describe('formatConversationTitle', () => {
     expect(
       formatConversationTitle('"This is a very long quoted title"', 10),
     ).toBe('This is a ....');
+  });
+});
+
+describe('groupAndFilterConversations', () => {
+  const now = new Date('2024-02-13T12:00:00Z').getTime();
+
+  const mockSearchHistories: SearchableChatHistories = {
+    1: {
+      title: 'Bitcoin Discussion',
+      lastSaved: now - 1000 * 60 * 60 * 2,
+      messages: [{ role: 'user', content: 'Can I have bitcoin advice?' }],
+    },
+    2: {
+      title: 'Ethereum Chat',
+      lastSaved: now - 1000 * 60 * 60 * 25,
+      messages: [{ role: 'user', content: 'Where can I buy ETH?' }],
+    },
+    3: {
+      title: 'Blockchain Overview',
+      lastSaved: now - 1000 * 60 * 60 * 24 * 5,
+      messages: [
+        { role: 'user', content: 'What is the history of blockchain?' },
+      ],
+    },
+    4: {
+      title: 'Party planning tips',
+      lastSaved: now - 1000 * 60 * 60 * 24 * 6,
+      messages: [{ role: 'user', content: 'I need help planning.' }],
+    },
+  };
+
+  beforeEach(() => {
+    vi.spyOn(Date.prototype, 'getTime').mockImplementation(() => now);
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('should filter conversations based on search term', () => {
+    const filtered = groupAndFilterConversations(
+      mockSearchHistories,
+      'bitcoin',
+    );
+    expect(Object.keys(filtered)).toEqual(['Today']);
+    expect(filtered['Today'][0].title).toBe('Bitcoin Discussion');
+  });
+
+  it('should be case insensitive when filtering', () => {
+    const filtered = groupAndFilterConversations(mockSearchHistories, 'ADVICE');
+    expect(filtered['Today'][0].title).toBe('Bitcoin Discussion');
+  });
+
+  it('should handle partial matches', () => {
+    const filtered = groupAndFilterConversations(
+      mockSearchHistories,
+      '  block',
+    );
+    expect(filtered['Last week'][0].title).toBe('Blockchain Overview');
+  });
+
+  it('should return all conversations when search term is empty', () => {
+    const filtered = groupAndFilterConversations(mockSearchHistories, '');
+
+    expect(filtered['Today'][0].title).toBe('Bitcoin Discussion');
+    expect(filtered['Yesterday'][0].title).toBe('Ethereum Chat');
+    expect(filtered['Last week'][0].title).toBe('Blockchain Overview');
+    expect(filtered['Last week'][1].title).toBe('Party planning tips');
+  });
+
+  it('handles multiple content matches', () => {
+    const filtered = groupAndFilterConversations(mockSearchHistories, 'can');
+    expect(filtered['Today'][0].title).toBe('Bitcoin Discussion');
+    expect(filtered['Yesterday'][0].title).toBe('Ethereum Chat');
+  });
+
+  it('handles missing search', () => {
+    const filtered = groupAndFilterConversations(mockSearchHistories, '1');
+    expect(filtered).toStrictEqual({});
+  });
+
+  it('should return conversations from the correct time groups and remove any empty groups', () => {
+    const filtered = groupAndFilterConversations(
+      mockSearchHistories,
+      'discussion',
+    );
+    expect(filtered['Today'][0].title).toBe('Bitcoin Discussion');
+    expect(filtered['Yesterday']).toBeUndefined();
+    expect(filtered['Last week']).toBeUndefined();
   });
 });
