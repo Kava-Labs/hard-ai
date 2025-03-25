@@ -68,20 +68,17 @@ export const SearchHistoryModalBody = ({
                 <small className={styles.timeGroupTitle}>{timeGroup}</small>
                 {conversations.map((conversation) => (
                   <div
-                    data-testid="search-chat-history-entry"
                     key={conversation.id}
                     className={styles.conversationItem}
                     onClick={() => onHistoryItemClick(conversation.id)}
                   >
                     <p
-                      data-testid="search-history-title"
                       className={styles.conversationTitle}
                       dangerouslySetInnerHTML={{
                         __html: formatConversationTitle(conversation.title, 50),
                       }}
                     />
                     <p
-                      data-testid="search-history-content"
                       className={styles.conversationSnippet}
                       dangerouslySetInnerHTML={{
                         __html: formatContentSnippet(conversation, inputValue),
