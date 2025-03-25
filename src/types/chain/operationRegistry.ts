@@ -10,6 +10,8 @@ import {
   defaultIntroText,
   defaultSystemPrompt,
 } from './prompts';
+import { EvmBalancesQuery } from '../../services/evmBalances';
+import { EvmTransferMessage } from '../../services/evmTransfer';
 /**
  * Central registry for all chain operations (messages and queries).
  * Manages the registration and retrieval of operations, and generates
@@ -128,3 +130,15 @@ export class OperationRegistry<T> {
     }));
   }
 }
+
+export function initializeMessageRegistry(): OperationRegistry<unknown> {
+  const registry = new OperationRegistry();
+  registry.register(new EvmTransferMessage());
+  registry.register(new EvmBalancesQuery());
+  return registry;
+}
+
+export type ExecuteOperation = (
+  operationName: string,
+  params: unknown,
+) => Promise<string>;
