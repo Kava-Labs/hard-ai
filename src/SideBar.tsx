@@ -93,7 +93,6 @@ export const SideBar = ({
           onSelectConversation={onSelectConversation}
           isSearchHistoryOpen={isSearchHistoryOpen}
           onCloseSearchHistory={onCloseSearchHistory}
-          setIsMobileSideBarOpen={onMobileCloseClick}
         />
       )}
     </div>

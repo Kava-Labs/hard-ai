@@ -3,26 +3,22 @@ import { useRef } from 'react';
 import { useIsMobileLayout } from './theme/useIsMobileLayout';
 import ButtonIcon from './ButtonIcon';
 import { X } from 'lucide-react';
-import { SearchableChatHistories } from './types';
-import {
-  formatContentSnippet,
-  formatConversationTitle,
-  groupAndFilterConversations,
-} from './utils/helpers';
+import { GroupedSearchHistories } from './types';
+import { formatContentSnippet, formatConversationTitle } from './utils/helpers';
 
 interface SearchModalBodyProps {
-  searchableHistory: SearchableChatHistories;
+  groupedConversations: GroupedSearchHistories;
   onSelectConversation: (id: string) => void;
-  searchTerm: string;
-  setSearchTerm: (searchTerm: string) => void;
+  handleSearchTermChange: (searchTerm: string) => void;
+  inputValue: string;
   onClose: () => void;
 }
 
 export const SearchHistoryModalBody = ({
-  searchableHistory,
+  groupedConversations,
   onSelectConversation,
-  searchTerm,
-  setSearchTerm,
+  handleSearchTermChange,
+  inputValue,
   onClose,
 }: SearchModalBodyProps) => {
   const inputRef = useRef<HTMLInputElement>(null);
@@ -31,11 +27,6 @@ export const SearchHistoryModalBody = ({
       onClose();
     }
   };
-
-  const groupedConversations = groupAndFilterConversations(
-    searchableHistory,
-    searchTerm,
-  );
 
   const onHistoryItemClick = (id: string) => {
     onSelectConversation(id);
@@ -51,9 +42,10 @@ export const SearchHistoryModalBody = ({
           type="text"
           className={styles.searchInput}
           placeholder="Search conversations..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
+          value={inputValue}
+          onChange={(e) => handleSearchTermChange(e.target.value)}
           onKeyDown={handleKeyDown}
+          autoFocus
         />
         {/*Mobile design uses the close icon within ModalWrapper*/}
         {!isMobileLayout && (
@@ -92,7 +84,7 @@ export const SearchHistoryModalBody = ({
                       data-testid="search-history-content"
                       className={styles.conversationSnippet}
                       dangerouslySetInnerHTML={{
-                        __html: formatContentSnippet(conversation, searchTerm),
+                        __html: formatContentSnippet(conversation, inputValue),
                       }}
                     />
                   </div>
