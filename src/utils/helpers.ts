@@ -126,23 +126,19 @@ export const groupAndFilterConversations = (
   if (!conversations) return groupedFilteredResults;
 
   const isSearching = searchTerm.trim() !== '';
+  const searchRegex = isSearching ? new RegExp(searchTerm.trim(), 'i') : null;
 
   Object.values(conversations).forEach((conversation) => {
-    // If we aren't searching, return all histories, sorted by time
-    if (isSearching) {
-      //  Remove whitespace and lowercase
-      const lowercaseSearchTerm = searchTerm.trim().toLowerCase();
-
+    //  If we aren't searching, return all histories, sorted by time
+    if (isSearching && searchRegex) {
       //  Primary search is for title match
-      const titleMatches = conversation.title
-        .toLowerCase()
-        .includes(lowercaseSearchTerm);
+      const titleMatches = searchRegex.test(conversation.title);
 
       //  Secondary search is for content matches
       if (!titleMatches) {
         const messageMatches = conversation.messages.some((message) => {
           const textContent = extractTextContent(message);
-          return textContent.toLowerCase().includes(lowercaseSearchTerm);
+          return searchRegex.test(textContent);
         });
 
         //  if we haven't found any title or content matches, return (triggers 'No results')
