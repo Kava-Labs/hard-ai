@@ -20,7 +20,7 @@ interface SearchModalBodyProps {
 
 export const SearchHistoryModalBody = ({
   searchableHistory,
-                                         onSelectConversation,
+  onSelectConversation,
   searchTerm,
   setSearchTerm,
   onClose,
@@ -36,6 +36,11 @@ export const SearchHistoryModalBody = ({
     searchableHistory,
     searchTerm,
   );
+
+  const onHistoryItemClick = (id: string) => {
+    onSelectConversation(id);
+    onClose();
+  };
 
   const isMobileLayout = useIsMobileLayout();
   return (
@@ -69,12 +74,12 @@ export const SearchHistoryModalBody = ({
             ([timeGroup, conversations]) => (
               <div key={timeGroup} className={styles.timeGroup}>
                 <small className={styles.timeGroupTitle}>{timeGroup}</small>
-                {conversations.map((conversation, index) => (
+                {conversations.map((conversation) => (
                   <div
                     data-testid="search-chat-history-entry"
-                    key={index}
+                    key={conversation.id}
                     className={styles.conversationItem}
-                    onClick={() => onSelectConversation(conversation.)}
+                    onClick={() => onHistoryItemClick(conversation.id)}
                   >
                     <p
                       data-testid="search-history-title"
