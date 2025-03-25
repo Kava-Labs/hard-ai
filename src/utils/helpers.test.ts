@@ -121,6 +121,37 @@ describe('groupConversationsByTime', () => {
     const grouped = groupConversationsByTime({});
     expect(grouped).toEqual({});
   });
+
+  it('handles searchable histories', () => {
+    const mockSearchableHistories: SearchableChatHistories = {
+      1: {
+        title: 'Bitcoin Discussion',
+        lastSaved: now - 1000 * 60 * 60 * 2,
+        messages: [{ role: 'user', content: 'Can I have bitcoin advice?' }],
+      },
+      2: {
+        title: 'Ethereum Chat',
+        lastSaved: now - 1000 * 60 * 60 * 25,
+        messages: [{ role: 'user', content: 'Where can I buy ETH?' }],
+      },
+      3: {
+        title: 'Blockchain Overview',
+        lastSaved: now - 1000 * 60 * 60 * 24 * 5,
+        messages: [
+          { role: 'user', content: 'What is the history of blockchain?' },
+        ],
+      },
+      4: {
+        title: 'Party planning tips',
+        lastSaved: now - 1000 * 60 * 60 * 24 * 6,
+        messages: [{ role: 'user', content: 'I need help planning.' }],
+      },
+    };
+
+    const grouped = groupConversationsByTime(mockSearchableHistories);
+    expect(grouped['Today'][0].title).toBe('Bitcoin Discussion');
+    expect(grouped['Yesterday'][0].title).toBe('Ethereum Chat');
+  });
 });
 
 describe('formatConversationTitle', () => {

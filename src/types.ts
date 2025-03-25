@@ -29,8 +29,6 @@ export type ConversationHistory = {
   tokensRemaining: number;
 };
 
-export type GroupedConversations = Record<string, ConversationHistory[]>;
-
 export type ConversationHistories = Record<string, ConversationHistory>;
 
 export type ChatMessage =
