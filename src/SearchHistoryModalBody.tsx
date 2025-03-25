@@ -58,14 +58,12 @@ export const SearchHistoryModalBody = ({
           autoFocus
         />
         {/*Mobile design uses the close icon within ModalWrapper*/}
-        {!isMobileLayout && (
-          <ButtonIcon
-            className={styles.searchCloseIcon}
-            icon={X}
-            aria-label="Close search modal"
-            onClick={onClose}
-          />
-        )}
+        <ButtonIcon
+          className={isMobileLayout ? styles.hidden : styles.searchCloseIcon}
+          icon={X}
+          aria-label="Close search modal"
+          onClick={onClose}
+        />
       </div>
 
       <div className={styles.results}>
