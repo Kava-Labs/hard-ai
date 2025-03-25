@@ -233,6 +233,11 @@ describe('groupAndFilterConversations', () => {
     expect(filtered['Yesterday'][0].title).toBe('Ethereum Chat');
   });
 
+  it('handles missing search', () => {
+    const filtered = groupAndFilterConversations(mockSearchHistories, '1');
+    expect(filtered).toStrictEqual({});
+  });
+
   it('should return conversations from the correct time groups and remove any empty groups', () => {
     const filtered = groupAndFilterConversations(
       mockSearchHistories,
