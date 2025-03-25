@@ -180,8 +180,8 @@ export const formatContentSnippet = (
   if (searchTerm.trim() !== '') {
     for (const message of messages) {
       const content = extractTextContent(message);
-      const regex = new RegExp(searchTerm, 'i'); // 'i' flag for case insensitive
-      const match = content.match(regex);
+      const searchRegex = new RegExp(searchTerm, 'i');
+      const match = content.match(searchRegex);
 
       //  If a match is found
       if (match && match.index !== undefined) {
