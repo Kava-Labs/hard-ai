@@ -166,25 +166,6 @@ describe('groupAndFilterConversations', () => {
   beforeEach(() => {
     vi.spyOn(Date.prototype, 'getTime').mockImplementation(() => now);
 
-    // const mockConversation: ChatMessage[] = [
-    //   {
-    //     role: 'system',
-    //     content: 'System prompt that should be ignored',
-    //   },
-    //   {
-    //     role: 'user',
-    //     content: 'First user message',
-    //   },
-    //   {
-    //     role: 'assistant',
-    //     content: 'First assistant response with searchable content',
-    //   },
-    //   {
-    //     role: 'user',
-    //     content: 'Second user message with different content',
-    //   },
-    // ];
-
     mockSearchHistories = {
       1: {
         title: 'Bitcoin Discussion',
