@@ -91,7 +91,6 @@ export const SideBar = ({
         <SearchHistoryModal
           searchableHistory={searchableHistory}
           onSelectConversation={onSelectConversation}
-          isSearchHistoryOpen={isSearchHistoryOpen}
           onCloseSearchHistory={onCloseSearchHistory}
         />
       )}

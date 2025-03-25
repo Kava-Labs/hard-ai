@@ -8,14 +8,12 @@ import { groupAndFilterConversations } from './utils/helpers';
 interface SearchHistoryProps {
   searchableHistory: SearchableChatHistories;
   onSelectConversation: (id: string) => void;
-  isSearchHistoryOpen: boolean;
   onCloseSearchHistory: () => void;
 }
 
 export const SearchHistoryModal = ({
   searchableHistory,
   onSelectConversation,
-  isSearchHistoryOpen,
   onCloseSearchHistory,
 }: SearchHistoryProps) => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -37,17 +35,15 @@ export const SearchHistoryModal = ({
 
   return (
     <div className={styles.container}>
-      {isSearchHistoryOpen && (
-        <ModalWrapper modalRef={modalRef} onClose={handleClose}>
-          <SearchHistoryModalBody
-            inputValue={searchTerm}
-            groupedConversations={groupedConversations}
-            onSelectConversation={onSelectConversation}
-            handleSearchTermChange={handleSearchTermChange}
-            onClose={handleClose}
-          />
-        </ModalWrapper>
-      )}
+      <ModalWrapper modalRef={modalRef} onClose={handleClose}>
+        <SearchHistoryModalBody
+          inputValue={searchTerm}
+          groupedConversations={groupedConversations}
+          onSelectConversation={onSelectConversation}
+          handleSearchTermChange={handleSearchTermChange}
+          onClose={handleClose}
+        />
+      </ModalWrapper>
     </div>
   );
 };
