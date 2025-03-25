@@ -30,6 +30,7 @@ export function mergeTitleAndMessages(
       acc[entry.id] = {
         title: entry.title,
         messages: messagesMap[entry.id],
+        lastSaved: entry.lastSaved,
       };
     }
     return acc;

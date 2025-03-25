@@ -1,9 +1,9 @@
 import { describe, it, expect } from 'vitest';
-import { ChatMessage, ConversationHistory, MessageHistory } from '../types';
+import { ConversationHistory, MessageHistory } from '../types';
 import { mergeTitleAndMessages } from './mergeTitleAndMessages';
 
 describe('mergeTitleAndMessages', () => {
-  const messagesData: { id: string; messages: ChatMessage[] }[] = [
+  const messagesData: MessageHistory[] = [
     {
       id: '123',
       messages: [
@@ -42,6 +42,7 @@ describe('mergeTitleAndMessages', () => {
     expect(result).toEqual({
       '123': {
         title: 'Chat 1',
+        lastSaved: 987654321,
         messages: [
           { role: 'user', content: 'Hello AI' },
           { role: 'assistant', content: 'Hello World!' },
@@ -49,6 +50,7 @@ describe('mergeTitleAndMessages', () => {
       },
       '456': {
         title: 'Chat 2',
+        lastSaved: 987654321,
         messages: [
           { role: 'user', content: 'foobar' },
           { role: 'assistant', content: 'fizzbuzz' },
@@ -76,6 +78,7 @@ describe('mergeTitleAndMessages', () => {
     expect(result).toEqual({
       '123': {
         title: 'Chat 1',
+        lastSaved: 987654321,
         messages: [
           { role: 'user', content: 'Hello AI' },
           { role: 'assistant', content: 'Hello World!' },
