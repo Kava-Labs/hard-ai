@@ -40,5 +40,5 @@ export type MessageHistory = { id: string; messages: ChatMessage[] };
 
 export type SearchableChatHistories = Record<
   string,
-  { title: string; messages: ChatMessage[] }
+  { title: string; messages: ChatMessage[]; lastSaved: number }
 >;

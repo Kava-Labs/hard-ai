@@ -247,10 +247,12 @@ describe('SideBar', () => {
     const mockHistory: SearchableChatHistories = {
       conversation1: {
         title: 'First Conversation',
+        lastSaved: 123400000000,
         messages: [{ role: 'user', content: 'Hello' }],
       },
       conversation2: {
         title: 'Second Conversation',
+        lastSaved: 987860000000,
         messages: [
           { role: 'user', content: 'Can you help me?' },
           { role: 'assistant', content: 'Yes of course!' },
