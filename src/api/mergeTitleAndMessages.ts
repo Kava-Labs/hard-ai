@@ -28,6 +28,7 @@ export function mergeTitleAndMessages(
   return conversationHistory.reduce<SearchableChatHistories>((acc, entry) => {
     if (messagesMap[entry.id]) {
       acc[entry.id] = {
+        id: entry.id,
         title: entry.title,
         messages: messagesMap[entry.id],
         lastSaved: entry.lastSaved,

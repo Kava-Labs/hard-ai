@@ -42,6 +42,7 @@ describe('mergeTitleAndMessages', () => {
     expect(result).toEqual({
       '123': {
         title: 'Chat 1',
+        id: '123',
         lastSaved: 987654321,
         messages: [
           { role: 'user', content: 'Hello AI' },
@@ -49,6 +50,7 @@ describe('mergeTitleAndMessages', () => {
         ],
       },
       '456': {
+        id: '456',
         title: 'Chat 2',
         lastSaved: 987654321,
         messages: [
@@ -78,6 +80,7 @@ describe('mergeTitleAndMessages', () => {
     expect(result).toEqual({
       '123': {
         title: 'Chat 1',
+        id: '123',
         lastSaved: 987654321,
         messages: [
           { role: 'user', content: 'Hello AI' },

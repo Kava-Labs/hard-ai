@@ -41,6 +41,7 @@ export type MessageHistory = { id: string; messages: ChatMessage[] };
 
 //  we need to be able to search all text and sort by time
 export type SearchableChatHistory = {
+  id: string;
   title: string;
   messages: ChatMessage[];
   lastSaved: number;
