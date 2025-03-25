@@ -5,11 +5,7 @@ import {
   groupAndFilterConversations,
   groupConversationsByTime,
 } from './helpers';
-import {
-  ChatMessage,
-  ConversationHistories,
-  SearchableChatHistories,
-} from '../types';
+import { ConversationHistories, SearchableChatHistories } from '../types';
 
 describe('getTimeGroup', () => {
   beforeEach(() => {
@@ -170,40 +166,47 @@ describe('groupAndFilterConversations', () => {
   beforeEach(() => {
     vi.spyOn(Date.prototype, 'getTime').mockImplementation(() => now);
 
-    const mockConversation: ChatMessage[] = [
-      {
-        role: 'system',
-        content: 'System prompt that should be ignored',
-      },
-      {
-        role: 'user',
-        content: 'First user message',
-      },
-      {
-        role: 'assistant',
-        content: 'First assistant response with searchable content',
-      },
-      {
-        role: 'user',
-        content: 'Second user message with different content',
-      },
-    ];
+    // const mockConversation: ChatMessage[] = [
+    //   {
+    //     role: 'system',
+    //     content: 'System prompt that should be ignored',
+    //   },
+    //   {
+    //     role: 'user',
+    //     content: 'First user message',
+    //   },
+    //   {
+    //     role: 'assistant',
+    //     content: 'First assistant response with searchable content',
+    //   },
+    //   {
+    //     role: 'user',
+    //     content: 'Second user message with different content',
+    //   },
+    // ];
 
     mockSearchHistories = {
       1: {
         title: 'Bitcoin Discussion',
         lastSaved: now - 1000 * 60 * 60 * 2,
-        messages: mockConversation,
+        messages: [{ role: 'user', content: 'Can I have bitcoin advice?' }],
       },
       2: {
         title: 'Ethereum Chat',
         lastSaved: now - 1000 * 60 * 60 * 25,
-        messages: mockConversation,
+        messages: [{ role: 'user', content: 'Where can I buy ETH?' }],
       },
       3: {
         title: 'Blockchain Overview',
         lastSaved: now - 1000 * 60 * 60 * 24 * 5,
-        messages: mockConversation,
+        messages: [
+          { role: 'user', content: 'What is the history of blockchain?' },
+        ],
+      },
+      4: {
+        title: 'Party planning tips',
+        lastSaved: now - 1000 * 60 * 60 * 24 * 6,
+        messages: [{ role: 'user', content: 'I need help planning.' }],
       },
     };
   });
@@ -222,25 +225,25 @@ describe('groupAndFilterConversations', () => {
   });
 
   it('should be case insensitive when filtering', () => {
-    const filtered = groupAndFilterConversations(
-      mockSearchHistories,
-      'BITCOIN',
-    );
+    const filtered = groupAndFilterConversations(mockSearchHistories, 'ADVICE');
     expect(filtered['Today'][0].title).toBe('Bitcoin Discussion');
   });
 
   it('should handle partial matches', () => {
-    const filtered = groupAndFilterConversations(mockSearchHistories, 'block');
+    const filtered = groupAndFilterConversations(
+      mockSearchHistories,
+      '  block',
+    );
     expect(filtered['Last week'][0].title).toBe('Blockchain Overview');
   });
 
   it('should return all conversations when search term is empty', () => {
     const filtered = groupAndFilterConversations(mockSearchHistories, '');
-    expect(Object.keys(filtered)).toStrictEqual([
-      'Today',
-      'Yesterday',
-      'Last week',
-    ]);
+
+    expect(filtered['Today'][0].title).toBe('Bitcoin Discussion');
+    expect(filtered['Yesterday'][0].title).toBe('Ethereum Chat');
+    expect(filtered['Last week'][0].title).toBe('Blockchain Overview');
+    expect(filtered['Last week'][1].title).toBe('Party planning tips');
   });
 
   it('should return conversations from the correct time groups and remove any empty groups', () => {

@@ -112,61 +112,66 @@ export const extractTextContent = (msg: ChatMessage): string => {
 
   return '';
 };
-
+/**
+ * Groups and filters conversations based on their timestamp and an optional search term.
+ *
+ * This function organizes conversations into time-based groups (Today, Yesterday, etc.)
+ * and can filter them based on a search term that matches either the conversation title
+ * or any message content.
+ *
+ * @param conversations - Collection of conversations to process
+ * @param searchTerm - Optional term to filter conversations (matches title or message content)
+ * @returns An object with time groups as keys and arrays of matching conversations as values
+ */
 export const groupAndFilterConversations = (
   conversations: SearchableChatHistories,
   searchTerm = '',
 ): GroupedSearchHistories => {
-  // Initialize result object with all possible time groups
-  const result: GroupedSearchHistories = {
-    Today: [],
-    Yesterday: [],
-    'Last week': [],
-    '2 weeks ago': [],
-    'Last month': [],
-    Older: [],
-  };
+  const groupedFilteredResults: GroupedSearchHistories = {};
 
-  if (!conversations) return result;
+  if (!conversations) return groupedFilteredResults;
 
-  const lowercaseSearchTerm = searchTerm.toLowerCase();
+  const isSearching = searchTerm.trim() !== '';
 
   Object.values(conversations).forEach((conversation) => {
-    const titleMatches = conversation.title
-      .toLowerCase()
-      .includes(lowercaseSearchTerm);
+    // If we aren't searching, we returned all histories, sorted
+    if (isSearching) {
+      //  Remove whitespace and lowercase
+      const lowercaseSearchTerm = searchTerm.trim().toLowerCase();
 
-    const messageMatches = conversation.messages.some((message) => {
-      const textContent = extractTextContent(message);
-      return textContent.toLowerCase().includes(lowercaseSearchTerm);
-    });
+      //  Primary search is for title match
+      const titleMatches = conversation.title
+        .toLowerCase()
+        .includes(lowercaseSearchTerm);
 
-    if (searchTerm && !titleMatches && !messageMatches) {
-      return;
+      //  Secondary search is for content matches
+      if (!titleMatches) {
+        const messageMatches = conversation.messages.some((message) => {
+          const textContent = extractTextContent(message);
+          return textContent.toLowerCase().includes(lowercaseSearchTerm);
+        });
+
+        //  if we haven't found any title or content matches, return (triggers 'No results')
+        if (!messageMatches) return;
+      }
     }
 
     const timeGroup = getTimeGroup(conversation.lastSaved);
 
-    const history = {
-      messages: conversation.messages,
-      title: conversation.title,
-      lastSaved: conversation.lastSaved,
-    };
-
-    result[timeGroup].push(history);
-  });
-
-  // Sort the conversations in each time group
-  Object.keys(result).forEach((group) => {
-    result[group].sort((a, b) => b.lastSaved - a.lastSaved);
-  });
-
-  // Remove time groups with empty arrays
-  Object.keys(result).forEach((group) => {
-    if (result[group].length === 0) {
-      delete result[group];
+    //  Initialize the time group if it doesn't exist yet
+    if (!groupedFilteredResults[timeGroup]) {
+      groupedFilteredResults[timeGroup] = [];
     }
+
+    groupedFilteredResults[timeGroup].push(conversation);
   });
 
-  return result;
+  for (const group in groupedFilteredResults) {
+    //  Only sort if the group has more than one entry
+    if (groupedFilteredResults[group].length > 1) {
+      groupedFilteredResults[group].sort((a, b) => b.lastSaved - a.lastSaved);
+    }
+  }
+
+  return groupedFilteredResults;
 };
