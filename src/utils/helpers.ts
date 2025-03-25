@@ -1,7 +1,6 @@
 import type { ERC20Record } from '../types/chain';
 import {
   ChatMessage,
-  ConversationHistories,
   ConversationsToGroup,
   GroupedConversations,
   GroupedSearchHistories,
