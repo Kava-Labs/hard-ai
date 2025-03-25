@@ -2,9 +2,14 @@ import { afterEach, beforeEach, describe, it, vi, expect } from 'vitest';
 import {
   formatConversationTitle,
   getTimeGroup,
+  groupAndFilterConversations,
   groupConversationsByTime,
 } from './helpers';
-import { ConversationHistories } from '../types';
+import {
+  ChatMessage,
+  ConversationHistories,
+  SearchableChatHistories,
+} from '../types';
 
 describe('getTimeGroup', () => {
   beforeEach(() => {
@@ -155,5 +160,96 @@ describe('formatConversationTitle', () => {
     expect(
       formatConversationTitle('"This is a very long quoted title"', 10),
     ).toBe('This is a ....');
+  });
+});
+
+describe('groupAndFilterConversations', () => {
+  let mockSearchHistories: SearchableChatHistories;
+  const now = new Date('2024-02-13T12:00:00Z').getTime();
+
+  beforeEach(() => {
+    vi.spyOn(Date.prototype, 'getTime').mockImplementation(() => now);
+
+    const mockConversation: ChatMessage[] = [
+      {
+        role: 'system',
+        content: 'System prompt that should be ignored',
+      },
+      {
+        role: 'user',
+        content: 'First user message',
+      },
+      {
+        role: 'assistant',
+        content: 'First assistant response with searchable content',
+      },
+      {
+        role: 'user',
+        content: 'Second user message with different content',
+      },
+    ];
+
+    mockSearchHistories = {
+      1: {
+        title: 'Bitcoin Discussion',
+        lastSaved: now - 1000 * 60 * 60 * 2,
+        messages: mockConversation,
+      },
+      2: {
+        title: 'Ethereum Chat',
+        lastSaved: now - 1000 * 60 * 60 * 25,
+        messages: mockConversation,
+      },
+      3: {
+        title: 'Blockchain Overview',
+        lastSaved: now - 1000 * 60 * 60 * 24 * 5,
+        messages: mockConversation,
+      },
+    };
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('should filter conversations based on search term', () => {
+    const filtered = groupAndFilterConversations(
+      mockSearchHistories,
+      'bitcoin',
+    );
+    expect(Object.keys(filtered)).toEqual(['Today']);
+    expect(filtered['Today'][0].title).toBe('Bitcoin Discussion');
+  });
+
+  it('should be case insensitive when filtering', () => {
+    const filtered = groupAndFilterConversations(
+      mockSearchHistories,
+      'BITCOIN',
+    );
+    expect(filtered['Today'][0].title).toBe('Bitcoin Discussion');
+  });
+
+  it('should handle partial matches', () => {
+    const filtered = groupAndFilterConversations(mockSearchHistories, 'block');
+    expect(filtered['Last week'][0].title).toBe('Blockchain Overview');
+  });
+
+  it('should return all conversations when search term is empty', () => {
+    const filtered = groupAndFilterConversations(mockSearchHistories, '');
+    expect(Object.keys(filtered)).toStrictEqual([
+      'Today',
+      'Yesterday',
+      'Last week',
+    ]);
+  });
+
+  it('should return conversations from the correct time groups and remove any empty groups', () => {
+    const filtered = groupAndFilterConversations(
+      mockSearchHistories,
+      'discussion',
+    );
+    expect(filtered['Today'][0].title).toBe('Bitcoin Discussion');
+    expect(filtered['Yesterday']).toBeUndefined();
+    expect(filtered['Last week']).toBeUndefined();
   });
 });

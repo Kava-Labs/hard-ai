@@ -1,8 +1,11 @@
-import { ConversationHistory } from '../types';
 import type { ERC20Record } from '../types/chain';
-
-//  Conversations indexed by time group label
-type GroupedConversations = Record<string, ConversationHistory[]>;
+import {
+  ChatMessage,
+  ConversationHistory,
+  GroupedConversations,
+  GroupedSearchHistories,
+  SearchableChatHistories,
+} from '../types';
 
 /**
  * Determines the time group label for a given timestamp
@@ -93,4 +96,77 @@ export const getERC20Record = (
   }
 
   return null;
+};
+
+export const extractTextContent = (msg: ChatMessage): string => {
+  if (typeof msg.content === 'string') {
+    return msg.content;
+  }
+
+  if (Array.isArray(msg.content)) {
+    return msg.content
+      .filter((item) => item.type === 'text')
+      .map((item) => item.text)
+      .join(' ');
+  }
+
+  return '';
+};
+
+export const groupAndFilterConversations = (
+  conversations: SearchableChatHistories,
+  searchTerm = '',
+): GroupedSearchHistories => {
+  // Initialize result object with all possible time groups
+  const result: GroupedSearchHistories = {
+    Today: [],
+    Yesterday: [],
+    'Last week': [],
+    '2 weeks ago': [],
+    'Last month': [],
+    Older: [],
+  };
+
+  if (!conversations) return result;
+
+  const lowercaseSearchTerm = searchTerm.toLowerCase();
+
+  Object.values(conversations).forEach((conversation) => {
+    const titleMatches = conversation.title
+      .toLowerCase()
+      .includes(lowercaseSearchTerm);
+
+    const messageMatches = conversation.messages.some((message) => {
+      const textContent = extractTextContent(message);
+      return textContent.toLowerCase().includes(lowercaseSearchTerm);
+    });
+
+    if (searchTerm && !titleMatches && !messageMatches) {
+      return;
+    }
+
+    const timeGroup = getTimeGroup(conversation.lastSaved);
+
+    const history = {
+      messages: conversation.messages,
+      title: conversation.title,
+      lastSaved: conversation.lastSaved,
+    };
+
+    result[timeGroup].push(history);
+  });
+
+  // Sort the conversations in each time group
+  Object.keys(result).forEach((group) => {
+    result[group].sort((a, b) => b.lastSaved - a.lastSaved);
+  });
+
+  // Remove time groups with empty arrays
+  Object.keys(result).forEach((group) => {
+    if (result[group].length === 0) {
+      delete result[group];
+    }
+  });
+
+  return result;
 };
