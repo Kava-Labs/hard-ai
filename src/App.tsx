@@ -16,6 +16,14 @@ export const App = () => {
     setIsDesktopSideBarOpen(true);
   };
 
+  const closeMobileSideBar = () => {
+    setIsMobileSideBarOpen(false);
+  };
+
+  const closeDesktopSideBar = () => {
+    setIsDesktopSideBarOpen(false);
+  };
+
   const {
     activeChat,
     conversationHistories,
@@ -37,8 +45,8 @@ export const App = () => {
         onUpdateConversationTitle={onUpdateConversationTitle}
         isMobileSideBarOpen={isMobileSideBarOpen}
         isDesktopSideBarOpen={isDesktopSideBarOpen}
-        onMobileCloseClick={() => setIsMobileSideBarOpen(false)}
-        onDesktopCloseClick={() => setIsDesktopSideBarOpen(false)}
+        onMobileCloseClick={closeMobileSideBar}
+        onDesktopCloseClick={closeDesktopSideBar}
       />
       <ChatInterface
         activeChat={activeChat}
