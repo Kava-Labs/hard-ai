@@ -16,6 +16,13 @@ export enum OperationType {
   QUERY = 'query',
 }
 
+export interface InProgressComponentProps {
+  toolCall: ToolCallStream;
+  progressStore: TextStreamStore;
+  onRendered?: () => void;
+  isOperationValidated: boolean;
+}
+
 /**
  * Base interface for all chain operations.
  * Both messages (transactions) and queries extend this interface.
@@ -41,11 +48,7 @@ export interface ChainOperation<T> {
   validate(params: T, walletStore: WalletStore): boolean | Promise<boolean>;
 
   /** Optional React component that displays as the model is streaming the tool call arguments */
-  inProgressComponent?: () => React.FunctionComponent<{
-    toolCall: ToolCallStream;
-    progressStore: TextStreamStore;
-    onRendered?: () => void;
-  }>;
+  inProgressComponent?: () => React.FunctionComponent<InProgressComponentProps>;
 }
 
 /**

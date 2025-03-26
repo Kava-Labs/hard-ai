@@ -15,6 +15,7 @@ export type ActiveChat = {
   model: string;
   abortController: AbortController;
   client: OpenAI;
+  isOperationValidated: boolean;
 
   toolCallStreamStore: ToolCallStreamStore;
   messageHistoryStore: MessageHistoryStore;

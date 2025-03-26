@@ -29,6 +29,7 @@ export const ConversationWrapper = ({
       progressText={progressText}
       errorText={errorText}
       isRequesting={isRequesting}
+      isOperationValidated={activeChat.isOperationValidated}
       onRendered={onRendered}
       progressStore={activeChat.progressStore}
       toolCallStreamStore={activeChat.toolCallStreamStore}

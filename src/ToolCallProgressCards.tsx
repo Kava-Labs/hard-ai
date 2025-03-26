@@ -8,11 +8,13 @@ export const ToolCallProgressCards = ({
   toolCallStreamStore,
   operationRegistry,
   progressStore,
+  isOperationValidated,
 }: {
   onRendered: () => void;
   progressStore: TextStreamStore;
   toolCallStreamStore: ToolCallStreamStore;
   operationRegistry: OperationRegistry<unknown>;
+  isOperationValidated: boolean;
 }) => {
   const toolCallStreams = useSyncExternalStore(
     toolCallStreamStore.subscribe,
@@ -27,6 +29,7 @@ export const ToolCallProgressCards = ({
       const Component = operation.inProgressComponent();
       return (
         <Component
+          isOperationValidated={isOperationValidated}
           progressStore={progressStore}
           key={toolCall.id}
           toolCall={toolCall}

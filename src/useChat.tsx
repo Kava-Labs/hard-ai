@@ -45,6 +45,7 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
     model: initModel ? initModel : 'gpt-4o',
     abortController: new AbortController(),
     client: client,
+    isOperationValidated: false,
 
     toolCallStreamStore: new ToolCallStreamStore(),
     messageHistoryStore: new MessageHistoryStore(initValues),
@@ -59,9 +60,21 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
 
   const [walletStore] = useState(() => new WalletStore());
 
+  const setIsOperationValidated = useCallback(
+    (isOperationValidated: boolean) => {
+      setActiveChat((prev) => {
+        activeChats[prev.id] = { ...prev, isOperationValidated };
+        return activeChats[prev.id];
+      });
+    },
+    [],
+  );
+
   const { executeOperation } = useExecuteOperation(
     operationRegistry,
     walletStore,
+    activeChat.isOperationValidated,
+    setIsOperationValidated,
   );
 
   const fetchConversations = useCallback(() => {
@@ -166,6 +179,7 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
       id: uuidv4(),
       isRequesting: false,
       isConversationStarted: false,
+      isOperationValidated: false,
       model: initModel ? initModel : 'gpt-4o',
       abortController: new AbortController(),
       client: client,
@@ -191,6 +205,7 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
           const newActiveChat: ActiveChat = {
             id: selectedConversation.id,
             model: selectedConversation.model,
+            isOperationValidated: false,
             isRequesting: false,
             isConversationStarted:
               Array.isArray(messages) &&

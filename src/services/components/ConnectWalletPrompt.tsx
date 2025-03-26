@@ -1,7 +1,7 @@
 import { useEffect, useSyncExternalStore } from 'react';
 import { InProgressComponentProps } from '../../types/chain';
 
-export const InProgressQueryDisplay = ({
+export const ConnectWalletPrompt = ({
   onRendered,
   progressStore,
 }: InProgressComponentProps) => {
@@ -11,7 +11,7 @@ export const InProgressQueryDisplay = ({
   );
 
   useEffect(() => {
-    progressStore.setText('Query in Progress');
+    progressStore.setText('Connect your wallet to continue');
     return () => {
       progressStore.setText('');
     };

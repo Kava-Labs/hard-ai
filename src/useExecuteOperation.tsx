@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback } from 'react';
 import { WalletStore, WalletTypes } from './stores/walletStore/walletStore';
 import {
   ChainNames,
@@ -14,6 +14,8 @@ import {
 export const useExecuteOperation = (
   registry: OperationRegistry<unknown>,
   walletStore: WalletStore,
+  isOperationValidated: boolean,
+  setIsOperationValidated: (isOperationValidated: boolean) => void,
 ) => {
   /**
    * Executes a chain operation with the provided parameters.
@@ -23,7 +25,6 @@ export const useExecuteOperation = (
    * @returns Result of the operation (transaction or query result)
    */
 
-  const [isOperationValidated, setIsOperationValidated] = useState(false);
   const executeOperation = useCallback(
     async (operationName: string, params: unknown) => {
       setIsOperationValidated(false);

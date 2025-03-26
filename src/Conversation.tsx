@@ -28,6 +28,7 @@ export interface ConversationProps {
   progressStore: TextStreamStore;
   toolCallStreamStore: ToolCallStreamStore;
   operationRegistry: OperationRegistry<unknown>;
+  isOperationValidated: boolean;
 }
 
 const ConversationComponent = ({
@@ -41,6 +42,7 @@ const ConversationComponent = ({
   progressStore,
   toolCallStreamStore,
   operationRegistry,
+  isOperationValidated,
 }: ConversationProps) => {
   return (
     <div className={styles.conversationContainer}>
@@ -99,6 +101,7 @@ const ConversationComponent = ({
       )}
 
       <ToolCallProgressCards
+        isOperationValidated={isOperationValidated}
         onRendered={onRendered}
         progressStore={progressStore}
         toolCallStreamStore={toolCallStreamStore}
