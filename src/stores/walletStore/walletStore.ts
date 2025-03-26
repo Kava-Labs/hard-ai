@@ -143,6 +143,12 @@ export class WalletStore {
     }
 
     if (this.getSnapshot().walletType === WalletTypes.METAMASK) {
+      if (!window.ethereum) {
+        throw new Error(
+          'failed to detected Metamask, please make sure you have the extension installed',
+        );
+      }
+
       switch (opts.signatureType) {
         case SignatureTypes.EVM: {
           // @ts-expect-error better type needed
@@ -173,6 +179,12 @@ export class WalletStore {
   };
 
   private async connectMetamask() {
+    if (!window.ethereum) {
+      throw new Error(
+        'failed to detected Metamask, please make sure you have the extension installed',
+      );
+    }
+
     const accounts: string[] = await window.ethereum.request({
       method: 'eth_requestAccounts',
     });
