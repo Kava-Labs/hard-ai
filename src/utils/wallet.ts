@@ -1,6 +1,5 @@
-import { WalletStore, WalletTypes } from '../stores/walletStore/walletStore';
-import { ChainType } from '../types/chain';
-import { chainRegistry } from '../types/chain/chainsRegistry';
+import { WalletStore, WalletTypes } from '../stores/walletStore';
+import { chainRegistry, ChainType } from '../toolcalls/chain';
 
 /**
  * Validates if the wallet is connected and compatible

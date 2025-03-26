@@ -10,8 +10,8 @@ import { Content } from './Content';
 import { ToolCallProgressCards } from './ToolCallProgressCards';
 import { TextStreamStore } from './stores/textStreamStore';
 import { ToolCallStreamStore } from './stores/toolCallStreamStore';
-import { OperationRegistry } from './types/chain';
-import { ToolMessageContainer } from './services/components/ToolCallMessageContainer';
+import { ToolCallRegistry } from './toolcalls/chain';
+import { ToolMessageContainer } from './toolcalls/components/ToolCallMessageContainer';
 
 export type ChatMessage =
   | ChatCompletionMessageParam
@@ -27,7 +27,7 @@ export interface ConversationProps {
   onRendered: () => void;
   progressStore: TextStreamStore;
   toolCallStreamStore: ToolCallStreamStore;
-  operationRegistry: OperationRegistry<unknown>;
+  toolCallRegistry: ToolCallRegistry<unknown>;
   isOperationValidated: boolean;
 }
 
@@ -41,7 +41,7 @@ const ConversationComponent = ({
 
   progressStore,
   toolCallStreamStore,
-  operationRegistry,
+  toolCallRegistry,
   isOperationValidated,
 }: ConversationProps) => {
   return (
@@ -73,7 +73,7 @@ const ConversationComponent = ({
                 messages[index - 1] as ChatCompletionAssistantMessageParam
               }
               onRendered={onRendered}
-              operationRegistry={operationRegistry}
+              toolCallRegistry={toolCallRegistry}
             />
           );
         }
@@ -119,7 +119,7 @@ const ConversationComponent = ({
         onRendered={onRendered}
         progressStore={progressStore}
         toolCallStreamStore={toolCallStreamStore}
-        operationRegistry={operationRegistry}
+        toolCallRegistry={toolCallRegistry}
       />
     </div>
   );

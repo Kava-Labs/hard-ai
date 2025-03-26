@@ -1,4 +1,4 @@
-import type { ERC20Record, CoinRecord } from '../types/chain';
+import type { ERC20Record, CoinRecord } from '../toolcalls/chain';
 import {
   ChatMessage,
   GroupedSearchHistories,

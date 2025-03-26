@@ -1,18 +1,18 @@
 import { useCallback } from 'react';
-import { WalletStore, WalletTypes } from './stores/walletStore/walletStore';
+import { WalletStore, WalletTypes } from './stores/walletStore';
 import {
   ChainNames,
   chainNameToolCallParam,
   chainRegistry,
   CosmosChainConfig,
   ChainType,
-  ChainMessage,
-  ChainQuery,
-  OperationRegistry,
-} from './types/chain';
+  ChainToolCallMessage,
+  ChainToolCallQuery,
+  ToolCallRegistry,
+} from './toolcalls/chain';
 
-export const useExecuteOperation = (
-  registry: OperationRegistry<unknown>,
+export const useExecuteToolCall = (
+  registry: ToolCallRegistry<unknown>,
   walletStore: WalletStore,
   isOperationValidated: boolean,
   setIsOperationValidated: (isOperationValidated: boolean) => void,
@@ -107,12 +107,12 @@ export const useExecuteOperation = (
       }
       setIsOperationValidated(true);
       if ('buildTransaction' in operation) {
-        return (operation as ChainMessage<unknown>).buildTransaction(
+        return (operation as ChainToolCallMessage<unknown>).buildTransaction(
           params,
           walletStore,
         );
       } else if ('executeQuery' in operation) {
-        return (operation as ChainQuery<unknown>).executeQuery(
+        return (operation as ChainToolCallQuery<unknown>).executeQuery(
           params,
           walletStore,
         );

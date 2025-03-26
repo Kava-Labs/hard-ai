@@ -1,6 +1,9 @@
-import { ChainNames, chainRegistry } from '../../types/chain/chainsRegistry';
-import type { EIP712SignerParams } from '../../types/chain';
-import { ChainType } from '../../types/chain';
+import {
+  ChainType,
+  EIP712SignerParams,
+  ChainNames,
+  chainRegistry,
+} from '../../toolcalls/chain';
 
 type Listener = () => void;
 
@@ -140,6 +143,12 @@ export class WalletStore {
     }
 
     if (this.getSnapshot().walletType === WalletTypes.METAMASK) {
+      if (!window.ethereum) {
+        throw new Error(
+          'failed to detected Metamask, please make sure you have the extension installed',
+        );
+      }
+
       switch (opts.signatureType) {
         case SignatureTypes.EVM: {
           // @ts-expect-error better type needed
@@ -147,7 +156,7 @@ export class WalletStore {
         }
         case SignatureTypes.EIP712: {
           const { eip712SignAndBroadcast } = await import(
-            '../../types/chain/msgs/eip712'
+            '../../toolcalls/chain/msgs/eip712'
           );
 
           return eip712SignAndBroadcast(opts.payload as EIP712SignerParams);
@@ -170,6 +179,12 @@ export class WalletStore {
   };
 
   private async connectMetamask() {
+    if (!window.ethereum) {
+      throw new Error(
+        'failed to detected Metamask, please make sure you have the extension installed',
+      );
+    }
+
     const accounts: string[] = await window.ethereum.request({
       method: 'eth_requestAccounts',
     });

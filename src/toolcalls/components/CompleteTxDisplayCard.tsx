@@ -1,6 +1,6 @@
 import styles from './DisplayCards.module.css';
 import { ExternalLinkIcon } from './ExternalLinkIcon';
-import { ChainConfig } from '../../types/chain';
+import { ChainConfig } from '../chain';
 
 export interface CompleteTxDisplayProps {
   hash: string;

@@ -1,10 +1,10 @@
 import {
   chainNameToolCallParam,
   chainRegistry,
-  OperationRegistry,
+  ToolCallRegistry,
   OperationResult,
   OperationType,
-} from '../../types/chain';
+} from '../chain';
 import {
   ChatCompletionAssistantMessageParam,
   ChatCompletionMessageToolCall,
@@ -17,14 +17,14 @@ export interface ToolMessageContainerProps {
   message: ChatCompletionToolMessageParam;
   prevMessage: ChatCompletionAssistantMessageParam;
   onRendered: () => void;
-  operationRegistry: OperationRegistry<unknown>;
+  toolCallRegistry: ToolCallRegistry<unknown>;
 }
 
 export const ToolMessageContainer = ({
   message,
   prevMessage,
   onRendered,
-  operationRegistry,
+  toolCallRegistry,
 }: ToolMessageContainerProps) => {
   const id = message.tool_call_id;
 
@@ -51,7 +51,7 @@ export const ToolMessageContainer = ({
     chainNameToolCallParam.name in params
   ) {
     const chainName = params[chainNameToolCallParam.name];
-    const operation = operationRegistry.get(tc.function.name);
+    const operation = toolCallRegistry.get(tc.function.name);
     if (!operation) return null;
 
     const chain = chainRegistry[operation.chainType][chainName];

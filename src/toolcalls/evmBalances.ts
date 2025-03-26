@@ -1,11 +1,7 @@
-import { ChainQuery, ChainType, OperationType } from '../types/chain';
+import { ChainToolCallQuery, ChainType, OperationType } from './chain';
 import { erc20ABI } from './erc20ABI';
-import { WalletStore, WalletTypes } from '../stores/walletStore/walletStore';
-import {
-  chainNameToolCallParam,
-  chainRegistry,
-  EVMChainConfig,
-} from '../types/chain';
+import { WalletStore, WalletTypes } from '../stores/walletStore';
+import { chainNameToolCallParam, chainRegistry, EVMChainConfig } from './chain';
 import { validateChain, validateWallet } from '../utils/wallet';
 import { InProgressQueryDisplay } from './components/InProgressQueryDisplay';
 
@@ -13,7 +9,9 @@ type EvmBalanceQueryParams = {
   chainName: string;
 };
 
-export class EvmBalancesQuery implements ChainQuery<EvmBalanceQueryParams> {
+export class EvmBalancesQuery
+  implements ChainToolCallQuery<EvmBalanceQueryParams>
+{
   name = 'evm-balances';
   description = 'Returns the erc20 token balances for a given address';
   parameters = [chainNameToolCallParam];

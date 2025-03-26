@@ -44,7 +44,7 @@ export const App = () => {
     onUpdateConversationTitle,
     searchableHistory,
     fetchSearchHistory,
-    operationRegistry,
+    toolCallRegistry,
   } = useChat();
 
   return (
@@ -64,7 +64,7 @@ export const App = () => {
         handleCancel={handleCancel}
         handleChatCompletion={handleChatCompletion}
         handleNewChat={handleNewChat}
-        operationRegistry={operationRegistry}
+        toolCallRegistry={toolCallRegistry}
         onMenuClick={onOpenSideBar}
         isSideBarOpen={isSideBarOpen}
       />

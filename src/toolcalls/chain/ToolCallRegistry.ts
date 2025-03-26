@@ -1,32 +1,32 @@
 import {
-  ChainMessage,
-  ChainOperation,
-  ChainQuery,
+  ChainToolCallMessage,
+  ChainToolCallOperation,
+  ChainToolCallQuery,
   OperationType,
-} from './chainOperation';
+} from './chainToolCallOperation';
 import type { ChatCompletionTool } from 'openai/resources/index';
 import {
   defaultInputPlaceholderText,
   defaultIntroText,
   defaultSystemPrompt,
 } from './prompts';
-import { EvmBalancesQuery } from '../../services/evmBalances';
-import { EvmTransferMessage } from '../../services/evmTransfer';
-import { ERC20ConversionMessage } from '../../services/erc20Conversion';
+import { EvmBalancesQuery } from '../evmBalances';
+import { EvmTransferMessage } from '../evmTransfer';
+import { ERC20ConversionMessage } from '../erc20Conversion';
 /**
  * Central registry for all chain operations (messages and queries).
  * Manages the registration and retrieval of operations, and generates
  * OpenAI tool definitions based on registered operations.
  */
-export class OperationRegistry<T> {
+export class ToolCallRegistry<T> {
   /** Map of operation type to operation implementation */
-  private operations: Map<string, ChainOperation<T>> = new Map();
+  private operations: Map<string, ChainToolCallOperation<T>> = new Map();
 
   /**
    * Registers a new operation in the registry.
    * @param operation - Operation to register
    */
-  register(operation: ChainOperation<T>) {
+  register(operation: ChainToolCallOperation<T>) {
     this.operations.set(operation.name, operation);
   }
 
@@ -35,7 +35,7 @@ export class OperationRegistry<T> {
    * @param type - Operation type identifier
    * @returns The operation implementation or undefined if not found
    */
-  get(type: string): ChainOperation<T> | undefined {
+  get(type: string): ChainToolCallOperation<T> | undefined {
     return this.operations.get(type);
   }
 
@@ -43,7 +43,7 @@ export class OperationRegistry<T> {
    * Gets all registered operations.
    * @returns Array of all registered operations
    */
-  getAllOperations(): ChainOperation<T>[] {
+  getAllOperations(): ChainToolCallOperation<T>[] {
     return Array.from(this.operations.values());
   }
 
@@ -72,9 +72,9 @@ export class OperationRegistry<T> {
    * Gets all registered transaction message operations.
    * @returns Array of transaction operations
    */
-  getMessages(): ChainMessage<T>[] {
+  getMessages(): ChainToolCallMessage<T>[] {
     return this.getAllOperations().filter(
-      (op): op is ChainMessage<T> =>
+      (op): op is ChainToolCallMessage<T> =>
         'operationType' in op && op.operationType === OperationType.TRANSACTION,
     );
   }
@@ -83,9 +83,9 @@ export class OperationRegistry<T> {
    * Gets all registered query operations.
    * @returns Array of query operations
    */
-  getQueries(): ChainQuery<T>[] {
+  getQueries(): ChainToolCallQuery<T>[] {
     return this.getAllOperations().filter(
-      (op): op is ChainQuery<T> =>
+      (op): op is ChainToolCallQuery<T> =>
         'operationType' in op && op.operationType === OperationType.QUERY,
     );
   }
@@ -132,8 +132,8 @@ export class OperationRegistry<T> {
   }
 }
 
-export function initializeMessageRegistry(): OperationRegistry<unknown> {
-  const registry = new OperationRegistry();
+export function initializeToolCallRegistry(): ToolCallRegistry<unknown> {
+  const registry = new ToolCallRegistry();
   registry.register(new EvmTransferMessage());
   registry.register(new EvmBalancesQuery());
   registry.register(new ERC20ConversionMessage());
@@ -141,7 +141,7 @@ export function initializeMessageRegistry(): OperationRegistry<unknown> {
   return registry;
 }
 
-export type ExecuteOperation = (
+export type ExecuteToolCall = (
   operationName: string,
   params: unknown,
 ) => Promise<string>;

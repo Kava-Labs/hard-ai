@@ -3,17 +3,17 @@ import {
   chainRegistry,
   CosmosChainConfig,
   EVMChainConfig,
-  ChainMessage,
+  ChainToolCallMessage,
   ChainType,
   OperationType,
   EIP712SignerParams,
-} from '../types/chain';
+} from './chain';
 
 import {
   SignatureTypes,
   WalletStore,
   WalletTypes,
-} from '../stores/walletStore/walletStore';
+} from '../stores/walletStore';
 import { erc20ABI } from './erc20ABI';
 import { ConnectWalletPrompt } from './components/ConnectWalletPrompt';
 import { InProgressTxDisplay } from './components/InProgressTxDisplay';
@@ -27,7 +27,7 @@ interface ERC20ConvertParams {
 }
 
 export class ERC20ConversionMessage
-  implements ChainMessage<ERC20ConvertParams>
+  implements ChainToolCallMessage<ERC20ConvertParams>
 {
   name = 'erc20Convert';
   description =
