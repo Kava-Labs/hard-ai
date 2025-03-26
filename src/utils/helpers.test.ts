@@ -5,6 +5,7 @@ import {
   getTimeGroup,
   groupAndFilterConversations,
   groupConversationsByTime,
+  highlightMatch,
 } from './helpers';
 import {
   ConversationHistories,
@@ -443,5 +444,61 @@ describe('formatContentSnippet', () => {
   it('returns snippet when search term spans multiple words', () => {
     const result = formatContentSnippet(mockSearchableHistory, 'user message');
     expect(result).toBe('First user message');
+  });
+});
+
+describe('highlightMatch', () => {
+  it('returns original text when searchTerm is empty', () => {
+    const text = 'This is some sample text';
+    expect(highlightMatch(text, '')).toBe(text);
+  });
+
+  it('returns original text when searchTerm is less than 2 characters', () => {
+    const text = 'This is some sample text';
+    expect(highlightMatch(text, 'a')).toBe(text);
+  });
+
+  it('highlights single occurrence of searchTerm', () => {
+    const text = 'This is a test string';
+    const searchTerm = 'test';
+    const expected = 'This is a <strong>test</strong> string';
+    expect(highlightMatch(text, searchTerm)).toBe(expected);
+  });
+
+  it('highlights multiple occurrences of searchTerm', () => {
+    const text = 'Test this test string for test matches';
+    const searchTerm = 'test';
+    const expected =
+      '<strong>Test</strong> this <strong>test</strong> string for <strong>test</strong> matches';
+    expect(highlightMatch(text, searchTerm)).toBe(expected);
+  });
+
+  it('performs case-insensitive matching', () => {
+    const text = 'Test TEST test tEsT';
+    const searchTerm = 'test';
+    const expected =
+      '<strong>Test</strong> <strong>TEST</strong> <strong>test</strong> <strong>tEsT</strong>';
+    expect(highlightMatch(text, searchTerm)).toBe(expected);
+  });
+
+  it('preserves original casing of matches', () => {
+    const text = 'Testing TESTING testing';
+    const searchTerm = 'testing';
+    const expected =
+      '<strong>Testing</strong> <strong>TESTING</strong> <strong>testing</strong>';
+    expect(highlightMatch(text, searchTerm)).toBe(expected);
+  });
+
+  it('works with partial word matches', () => {
+    const text = 'Testing for partial matches';
+    const searchTerm = 'part';
+    const expected = 'Testing for <strong>part</strong>ial matches';
+    expect(highlightMatch(text, searchTerm)).toBe(expected);
+  });
+
+  it('handles empty text properly', () => {
+    const text = '';
+    const searchTerm = 'test';
+    expect(highlightMatch(text, searchTerm)).toBe('');
   });
 });

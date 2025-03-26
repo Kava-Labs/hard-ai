@@ -14,11 +14,13 @@ describe('SearchHistoryModalBody', () => {
   const onSelectConversation = vi.fn();
   const handleSearchTermChange = vi.fn();
   const onClose = vi.fn();
+  const searchTerm = 'This';
 
   const props = {
     onSelectConversation,
     onClose,
     handleSearchTermChange,
+    searchTerm,
   };
 
   beforeEach(() => {

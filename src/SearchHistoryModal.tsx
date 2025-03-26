@@ -42,6 +42,7 @@ export const SearchHistoryModal = ({
           onSelectConversation={onSelectConversation}
           handleSearchTermChange={handleSearchTermChange}
           onClose={handleClose}
+          searchTerm={searchTerm}
         />
       </ModalWrapper>
     </div>

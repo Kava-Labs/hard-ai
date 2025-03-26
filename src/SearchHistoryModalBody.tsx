@@ -4,7 +4,11 @@ import { useIsMobileLayout } from './theme/useIsMobileLayout';
 import ButtonIcon from './ButtonIcon';
 import { X } from 'lucide-react';
 import { GroupedSearchHistories } from './types';
-import { formatContentSnippet, formatConversationTitle } from './utils/helpers';
+import {
+  formatContentSnippet,
+  formatConversationTitle,
+  highlightMatch,
+} from './utils/helpers';
 
 interface SearchModalBodyProps {
   groupedConversations: GroupedSearchHistories;
@@ -12,6 +16,7 @@ interface SearchModalBodyProps {
   handleSearchTermChange: (searchTerm: string) => void;
   inputValue: string;
   onClose: () => void;
+  searchTerm: string;
 }
 
 export const SearchHistoryModalBody = ({
@@ -20,6 +25,7 @@ export const SearchHistoryModalBody = ({
   handleSearchTermChange,
   inputValue,
   onClose,
+  searchTerm,
 }: SearchModalBodyProps) => {
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -83,13 +89,19 @@ export const SearchHistoryModalBody = ({
                     <p
                       className={styles.conversationTitle}
                       dangerouslySetInnerHTML={{
-                        __html: formatConversationTitle(conversation.title, 50),
+                        __html: highlightMatch(
+                          formatConversationTitle(conversation.title, 50),
+                          searchTerm,
+                        ),
                       }}
                     />
                     <p
                       className={styles.conversationSnippet}
                       dangerouslySetInnerHTML={{
-                        __html: formatContentSnippet(conversation, inputValue),
+                        __html: highlightMatch(
+                          formatContentSnippet(conversation, searchTerm),
+                          searchTerm,
+                        ),
                       }}
                     />
                   </div>
