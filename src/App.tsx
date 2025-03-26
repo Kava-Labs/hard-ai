@@ -4,6 +4,7 @@ import { useChat } from './useChat';
 import { SideBar } from './SideBar';
 import { ChatInterface } from './ChatInterface';
 import { SearchHistoryModal } from './SearchHistoryModal';
+import { useIsMobileLayout } from './theme/useIsMobileLayout';
 
 export const App = () => {
   const [isMobileSideBarOpen, setIsMobileSideBarOpen] = useState(false);
@@ -34,6 +35,11 @@ export const App = () => {
     await fetchSearchHistory();
     setIsSearchHistoryOpen(true);
   };
+  const isMobileLayout = useIsMobileLayout();
+
+  const onCloseSideBar = isMobileLayout
+    ? closeMobileSideBar
+    : closeDesktopSideBar;
 
   const {
     activeChat,
@@ -60,9 +66,8 @@ export const App = () => {
         onOpenSearchModal={onOpenSearchModal}
         isMobileSideBarOpen={isMobileSideBarOpen}
         isDesktopSideBarOpen={isDesktopSideBarOpen}
-        onMobileCloseClick={closeMobileSideBar}
-        onDesktopCloseClick={closeDesktopSideBar}
         isSearchHistoryOpen={isSearchHistoryOpen}
+        onCloseClick={onCloseSideBar}
       />
       <ChatInterface
         activeChat={activeChat}
