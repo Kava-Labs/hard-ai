@@ -14,7 +14,7 @@ export interface SideBarProps {
   onUpdateConversationTitle: (id: string, newTitle: string) => void;
   onDesktopCloseClick: () => void;
   onMobileCloseClick: () => void;
-  onClickSearchHistory: () => void;
+  onOpenSearchModal: () => void;
   isMobileSideBarOpen: boolean;
   isDesktopSideBarOpen: boolean;
   isSearchHistoryOpen: boolean;
@@ -28,7 +28,7 @@ export const SideBar = ({
   onUpdateConversationTitle,
   onMobileCloseClick,
   onDesktopCloseClick,
-  onClickSearchHistory,
+  onOpenSearchModal,
   isMobileSideBarOpen,
   isDesktopSideBarOpen,
   isSearchHistoryOpen,
@@ -46,14 +46,14 @@ export const SideBar = ({
           {showMobileSideBar && (
             <MobileSideBar
               isSearchHistoryOpen={isSearchHistoryOpen}
-              onClickSearchHistory={onClickSearchHistory}
+              onOpenSearchModal={onOpenSearchModal}
               onCloseClick={onMobileCloseClick}
             />
           )}
           {showDesktopSideBar && (
             <DesktopSideBar
               isSearchHistoryOpen={isSearchHistoryOpen}
-              onClickSearchHistory={onClickSearchHistory}
+              onOpenSearchModal={onOpenSearchModal}
               onCloseClick={onDesktopCloseClick}
             />
           )}

@@ -4,18 +4,18 @@ import ButtonIcon from './ButtonIcon';
 interface MobileSideBarProps {
   isSearchHistoryOpen: boolean;
   onCloseClick: () => void;
-  onClickSearchHistory: () => void;
+  onOpenSearchModal: () => void;
 }
 
 export const MobileSideBar = ({
   onCloseClick,
-  onClickSearchHistory,
+  onOpenSearchModal,
 }: MobileSideBarProps) => {
   return (
     <>
       <ButtonIcon
         disabled={false}
-        onClick={onClickSearchHistory}
+        onClick={onOpenSearchModal}
         icon={TextSearch}
         tooltip={{
           text: 'Search History',

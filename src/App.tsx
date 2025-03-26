@@ -30,7 +30,7 @@ export const App = () => {
     setIsSearchHistoryOpen(false);
   };
 
-  const onClickSearchHistory = async () => {
+  const onOpenSearchModal = async () => {
     await fetchSearchHistory();
     setIsSearchHistoryOpen(true);
   };
@@ -56,7 +56,7 @@ export const App = () => {
         activeConversationId={activeChat.id}
         onDeleteConversation={onDeleteConversation}
         onUpdateConversationTitle={onUpdateConversationTitle}
-        onClickSearchHistory={onClickSearchHistory}
+        onOpenSearchModal={onOpenSearchModal}
         isMobileSideBarOpen={isMobileSideBarOpen}
         isDesktopSideBarOpen={isDesktopSideBarOpen}
         onMobileCloseClick={closeMobileSideBar}
