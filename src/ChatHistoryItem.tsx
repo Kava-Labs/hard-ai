@@ -68,7 +68,6 @@ export const ChatHistoryItem = memo(
         setEditInputValue(title);
         setEditingTitle(true);
       }
-      setIsMenuOpen(false);
     };
 
     const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -104,6 +103,9 @@ export const ChatHistoryItem = memo(
       return () =>
         document.removeEventListener('mousedown', handleClickOutside);
     }, [editingTitle, handleSaveTitle]);
+
+    console.log({ editingTitle });
+    console.log({ isSelected });
 
     return (
       <div
