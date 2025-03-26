@@ -11,6 +11,7 @@ import { ToolCallProgressCards } from './ToolCallProgressCards';
 import { TextStreamStore } from './stores/textStreamStore';
 import { ToolCallStreamStore } from './stores/toolCallStreamStore';
 import { OperationRegistry } from './types/chain';
+import { ToolMessageContainer } from './services/components/ToolCallMessageContainer';
 
 export type ChatMessage =
   | ChatCompletionMessageParam
@@ -61,6 +62,20 @@ const ConversationComponent = ({
         if (message.role === 'assistant' && message.content) {
           return (
             <AssistantMessage key={index} content={message.content as string} />
+          );
+        }
+
+        if (message.role === 'tool') {
+          return (
+            <ToolMessageContainer
+              key={index}
+              message={message}
+              prevMessage={
+                messages[index - 1] as ChatCompletionAssistantMessageParam
+              }
+              onRendered={onRendered}
+              operationRegistry={operationRegistry}
+            />
           );
         }
 
