@@ -3,21 +3,27 @@ import { PanelLeftClose, TextSearch, X as CloseX } from 'lucide-react';
 import { useIsMobileLayout } from './theme/useIsMobileLayout';
 
 interface SideBarControlsProps {
+  isDisabled: boolean;
   onCloseClick: () => void;
   onOpenSearchModal: () => void;
 }
 
 export const SideBarControls = ({
+  isDisabled,
   onCloseClick,
   onOpenSearchModal,
 }: SideBarControlsProps) => {
   const isMobileLayout = useIsMobileLayout();
   const CloseIcon = isMobileLayout ? CloseX : PanelLeftClose;
 
+  const closeIconLabel = isMobileLayout
+    ? 'Close Mobile Menu'
+    : 'Close Desktop Menu';
+
   return (
     <>
       <ButtonIcon
-        disabled={false}
+        disabled={isDisabled}
         onClick={onOpenSearchModal}
         icon={TextSearch}
         tooltip={{
@@ -32,7 +38,7 @@ export const SideBarControls = ({
           text: 'Close Menu',
           position: 'bottom',
         }}
-        aria-label="Close Menu"
+        aria-label={closeIconLabel}
         onClick={onCloseClick}
       />
     </>

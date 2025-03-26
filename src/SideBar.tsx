@@ -30,12 +30,15 @@ export const SideBar = ({
 }: SideBarProps) => {
   const sideBarStyles = `${styles.sidebar} ${isMobileSideBarOpen ? styles.isOpen : ''} ${isDesktopSideBarOpen ? '' : styles.isHidden}`;
 
+  const hasNoConversationHistory =
+    Object.keys(conversationHistories).length === 0;
   return (
     <div className={sideBarStyles}>
       <div className={styles.sidebarHeader}>
         <img src={hardAILogo} alt="Hard AI logo" height={18} />
         <div className={styles.buttonGroup}>
           <SideBarControls
+            isDisabled={hasNoConversationHistory}
             onCloseClick={onCloseClick}
             onOpenSearchModal={onOpenSearchModal}
           />
