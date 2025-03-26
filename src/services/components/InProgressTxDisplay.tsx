@@ -1,16 +1,12 @@
 import styles from './DisplayCards.module.css';
-import { useEffect } from 'react';
 import { InProgressComponentProps } from '../../types/chain';
+import { useScrollToBottom } from '../../useScrollToBottom';
 
 export const InProgressTxDisplay = ({
   onRendered,
   isOperationValidated,
 }: InProgressComponentProps) => {
-  useEffect(() => {
-    if (onRendered) {
-      requestAnimationFrame(onRendered);
-    }
-  }, [onRendered, isOperationValidated]);
+  useScrollToBottom(onRendered, isOperationValidated);
 
   if (!isOperationValidated) {
     return null;

@@ -1,6 +1,7 @@
 import { memo, useEffect, useState } from 'react';
 import styles from './Content.module.css';
 import { sanitizeContent } from './utils/sanitize';
+import { useScrollToBottom } from './useScrollToBottom';
 
 export interface ContentProps {
   content: string;
@@ -47,11 +48,7 @@ export const ContentComponent = ({
     };
   }, [content]);
 
-  useEffect(() => {
-    if (onRendered) {
-      requestAnimationFrame(onRendered);
-    }
-  }, [sanitizedContent, onRendered]);
+  useScrollToBottom(onRendered, sanitizedContent);
 
   if (hasError) {
     return <span>Error: Could not render content!</span>;

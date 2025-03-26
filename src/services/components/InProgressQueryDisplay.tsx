@@ -1,5 +1,6 @@
 import { useEffect, useSyncExternalStore } from 'react';
 import { InProgressComponentProps } from '../../types/chain';
+import { useScrollToBottom } from '../../useScrollToBottom';
 
 export const InProgressQueryDisplay = ({
   onRendered,
@@ -17,11 +18,7 @@ export const InProgressQueryDisplay = ({
     };
   }, [progressStore, progressText]);
 
-  useEffect(() => {
-    if (onRendered) {
-      requestAnimationFrame(onRendered);
-    }
-  }, [onRendered]);
+  useScrollToBottom(onRendered);
 
   return null;
 };
