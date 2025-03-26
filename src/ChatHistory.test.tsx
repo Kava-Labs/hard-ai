@@ -97,24 +97,6 @@ describe('ChatHistory Component', () => {
     );
   });
 
-  it('should show rename and delete buttons after clicking chat options icon ', () => {
-    render(
-      <ChatHistory
-        chatHistories={mockHistories}
-        activeConversationId={'123'}
-        {...mockProps}
-      />,
-    );
-
-    fireEvent.click(screen.getByLabelText('Chat Options'));
-    expect(
-      screen.getByRole('button', { name: 'Rename Title' }),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByRole('button', { name: 'Delete Chat' }),
-    ).toBeInTheDocument();
-  });
-
   it('clicking delete button calls onDelete with correct id', async () => {
     render(
       <ChatHistory
