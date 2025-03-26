@@ -9,6 +9,7 @@ export const App = () => {
   const [isMobileSideBarOpen, setIsMobileSideBarOpen] = useState(false);
   const [isDesktopSideBarOpen, setIsDesktopSideBarOpen] = useState(true);
   const [isSearchHistoryOpen, setIsSearchHistoryOpen] = useState(false);
+
   const openMobileSideBar = () => {
     setIsMobileSideBarOpen(true);
   };
@@ -29,7 +30,8 @@ export const App = () => {
     setIsSearchHistoryOpen(false);
   };
 
-  const onClickSearchHistory = () => {
+  const onClickSearchHistory = async () => {
+    await fetchSearchHistory();
     setIsSearchHistoryOpen(true);
   };
 
@@ -43,6 +45,7 @@ export const App = () => {
     onDeleteConversation,
     onUpdateConversationTitle,
     searchableHistory,
+    fetchSearchHistory,
   } = useChat();
 
   return (
@@ -72,7 +75,7 @@ export const App = () => {
       {isSearchHistoryOpen && searchableHistory && (
         <SearchHistoryModal
           searchableHistory={searchableHistory}
-          onSelectConversation={onClickSearchHistory}
+          onSelectConversation={onSelectConversation}
           onCloseSearchHistory={onCloseSearchHistory}
         />
       )}

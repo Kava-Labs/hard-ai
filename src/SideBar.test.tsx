@@ -67,8 +67,10 @@ describe('SideBar', () => {
     onUpdateConversationTitle: vi.fn(),
     onDesktopCloseClick: vi.fn(),
     onMobileCloseClick: vi.fn(),
+    onClickSearchHistory: vi.fn(),
     isMobileSideBarOpen: false,
     isDesktopSideBarOpen: true,
+    isSearchHistoryOpen: false,
   };
 
   beforeEach(() => {
