@@ -104,9 +104,6 @@ export const ChatHistoryItem = memo(
         document.removeEventListener('mousedown', handleClickOutside);
     }, [editingTitle, handleSaveTitle]);
 
-    console.log({ editingTitle });
-    console.log({ isSelected });
-
     return (
       <div
         ref={containerRef}
