@@ -2,19 +2,6 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { fireEvent, render, screen } from '@testing-library/react';
 import { ChatHistory } from './ChatHistory';
 import { ConversationHistories } from './types';
-import { ChatHistoryItemProps } from './ChatHistoryItem';
-
-vi.mock('./ChatHistoryItem', () => ({
-  ChatHistoryItem: ({
-    conversation,
-    onHistoryItemClick,
-    isSelected,
-  }: ChatHistoryItemProps) => (
-    <div data-selected={isSelected} onClick={onHistoryItemClick}>
-      {conversation.title}
-    </div>
-  ),
-}));
 
 describe('ChatHistory Component', () => {
   const mockOnSelectConversation = vi.fn();
@@ -25,6 +12,16 @@ describe('ChatHistory Component', () => {
     onSelectConversation: mockOnSelectConversation,
     onDeleteConversation: mockOnDeleteConversation,
     onUpdateConversationTitle: mockOnUpdateConversationTitle,
+  };
+
+  const mockHistories: ConversationHistories = {
+    'conv-today-1': {
+      id: 'conv-today-1',
+      model: 'gpt-4-turbo',
+      title: 'First Today Conversation',
+      lastSaved: Date.now(),
+      tokensRemaining: 6000,
+    },
   };
 
   beforeEach(() => {
@@ -43,63 +40,7 @@ describe('ChatHistory Component', () => {
     expect(screen.getByText('Start a new chat to begin')).toBeInTheDocument();
   });
 
-  it('should display conversations grouped by time', () => {
-    const today = Date.now();
-    const yesterday = today - 86400000;
-    const older = today - 172800000;
-
-    const mockHistories: ConversationHistories = {
-      'conv-today': {
-        id: 'conv-today',
-        model: 'gpt-4-turbo',
-        title: 'Today Conversation',
-        lastSaved: today,
-        tokensRemaining: 6453,
-      },
-      'conv-yesterday': {
-        id: 'conv-yesterday',
-        model: 'claude-3-opus',
-        title: 'Yesterday Conversation',
-        lastSaved: yesterday,
-        tokensRemaining: 4821,
-      },
-      'conv-older': {
-        id: 'conv-older',
-        model: 'claude-3-opus',
-        title: 'Older Conversation',
-        lastSaved: older,
-        tokensRemaining: 5000,
-      },
-    };
-
-    render(
-      <ChatHistory
-        chatHistories={mockHistories}
-        activeConversationId={'123'}
-        {...mockProps}
-      />,
-    );
-
-    expect(screen.getByText('Today')).toBeInTheDocument();
-    expect(screen.getByText('Yesterday')).toBeInTheDocument();
-    expect(screen.getByText('Last week')).toBeInTheDocument();
-
-    expect(screen.getByText('Today Conversation')).toBeInTheDocument();
-    expect(screen.getByText('Yesterday Conversation')).toBeInTheDocument();
-    expect(screen.getByText('Older Conversation')).toBeInTheDocument();
-  });
-
   it('should call onSelectConversation with correct ID when conversation is clicked', () => {
-    const mockHistories: ConversationHistories = {
-      'conv-2025-03-19-001': {
-        id: 'conv-2025-03-19-001',
-        model: 'gpt-4-turbo',
-        title: 'Today Conversation',
-        lastSaved: Date.now(),
-        tokensRemaining: 6453,
-      },
-    };
-
     render(
       <ChatHistory
         chatHistories={mockHistories}
@@ -108,54 +49,13 @@ describe('ChatHistory Component', () => {
       />,
     );
 
-    fireEvent.click(screen.getByText('Today Conversation'));
-    expect(mockOnSelectConversation).toHaveBeenCalledWith(
-      'conv-2025-03-19-001',
-    );
-  });
-
-  it('should properly set isSelected prop for active conversation', () => {
-    const mockHistories: ConversationHistories = {
-      'conv-2025-03-19-001': {
-        id: 'conv-2025-03-19-001',
-        model: 'gpt-4-turbo',
-        title: 'Active Conversation',
-        lastSaved: Date.now(),
-        tokensRemaining: 6453,
-      },
-      'conv-2025-03-19-002': {
-        id: 'conv-2025-03-19-002',
-        model: 'claude-3-opus',
-        title: 'Inactive Conversation',
-        lastSaved: Date.now() - 10000,
-        tokensRemaining: 6453,
-      },
-    };
-
-    render(
-      <ChatHistory
-        chatHistories={mockHistories}
-        activeConversationId="conv-2025-03-19-001"
-        {...mockProps}
-      />,
-    );
-
-    const activeItem = screen.getByText('Active Conversation');
-    const inactiveItem = screen.getByText('Inactive Conversation');
-
-    expect(activeItem.getAttribute('data-selected')).toBe('true');
-    expect(inactiveItem.getAttribute('data-selected')).toBe('false');
+    fireEvent.click(screen.getByText('First Today Conversation'));
+    expect(mockOnSelectConversation).toHaveBeenCalledWith('conv-today-1');
   });
 
   it('should render conversations within their proper time groups', () => {
-    const mockHistories: ConversationHistories = {
-      'conv-today-1': {
-        id: 'conv-today-1',
-        model: 'gpt-4-turbo',
-        title: 'First Today Conversation',
-        lastSaved: Date.now(),
-        tokensRemaining: 6000,
-      },
+    const multipleHistories: ConversationHistories = {
+      ...mockHistories,
       'conv-today-2': {
         id: 'conv-today-2',
         model: 'gpt-4-turbo',
@@ -174,7 +74,7 @@ describe('ChatHistory Component', () => {
 
     render(
       <ChatHistory
-        chatHistories={mockHistories}
+        chatHistories={multipleHistories}
         activeConversationId={'123'}
         {...mockProps}
       />,
@@ -195,5 +95,59 @@ describe('ChatHistory Component', () => {
     expect(screen.getAllByText(textToMatch)[4].textContent).toBe(
       'Yesterday Conversation',
     );
+  });
+
+  it('clicking delete button calls onDelete with correct id', async () => {
+    render(
+      <ChatHistory
+        chatHistories={mockHistories}
+        activeConversationId={'123'}
+        {...mockProps}
+      />,
+    );
+
+    fireEvent.click(screen.getByLabelText('Chat Options'));
+    fireEvent.click(screen.getByRole('button', { name: 'Delete Chat' }));
+
+    expect(mockProps.onDeleteConversation).toHaveBeenCalledWith('conv-today-1');
+  });
+  it('clicking rename button opens an editable input', async () => {
+    render(
+      <ChatHistory
+        chatHistories={mockHistories}
+        activeConversationId={'123'}
+        {...mockProps}
+      />,
+    );
+
+    expect(screen.getByText('First Today Conversation')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByLabelText('Chat Options'));
+
+    //  Click rename, which changes its button text to cancel
+    const renameButton = screen.getByLabelText('Rename Title');
+    fireEvent.click(renameButton);
+
+    const editInput = screen.getByRole('textbox', {
+      name: 'Edit Title Input',
+    });
+    const cancelButton = screen.getByLabelText('Cancel Rename Title');
+    const deleteButton = screen.getByLabelText('Delete Chat');
+
+    expect(editInput).toBeInTheDocument();
+    expect(editInput).toBeEnabled();
+    expect(cancelButton).toBeInTheDocument();
+    expect(deleteButton).toBeInTheDocument();
+    expect(screen.queryByLabelText('Rename Title')).not.toBeInTheDocument();
+
+    //  Click cancel to close editing mode
+    fireEvent.click(cancelButton);
+
+    expect(renameButton).toBeInTheDocument();
+
+    //  Click icon to return to base view
+    fireEvent.click(screen.getByLabelText('Chat Options'));
+
+    expect(editInput).not.toBeInTheDocument();
   });
 });
