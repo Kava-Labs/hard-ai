@@ -21,6 +21,7 @@ import { initializeMessageRegistry } from './types/chain/operationRegistry';
 import { ToolCallStreamStore } from './stores/toolCallStreamStore';
 import { useExecuteOperation } from './useExecuteOperation';
 import { WalletStore } from './stores/walletStore/walletStore';
+import { getSearchableHistory } from './api/getSearchableHistory';
 
 const activeChats: Record<string, ActiveChat> = {};
 
