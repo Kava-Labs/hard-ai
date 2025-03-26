@@ -8,10 +8,7 @@ export interface CompleteTxDisplayProps {
   onRendered?: () => void;
 }
 
-export const CompleteTxDisplay = ({
-  hash,
-  chain,
-}: CompleteTxDisplayProps) => {
+export const CompleteTxDisplay = ({ hash, chain }: CompleteTxDisplayProps) => {
   const explorerUrl = chain.blockExplorerUrls[0] + 'tx/' + hash;
 
   //   useScrollToBottom(onRendered);

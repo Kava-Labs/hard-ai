@@ -120,7 +120,7 @@ export const useExecuteOperation = (
 
       throw new Error('Invalid operation type');
     },
-    [registry, walletStore],
+    [registry, walletStore, setIsOperationValidated],
   );
 
   return {

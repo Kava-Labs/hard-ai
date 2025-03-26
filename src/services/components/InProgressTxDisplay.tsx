@@ -6,16 +6,15 @@ export const InProgressTxDisplay = ({
   onRendered,
   isOperationValidated,
 }: InProgressComponentProps) => {
-  if (!isOperationValidated) {
-    return null;
-  }
-
   useEffect(() => {
     if (onRendered) {
       requestAnimationFrame(onRendered);
     }
   }, [onRendered, isOperationValidated]);
 
+  if (!isOperationValidated) {
+    return null;
+  }
   return (
     <div
       data-testid="in-progress-tx-display"

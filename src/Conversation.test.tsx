@@ -1,6 +1,9 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { Conversation, ChatMessage } from './Conversation';
+import { TextStreamStore } from './stores/textStreamStore';
+import { ToolCallStreamStore } from './stores/toolCallStreamStore';
+import { initializeMessageRegistry } from './types/chain';
 
 vi.mock('./Content', () => ({
   Content: ({ content, role }: { content: string; role: string }) => (
@@ -18,6 +21,10 @@ describe('Conversation Component', () => {
         errorText=""
         assistantStream=""
         onRendered={vi.fn()}
+        progressStore={new TextStreamStore()}
+        isOperationValidated={false}
+        toolCallStreamStore={new ToolCallStreamStore()}
+        operationRegistry={initializeMessageRegistry()}
       />,
     );
     expect(container.firstChild).toHaveClass('_conversationContainer_768897');
@@ -37,6 +44,10 @@ describe('Conversation Component', () => {
         errorText=""
         assistantStream=""
         onRendered={vi.fn()}
+        progressStore={new TextStreamStore()}
+        isOperationValidated={false}
+        toolCallStreamStore={new ToolCallStreamStore()}
+        operationRegistry={initializeMessageRegistry()}
       />,
     );
 
@@ -61,6 +72,10 @@ describe('Conversation Component', () => {
         errorText=""
         assistantStream=""
         onRendered={vi.fn()}
+        progressStore={new TextStreamStore()}
+        isOperationValidated={false}
+        toolCallStreamStore={new ToolCallStreamStore()}
+        operationRegistry={initializeMessageRegistry()}
       />,
     );
 

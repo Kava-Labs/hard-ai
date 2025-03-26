@@ -2,6 +2,9 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { ChatInterface } from './ChatInterface';
 import { ActiveChat, ChatMessage } from './types';
+import { TextStreamStore } from './stores/textStreamStore';
+import { ToolCallStreamStore } from './stores/toolCallStreamStore';
+import { initializeMessageRegistry } from './types/chain';
 
 vi.mock('./LandingContent', () => ({
   LandingContent: () => (
@@ -79,6 +82,11 @@ describe('ChatInterface', () => {
     isDesktopSideBarOpen: true,
     onMobileMenuClick: vi.fn(),
     onDesktopMenuClick: vi.fn(),
+
+    progressStore: new TextStreamStore(),
+    isOperationValidated: false,
+    toolCallStreamStore: new ToolCallStreamStore(),
+    operationRegistry: initializeMessageRegistry(),
   };
 
   beforeEach(() => {
