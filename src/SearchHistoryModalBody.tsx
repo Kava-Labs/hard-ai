@@ -4,22 +4,26 @@ import { useIsMobileLayout } from './theme/useIsMobileLayout';
 import ButtonIcon from './ButtonIcon';
 import { X } from 'lucide-react';
 import { GroupedSearchHistories } from './types';
-import { formatContentSnippet, formatConversationTitle } from './utils/helpers';
+import {
+  formatContentSnippet,
+  formatConversationTitle,
+  highlightMatch,
+} from './utils/helpers';
 
 interface SearchModalBodyProps {
   groupedConversations: GroupedSearchHistories;
   onSelectConversation: (id: string) => void;
   handleSearchTermChange: (searchTerm: string) => void;
-  inputValue: string;
   onClose: () => void;
+  searchTerm: string;
 }
 
 export const SearchHistoryModalBody = ({
   groupedConversations,
   onSelectConversation,
   handleSearchTermChange,
-  inputValue,
   onClose,
+  searchTerm,
 }: SearchModalBodyProps) => {
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -52,7 +56,7 @@ export const SearchHistoryModalBody = ({
           type="text"
           className={styles.searchInput}
           placeholder="Search conversations..."
-          value={inputValue}
+          value={searchTerm}
           onChange={(e) => handleSearchTermChange(e.target.value)}
           onKeyDown={handleKeyDown}
           autoFocus
@@ -83,13 +87,19 @@ export const SearchHistoryModalBody = ({
                     <p
                       className={styles.conversationTitle}
                       dangerouslySetInnerHTML={{
-                        __html: formatConversationTitle(conversation.title, 50),
+                        __html: highlightMatch(
+                          formatConversationTitle(conversation.title, 50),
+                          searchTerm,
+                        ),
                       }}
                     />
                     <p
                       className={styles.conversationSnippet}
                       dangerouslySetInnerHTML={{
-                        __html: formatContentSnippet(conversation, inputValue),
+                        __html: highlightMatch(
+                          formatContentSnippet(conversation, searchTerm),
+                          searchTerm,
+                        ),
                       }}
                     />
                   </div>

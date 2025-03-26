@@ -37,11 +37,11 @@ export const SearchHistoryModal = ({
     <div className={styles.container}>
       <ModalWrapper modalRef={modalRef} onClose={handleClose}>
         <SearchHistoryModalBody
-          inputValue={searchTerm}
           groupedConversations={groupedConversations}
           onSelectConversation={onSelectConversation}
           handleSearchTermChange={handleSearchTermChange}
           onClose={handleClose}
+          searchTerm={searchTerm}
         />
       </ModalWrapper>
     </div>
