@@ -1,62 +1,49 @@
 import styles from './App.module.css';
 import hardAILogo from './assets/hardAILogo.svg';
-import { MobileSideBar } from './MobileSideBar';
-import { DesktopSideBar } from './DesktopSideBar';
 import { ChatHistory } from './ChatHistory';
-import { useIsMobileLayout } from './theme/useIsMobileLayout';
 import { ConversationHistories } from './types';
+import { SideBarControls } from './SideBarControls';
+import { useIsMobileLayout } from './theme/useIsMobileLayout';
 
 export interface SideBarProps {
+  activeConversationId: string | null;
   conversationHistories: ConversationHistories;
   onSelectConversation: (id: string) => void;
-  activeConversationId: string | null;
   onDeleteConversation: (id: string) => void;
   onUpdateConversationTitle: (id: string, newTitle: string) => void;
-  onDesktopCloseClick: () => void;
-  onMobileCloseClick: () => void;
   onOpenSearchModal: () => void;
-  isMobileSideBarOpen: boolean;
-  isDesktopSideBarOpen: boolean;
-  isSearchHistoryOpen: boolean;
+  onCloseClick: () => void;
+  isSideBarOpen: boolean;
 }
 
 export const SideBar = ({
+  activeConversationId,
   conversationHistories,
   onSelectConversation,
-  activeConversationId,
   onDeleteConversation,
   onUpdateConversationTitle,
-  onMobileCloseClick,
-  onDesktopCloseClick,
   onOpenSearchModal,
-  isMobileSideBarOpen,
-  isDesktopSideBarOpen,
-  isSearchHistoryOpen,
+  onCloseClick,
+  isSideBarOpen,
 }: SideBarProps) => {
   const isMobileLayout = useIsMobileLayout();
-  const showMobileSideBar = isMobileLayout && isMobileSideBarOpen;
-  const showDesktopSideBar = !isMobileLayout && isDesktopSideBarOpen;
+  const isMobileSideBarOpen = isSideBarOpen && isMobileLayout;
+  const isDesktopSideBarOpen = isSideBarOpen && !isMobileLayout;
   const sideBarStyles = `${styles.sidebar} ${isMobileSideBarOpen ? styles.isOpen : ''} ${isDesktopSideBarOpen ? '' : styles.isHidden}`;
+
+  const hasNoConversationHistory =
+    Object.keys(conversationHistories).length === 0;
 
   return (
     <div className={sideBarStyles}>
       <div className={styles.sidebarHeader}>
         <img src={hardAILogo} alt="Hard AI logo" height={18} />
         <div className={styles.buttonGroup}>
-          {showMobileSideBar && (
-            <MobileSideBar
-              isSearchHistoryOpen={isSearchHistoryOpen}
-              onOpenSearchModal={onOpenSearchModal}
-              onCloseClick={onMobileCloseClick}
-            />
-          )}
-          {showDesktopSideBar && (
-            <DesktopSideBar
-              isSearchHistoryOpen={isSearchHistoryOpen}
-              onOpenSearchModal={onOpenSearchModal}
-              onCloseClick={onDesktopCloseClick}
-            />
-          )}
+          <SideBarControls
+            isDisabled={hasNoConversationHistory}
+            onCloseClick={onCloseClick}
+            onOpenSearchModal={onOpenSearchModal}
+          />
         </div>
       </div>
 

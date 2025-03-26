@@ -3,27 +3,37 @@ import { Menu, PanelLeftOpen, SquarePen } from 'lucide-react';
 import ButtonIcon from './ButtonIcon';
 import { useIsMobileLayout } from './theme/useIsMobileLayout';
 
-interface NavBarProps {
-  onMobileMenuClick: () => void;
-  onDesktopMenuClick: () => void;
-  isDesktopSideBarOpen: boolean;
+export interface NavBarProps {
+  onMenuClick: () => void;
+  isSideBarOpen: boolean;
   onNewChatClick: () => void;
 }
 
 export const NavBar = ({
-  onMobileMenuClick,
-  onDesktopMenuClick,
-  isDesktopSideBarOpen,
+  onMenuClick,
+  isSideBarOpen,
   onNewChatClick,
 }: NavBarProps) => {
   const isMobileLayout = useIsMobileLayout();
+
+  const newChatButton = (
+    <ButtonIcon
+      icon={SquarePen}
+      tooltip={{
+        text: 'New Chat',
+        position: 'bottom',
+      }}
+      aria-label="New Chat Button"
+      onClick={onNewChatClick}
+    />
+  );
 
   return (
     <div className={styles.nav}>
       <div className={styles.leftSection}>
         {!isMobileLayout ? (
           <div className={styles.desktopControls}>
-            {!isDesktopSideBarOpen && (
+            {!isSideBarOpen && (
               <ButtonIcon
                 icon={PanelLeftOpen}
                 tooltip={{
@@ -31,18 +41,10 @@ export const NavBar = ({
                   position: 'bottom',
                 }}
                 aria-label="Open Desktop Menu"
-                onClick={onDesktopMenuClick}
+                onClick={onMenuClick}
               />
             )}
-            <ButtonIcon
-              icon={SquarePen}
-              tooltip={{
-                text: 'New Chat',
-                position: 'bottom',
-              }}
-              aria-label="New Chat Desktop Button"
-              onClick={onNewChatClick}
-            />
+            {newChatButton}
           </div>
         ) : (
           <div className={styles.menu}>
@@ -52,25 +54,15 @@ export const NavBar = ({
                 text: 'Menu',
                 position: 'bottom',
               }}
-              aria-label="Toggle Mobile Menu"
-              onClick={onMobileMenuClick}
+              aria-label="Open Mobile Menu"
+              onClick={onMenuClick}
             />
           </div>
         )}
       </div>
 
       <div className={styles.rightSection}>
-        {isMobileLayout && (
-          <ButtonIcon
-            icon={SquarePen}
-            tooltip={{
-              text: 'New Chat',
-              position: 'bottom',
-            }}
-            aria-label="New Chat Mobile Button"
-            onClick={onNewChatClick}
-          />
-        )}
+        {isMobileLayout && newChatButton}
       </div>
     </div>
   );

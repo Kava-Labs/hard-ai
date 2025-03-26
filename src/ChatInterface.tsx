@@ -12,10 +12,9 @@ interface ChatInterfaceProps {
   handleChatCompletion: (messages: ChatMessage[]) => void;
   handleCancel: () => void;
   handleNewChat: () => void;
-  isDesktopSideBarOpen: boolean;
-  onMobileMenuClick: () => void;
-  onDesktopMenuClick: () => void;
   operationRegistry: OperationRegistry<unknown>;
+  isSideBarOpen: boolean;
+  onMenuClick: () => void;
 }
 
 export const ChatInterface = ({
@@ -23,10 +22,9 @@ export const ChatInterface = ({
   handleChatCompletion,
   handleCancel,
   handleNewChat,
-  isDesktopSideBarOpen,
-  onMobileMenuClick,
-  onDesktopMenuClick,
   operationRegistry,
+  isSideBarOpen,
+  onMenuClick,
 }: ChatInterfaceProps) => {
   const { isConversationStarted, isRequesting } = activeChat;
   const containerRef = useRef<HTMLDivElement>(null);
@@ -77,9 +75,8 @@ export const ChatInterface = ({
         <div ref={containerRef} className={styles.scrollContainer}>
           <div className={styles.chatHeader}>
             <NavBar
-              onMobileMenuClick={onMobileMenuClick}
-              onDesktopMenuClick={onDesktopMenuClick}
-              isDesktopSideBarOpen={isDesktopSideBarOpen}
+              onMenuClick={onMenuClick}
+              isSideBarOpen={isSideBarOpen}
               onNewChatClick={handleNewChat}
             />
           </div>
