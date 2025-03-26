@@ -12,6 +12,7 @@ import {
 } from './prompts';
 import { EvmBalancesQuery } from '../../services/evmBalances';
 import { EvmTransferMessage } from '../../services/evmTransfer';
+import { ERC20ConversionMessage } from '../../services/erc20Conversion';
 /**
  * Central registry for all chain operations (messages and queries).
  * Manages the registration and retrieval of operations, and generates
@@ -135,6 +136,8 @@ export function initializeMessageRegistry(): OperationRegistry<unknown> {
   const registry = new OperationRegistry();
   registry.register(new EvmTransferMessage());
   registry.register(new EvmBalancesQuery());
+  registry.register(new ERC20ConversionMessage());
+
   return registry;
 }
 
