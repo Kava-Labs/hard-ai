@@ -2,12 +2,6 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { describe, test, expect, beforeEach, vi } from 'vitest';
 import { SideBar, SideBarProps } from './SideBar';
 import { useIsMobileLayout } from './theme/useIsMobileLayout';
-import * as api from './api/getSearchableHistory';
-import { SearchableChatHistories } from './types';
-
-vi.mock('./api/getSearchableHistory', () => ({
-  getSearchableHistory: vi.fn(),
-}));
 
 vi.mock('./MobileSideBar', () => ({
   MobileSideBar: ({
@@ -69,6 +63,8 @@ describe('SideBar', () => {
     onMobileCloseClick: vi.fn(),
     isMobileSideBarOpen: false,
     isDesktopSideBarOpen: true,
+    isSearchHistoryOpen: false,
+    onClickSearchHistory: vi.fn(),
   };
 
   beforeEach(() => {
@@ -243,34 +239,14 @@ describe('SideBar', () => {
     screen.getByTestId('desktop-sidebar-close').click();
     expect(mockProps.onDesktopCloseClick).toHaveBeenCalledTimes(1);
   });
-  test('calls getSearchableHistory when search button is clicked', async () => {
-    const mockHistory: SearchableChatHistories = {
-      conversation1: {
-        id: 'conversation1',
-        title: 'First Conversation',
-        lastSaved: 123400000000,
-        messages: [{ role: 'user', content: 'Hello' }],
-      },
-      conversation2: {
-        title: 'Second Conversation',
-        id: 'conversation2',
-        lastSaved: 987860000000,
-        messages: [
-          { role: 'user', content: 'Can you help me?' },
-          { role: 'assistant', content: 'Yes of course!' },
-        ],
-      },
-    };
-
-    vi.mocked(api.getSearchableHistory).mockResolvedValue(mockHistory);
-
+  test('calls onClickSearchHistory when search button is clicked', async () => {
     render(<SideBar {...mockProps} />);
 
     const searchButton = screen.getByRole('button', { name: 'Search History' });
     fireEvent.click(searchButton);
 
     await waitFor(() => {
-      expect(api.getSearchableHistory).toHaveBeenCalledTimes(1);
+      expect(mockProps.onClickSearchHistory).toHaveBeenCalledTimes(1);
     });
   });
 });

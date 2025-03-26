@@ -3,10 +3,12 @@ import { useState } from 'react';
 import { useChat } from './useChat';
 import { SideBar } from './SideBar';
 import { ChatInterface } from './ChatInterface';
+import { SearchHistoryModal } from './SearchHistoryModal';
 
 export const App = () => {
   const [isMobileSideBarOpen, setIsMobileSideBarOpen] = useState(false);
   const [isDesktopSideBarOpen, setIsDesktopSideBarOpen] = useState(true);
+  const [isSearchHistoryOpen, setIsSearchHistoryOpen] = useState(false);
 
   const openMobileSideBar = () => {
     setIsMobileSideBarOpen(true);
@@ -24,6 +26,15 @@ export const App = () => {
     setIsDesktopSideBarOpen(false);
   };
 
+  const onCloseSearchHistory = () => {
+    setIsSearchHistoryOpen(false);
+  };
+
+  const onClickSearchHistory = async () => {
+    await fetchSearchHistory();
+    setIsSearchHistoryOpen(true);
+  };
+
   const {
     activeChat,
     conversationHistories,
@@ -33,6 +44,8 @@ export const App = () => {
     onSelectConversation,
     onDeleteConversation,
     onUpdateConversationTitle,
+    fetchSearchHistory,
+    searchableHistory,
   } = useChat();
 
   return (
@@ -47,6 +60,8 @@ export const App = () => {
         isDesktopSideBarOpen={isDesktopSideBarOpen}
         onMobileCloseClick={closeMobileSideBar}
         onDesktopCloseClick={closeDesktopSideBar}
+        isSearchHistoryOpen={isSearchHistoryOpen}
+        onClickSearchHistory={onClickSearchHistory}
       />
       <ChatInterface
         activeChat={activeChat}
@@ -57,6 +72,13 @@ export const App = () => {
         onMobileMenuClick={openMobileSideBar}
         onDesktopMenuClick={openDesktopSideBar}
       />
+      {isSearchHistoryOpen && searchableHistory && (
+        <SearchHistoryModal
+          searchableHistory={searchableHistory}
+          onSelectConversation={onSelectConversation}
+          onCloseSearchHistory={onCloseSearchHistory}
+        />
+      )}
     </div>
   );
 };
