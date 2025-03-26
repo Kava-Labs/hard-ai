@@ -125,24 +125,20 @@ describe('ChatHistory Component', () => {
     fireEvent.click(screen.getByLabelText('Chat Options'));
 
     //  Click rename, which changes its button text to cancel
-    const renameButton = screen.getByLabelText('Rename Title', { exact: true });
+    const renameButton = screen.getByLabelText('Rename Title');
     fireEvent.click(renameButton);
 
     const editInput = screen.getByRole('textbox', {
       name: 'Edit Title Input',
     });
-    const cancelButton = screen.getByLabelText('Cancel Rename Title', {
-      exact: true,
-    });
+    const cancelButton = screen.getByLabelText('Cancel Rename Title');
     const deleteButton = screen.getByLabelText('Delete Chat');
 
     expect(editInput).toBeInTheDocument();
     expect(editInput).toBeEnabled();
     expect(cancelButton).toBeInTheDocument();
     expect(deleteButton).toBeInTheDocument();
-    expect(
-      screen.queryByLabelText('Rename Title', { exact: true }),
-    ).not.toBeInTheDocument();
+    expect(screen.queryByLabelText('Rename Title')).not.toBeInTheDocument();
 
     //  Click cancel to close editing mode
     fireEvent.click(cancelButton);
