@@ -68,7 +68,6 @@ export const ChatHistoryItem = memo(
         setEditInputValue(title);
         setEditingTitle(true);
       }
-      setIsMenuOpen(false);
     };
 
     const handleKeyDown = (e: React.KeyboardEvent) => {
