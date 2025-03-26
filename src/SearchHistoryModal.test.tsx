@@ -115,4 +115,129 @@ describe('SearchHistoryModalBody', () => {
 
     expect(onClose).toHaveBeenCalled();
   });
+
+  it('highlights matching text in conversation titles', () => {
+    const history: SearchableChatHistory = {
+      ...mockHistory,
+      title: 'Test Conversation About Bitcoin',
+      messages: [{ role: 'user', content: 'This is about something else' }],
+    };
+    const searchTerm = 'Bitcoin';
+
+    const expectedTitle = 'Test Conversation About <strong>Bitcoin</strong>';
+
+    const groupedConversations: GroupedSearchHistories = {
+      Today: [history],
+    };
+
+    render(
+      <SearchHistoryModalBody
+        groupedConversations={groupedConversations}
+        onSelectConversation={onSelectConversation}
+        handleSearchTermChange={handleSearchTermChange}
+        inputValue={searchTerm}
+        onClose={onClose}
+        searchTerm={searchTerm}
+      />,
+    );
+
+    const titleElement = screen.getByText(/Test Conversation About/);
+    expect(titleElement.innerHTML).toBe(expectedTitle);
+  });
+
+  it('highlights matching text in conversation snippets', () => {
+    const history: SearchableChatHistory = {
+      ...mockHistory,
+      title: 'Simple Conversation',
+      messages: [{ role: 'user', content: 'This is about Ethereum' }],
+    };
+
+    const searchTerm = 'Ethereum';
+
+    const expectedSnippet = 'This is about <strong>Ethereum</strong>';
+
+    const groupedConversations: GroupedSearchHistories = {
+      Today: [history],
+    };
+
+    render(
+      <SearchHistoryModalBody
+        groupedConversations={groupedConversations}
+        onSelectConversation={onSelectConversation}
+        handleSearchTermChange={handleSearchTermChange}
+        inputValue={searchTerm}
+        onClose={onClose}
+        searchTerm={searchTerm}
+      />,
+    );
+
+    const snippetElement = screen.getByText(/This is about/);
+    expect(snippetElement.innerHTML).toBe(expectedSnippet);
+  });
+
+  it('handles case-insensitive highlighting', () => {
+    const history: SearchableChatHistory = {
+      ...mockHistory,
+      title: 'Tokenomics discussion',
+      messages: [{ role: 'user', content: 'This is about DeFi.' }],
+    };
+
+    const searchTerm = 'TOKENOMICS';
+    const expectedTitle = '<strong>Tokenomics</strong> discussion';
+
+    const groupedConversations: GroupedSearchHistories = {
+      Today: [history],
+    };
+
+    render(
+      <SearchHistoryModalBody
+        groupedConversations={groupedConversations}
+        onSelectConversation={onSelectConversation}
+        handleSearchTermChange={handleSearchTermChange}
+        inputValue={searchTerm}
+        onClose={onClose}
+        searchTerm={searchTerm}
+      />,
+    );
+
+    const titleElement = screen.getByText(/discussion/);
+    expect(titleElement.innerHTML).toBe(expectedTitle);
+  });
+
+  it('highlights same search term in both title and content with special characters', () => {
+    const history: SearchableChatHistory = {
+      ...mockHistory,
+      title: 'Working with Artificial Intelligence',
+      messages: [
+        { role: 'user', content: 'How do I use artificial intelligence?' },
+      ],
+    };
+
+    const searchTerm = 'artificial';
+    const expectedTitle =
+      'Working with <strong>Artificial</strong> Intelligence';
+    const expectedSnippet =
+      'do I use <strong>artificial</strong> intelligence?';
+
+    const groupedConversations: GroupedSearchHistories = {
+      Today: [history],
+    };
+
+    render(
+      <SearchHistoryModalBody
+        groupedConversations={groupedConversations}
+        onSelectConversation={onSelectConversation}
+        handleSearchTermChange={handleSearchTermChange}
+        inputValue={searchTerm}
+        onClose={onClose}
+        searchTerm={searchTerm}
+      />,
+    );
+
+    const titleElement = screen.getByText(/Working with/);
+    expect(titleElement.innerHTML).toBe(expectedTitle);
+
+    const snippetElement = screen.getByText(/do I use/);
+    expect(snippetElement.innerHTML).toBe(expectedSnippet);
+  });
 });
