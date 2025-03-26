@@ -4,10 +4,7 @@ import { MobileSideBar } from './MobileSideBar';
 import { DesktopSideBar } from './DesktopSideBar';
 import { ChatHistory } from './ChatHistory';
 import { useIsMobileLayout } from './theme/useIsMobileLayout';
-import { ConversationHistories, SearchableChatHistories } from './types';
-import { useState } from 'react';
-import { getSearchableHistory } from './api/getSearchableHistory';
-import { SearchHistoryModal } from './SearchHistoryModal';
+import { ConversationHistories } from './types';
 
 export interface SideBarProps {
   conversationHistories: ConversationHistories;
@@ -17,8 +14,10 @@ export interface SideBarProps {
   onUpdateConversationTitle: (id: string, newTitle: string) => void;
   onDesktopCloseClick: () => void;
   onMobileCloseClick: () => void;
+  onOpenSearchModal: () => void;
   isMobileSideBarOpen: boolean;
   isDesktopSideBarOpen: boolean;
+  isSearchHistoryOpen: boolean;
 }
 
 export const SideBar = ({
@@ -29,27 +28,11 @@ export const SideBar = ({
   onUpdateConversationTitle,
   onMobileCloseClick,
   onDesktopCloseClick,
+  onOpenSearchModal,
   isMobileSideBarOpen,
   isDesktopSideBarOpen,
+  isSearchHistoryOpen,
 }: SideBarProps) => {
-  const [isSearchHistoryOpen, setIsSearchHistoryOpen] = useState(false);
-  const [searchableHistory, setSearchableHistory] =
-    useState<SearchableChatHistories | null>(null);
-
-  const onClickSearchHistory = async () => {
-    try {
-      const history = await getSearchableHistory();
-      setSearchableHistory(history);
-      setIsSearchHistoryOpen(true);
-    } catch (error) {
-      console.error('Failed to load search history:', error);
-    }
-  };
-
-  const onCloseSearchHistory = () => {
-    setIsSearchHistoryOpen(false);
-  };
-
   const isMobileLayout = useIsMobileLayout();
   const showMobileSideBar = isMobileLayout && isMobileSideBarOpen;
   const showDesktopSideBar = !isMobileLayout && isDesktopSideBarOpen;
@@ -63,14 +46,14 @@ export const SideBar = ({
           {showMobileSideBar && (
             <MobileSideBar
               isSearchHistoryOpen={isSearchHistoryOpen}
-              onClickSearchHistory={onClickSearchHistory}
+              onOpenSearchModal={onOpenSearchModal}
               onCloseClick={onMobileCloseClick}
             />
           )}
           {showDesktopSideBar && (
             <DesktopSideBar
               isSearchHistoryOpen={isSearchHistoryOpen}
-              onClickSearchHistory={onClickSearchHistory}
+              onOpenSearchModal={onOpenSearchModal}
               onCloseClick={onDesktopCloseClick}
             />
           )}
@@ -86,14 +69,6 @@ export const SideBar = ({
           onUpdateConversationTitle={onUpdateConversationTitle}
         />
       </div>
-
-      {isSearchHistoryOpen && searchableHistory && (
-        <SearchHistoryModal
-          searchableHistory={searchableHistory}
-          onSelectConversation={onSelectConversation}
-          onCloseSearchHistory={onCloseSearchHistory}
-        />
-      )}
     </div>
   );
 };

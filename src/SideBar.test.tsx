@@ -2,8 +2,6 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { describe, test, expect, beforeEach, vi } from 'vitest';
 import { SideBar, SideBarProps } from './SideBar';
 import { useIsMobileLayout } from './theme/useIsMobileLayout';
-import * as api from './api/getSearchableHistory';
-import { SearchableChatHistories } from './types';
 
 vi.mock('./api/getSearchableHistory', () => ({
   getSearchableHistory: vi.fn(),
@@ -12,19 +10,16 @@ vi.mock('./api/getSearchableHistory', () => ({
 vi.mock('./MobileSideBar', () => ({
   MobileSideBar: ({
     onCloseClick,
-    onClickSearchHistory,
+    onOpenSearchModal,
   }: {
     onCloseClick: () => void;
-    onClickSearchHistory: () => void;
+    onOpenSearchModal: () => void;
   }) => (
     <div>
       <button data-testid="mobile-sidebar-close" onClick={onCloseClick}>
         Mobile Close
       </button>
-      <button
-        data-testid="search-history-button"
-        onClick={onClickSearchHistory}
-      >
+      <button data-testid="search-history-button" onClick={onOpenSearchModal}>
         Search History
       </button>
     </div>
@@ -34,19 +29,16 @@ vi.mock('./MobileSideBar', () => ({
 vi.mock('./DesktopSideBar', () => ({
   DesktopSideBar: ({
     onCloseClick,
-    onClickSearchHistory,
+    onOpenSearchModal,
   }: {
     onCloseClick: () => void;
-    onClickSearchHistory: () => void;
+    onOpenSearchModal: () => void;
   }) => (
     <div>
       <button data-testid="desktop-sidebar-close" onClick={onCloseClick}>
         Desktop Close
       </button>
-      <button
-        data-testid="search-history-button"
-        onClick={onClickSearchHistory}
-      >
+      <button data-testid="search-history-button" onClick={onOpenSearchModal}>
         Search History
       </button>
     </div>
@@ -67,8 +59,10 @@ describe('SideBar', () => {
     onUpdateConversationTitle: vi.fn(),
     onDesktopCloseClick: vi.fn(),
     onMobileCloseClick: vi.fn(),
+    onOpenSearchModal: vi.fn(),
     isMobileSideBarOpen: false,
     isDesktopSideBarOpen: true,
+    isSearchHistoryOpen: false,
   };
 
   beforeEach(() => {
@@ -243,34 +237,14 @@ describe('SideBar', () => {
     screen.getByTestId('desktop-sidebar-close').click();
     expect(mockProps.onDesktopCloseClick).toHaveBeenCalledTimes(1);
   });
-  test('calls getSearchableHistory when search button is clicked', async () => {
-    const mockHistory: SearchableChatHistories = {
-      conversation1: {
-        id: 'conversation1',
-        title: 'First Conversation',
-        lastSaved: 123400000000,
-        messages: [{ role: 'user', content: 'Hello' }],
-      },
-      conversation2: {
-        title: 'Second Conversation',
-        id: 'conversation2',
-        lastSaved: 987860000000,
-        messages: [
-          { role: 'user', content: 'Can you help me?' },
-          { role: 'assistant', content: 'Yes of course!' },
-        ],
-      },
-    };
-
-    vi.mocked(api.getSearchableHistory).mockResolvedValue(mockHistory);
-
+  test('calls onOpenSearchModal when search button is clicked', async () => {
     render(<SideBar {...mockProps} />);
 
     const searchButton = screen.getByRole('button', { name: 'Search History' });
     fireEvent.click(searchButton);
 
     await waitFor(() => {
-      expect(api.getSearchableHistory).toHaveBeenCalledTimes(1);
+      expect(mockProps.onOpenSearchModal).toHaveBeenCalledTimes(1);
     });
   });
 });

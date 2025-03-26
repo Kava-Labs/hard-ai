@@ -4,18 +4,18 @@ import { PanelLeftClose, TextSearch } from 'lucide-react';
 interface DesktopSideBarProps {
   isSearchHistoryOpen: boolean;
   onCloseClick: () => void;
-  onClickSearchHistory: () => void;
+  onOpenSearchModal: () => void;
 }
 
 export const DesktopSideBar = ({
   onCloseClick,
-  onClickSearchHistory,
+  onOpenSearchModal,
 }: DesktopSideBarProps) => {
   return (
     <>
       <ButtonIcon
         disabled={false}
-        onClick={onClickSearchHistory}
+        onClick={onOpenSearchModal}
         icon={TextSearch}
         tooltip={{
           text: 'Search History',

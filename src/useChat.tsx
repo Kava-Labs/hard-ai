@@ -5,6 +5,7 @@ import {
   ActiveChat,
   ConversationHistories,
   ConversationHistory,
+  SearchableChatHistories,
 } from './types';
 import { TextStreamStore } from './stores/textStreamStore';
 import { v4 as uuidv4 } from 'uuid';
@@ -16,6 +17,7 @@ import { deleteConversation } from './api/deleteConversation';
 import { updateConversation } from './api/updateConversation';
 import { getAllConversations } from './api/getAllConversations';
 import { saveConversation } from './api/saveConversation';
+import { getSearchableHistory } from './api/getSearchableHistory';
 
 const activeChats: Record<string, ActiveChat> = {};
 
@@ -211,6 +213,18 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
     [],
   );
 
+  const [searchableHistory, setSearchableHistory] =
+    useState<SearchableChatHistories | null>(null);
+
+  const fetchSearchHistory = async () => {
+    try {
+      const history = await getSearchableHistory();
+      setSearchableHistory(history);
+    } catch (error) {
+      console.error('Failed to load search history:', error);
+    }
+  };
+
   useEffect(() => {
     idbEventTarget.addEventListener('indexeddb-update', (_event: Event) => {
       // const { stores, operation, id } = (_event as CustomEvent).detail;
@@ -231,16 +245,19 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
       onSelectConversation,
       onDeleteConversation,
       onUpdateConversationTitle,
+      searchableHistory,
+      fetchSearchHistory,
     }),
     [
       activeChat,
       conversationHistories,
-      handleChatCompletion,
       handleNewChat,
+      handleChatCompletion,
       handleCancel,
       onSelectConversation,
       onDeleteConversation,
       onUpdateConversationTitle,
+      searchableHistory,
     ],
   );
 };
