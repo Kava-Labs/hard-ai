@@ -141,11 +141,35 @@ describe('ChatHistory Component', () => {
     expect(screen.getByText('First Today Conversation')).toBeInTheDocument();
 
     fireEvent.click(screen.getByLabelText('Chat Options'));
-    fireEvent.click(screen.getByRole('button', { name: 'Rename Title' }));
 
-    const editInput = screen.getByRole('textbox', { name: 'Edit Title Input' });
+    //  Click rename, which changes its button text to cancel
+    const renameButton = screen.getByLabelText('Rename Title', { exact: true });
+    fireEvent.click(renameButton);
+
+    const editInput = screen.getByRole('textbox', {
+      name: 'Edit Title Input',
+    });
+    const cancelButton = screen.getByLabelText('Cancel Rename Title', {
+      exact: true,
+    });
+    const deleteButton = screen.getByLabelText('Delete Chat');
 
     expect(editInput).toBeInTheDocument();
     expect(editInput).toBeEnabled();
+    expect(cancelButton).toBeInTheDocument();
+    expect(deleteButton).toBeInTheDocument();
+    expect(
+      screen.queryByLabelText('Rename Title', { exact: true }),
+    ).not.toBeInTheDocument();
+
+    //  Click cancel to close editing mode
+    fireEvent.click(cancelButton);
+
+    expect(renameButton).toBeInTheDocument();
+
+    //  Click icon to return to base view
+    fireEvent.click(screen.getByLabelText('Chat Options'));
+
+    expect(editInput).not.toBeInTheDocument();
   });
 });
