@@ -50,9 +50,7 @@ describe('SideBar', () => {
 
     render(<SideBar {...mockProps} isSideBarOpen={true} />);
 
-    expect(
-      screen.getByRole('img', { name: 'Hard AI logo' }),
-    ).toBeInTheDocument();
+    expect(screen.getByLabelText('Close Mobile Menu'));
   });
 
   test('renders Sidebar in desktop layout when sidebar is open', () => {
@@ -60,9 +58,7 @@ describe('SideBar', () => {
 
     render(<SideBar {...mockProps} />);
 
-    expect(
-      screen.getByRole('img', { name: 'Hard AI logo' }),
-    ).toBeInTheDocument();
+    expect(screen.getByLabelText('Close Desktop Menu'));
   });
 
   test('renders the logo and ChatHistory component', () => {
