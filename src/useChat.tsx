@@ -17,6 +17,10 @@ import { deleteConversation } from './api/deleteConversation';
 import { updateConversation } from './api/updateConversation';
 import { getAllConversations } from './api/getAllConversations';
 import { saveConversation } from './api/saveConversation';
+import { initializeMessageRegistry } from './types/chain/operationRegistry';
+import { ToolCallStreamStore } from './stores/toolCallStreamStore';
+import { useExecuteOperation } from './useExecuteOperation';
+import { WalletStore } from './stores/walletStore/walletStore';
 import { getSearchableHistory } from './api/getSearchableHistory';
 
 const activeChats: Record<string, ActiveChat> = {};
@@ -41,7 +45,9 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
     model: initModel ? initModel : 'gpt-4o',
     abortController: new AbortController(),
     client: client,
+    isOperationValidated: false,
 
+    toolCallStreamStore: new ToolCallStreamStore(),
     messageHistoryStore: new MessageHistoryStore(initValues),
     messageStore: new TextStreamStore(),
     progressStore: new TextStreamStore(),
@@ -49,6 +55,27 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
   });
 
   // **********
+
+  const [operationRegistry] = useState(() => initializeMessageRegistry());
+
+  const [walletStore] = useState(() => new WalletStore());
+
+  const setIsOperationValidated = useCallback(
+    (isOperationValidated: boolean) => {
+      setActiveChat((prev) => {
+        activeChats[prev.id] = { ...prev, isOperationValidated };
+        return activeChats[prev.id];
+      });
+    },
+    [],
+  );
+
+  const { executeOperation } = useExecuteOperation(
+    operationRegistry,
+    walletStore,
+    activeChat.isOperationValidated,
+    setIsOperationValidated,
+  );
 
   const fetchConversations = useCallback(() => {
     getAllConversations()
@@ -109,7 +136,7 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
 
       // no need to catch
       // doChat won't throw and automatically sets errors in the activeChat's errorStore
-      await doChat(newActiveChat);
+      await doChat(newActiveChat, operationRegistry, executeOperation);
       setActiveChat((prev) => ({
         ...prev,
         isRequesting: false,
@@ -136,7 +163,7 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
           delete activeChats[activeChat.id];
         });
     },
-    [activeChat, conversationHistories],
+    [activeChat, conversationHistories, operationRegistry, executeOperation],
   );
 
   const handleCancel = useCallback(() => {
@@ -152,9 +179,11 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
       id: uuidv4(),
       isRequesting: false,
       isConversationStarted: false,
+      isOperationValidated: false,
       model: initModel ? initModel : 'gpt-4o',
       abortController: new AbortController(),
       client: client,
+      toolCallStreamStore: new ToolCallStreamStore(),
       messageHistoryStore: new MessageHistoryStore(),
       messageStore: new TextStreamStore(),
       progressStore: new TextStreamStore(),
@@ -176,11 +205,13 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
           const newActiveChat: ActiveChat = {
             id: selectedConversation.id,
             model: selectedConversation.model,
+            isOperationValidated: false,
             isRequesting: false,
             isConversationStarted:
               Array.isArray(messages) &&
               messages.some((msg) => msg.role === 'assistant'),
             messageHistoryStore: new MessageHistoryStore(messages ?? []),
+            toolCallStreamStore: new ToolCallStreamStore(),
             progressStore: new TextStreamStore(),
             errorStore: new TextStreamStore(),
             messageStore: new TextStreamStore(),
@@ -247,6 +278,7 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
       onUpdateConversationTitle,
       searchableHistory,
       fetchSearchHistory,
+      operationRegistry,
     }),
     [
       activeChat,
@@ -258,6 +290,7 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
       onDeleteConversation,
       onUpdateConversationTitle,
       searchableHistory,
+      operationRegistry,
     ],
   );
 };

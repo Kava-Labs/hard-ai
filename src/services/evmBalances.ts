@@ -7,6 +7,7 @@ import {
   EVMChainConfig,
 } from '../types/chain';
 import { validateChain, validateWallet } from '../utils/wallet';
+import { InProgressQueryDisplay } from './components/InProgressQueryDisplay';
 
 type EvmBalanceQueryParams = {
   chainName: string;
@@ -29,10 +30,9 @@ export class EvmBalancesQuery implements ChainQuery<EvmBalanceQueryParams> {
     return true;
   }
 
-  //   inProgressComponent() {
-  //     return ;
-  //   }
-
+  inProgressComponent() {
+    return InProgressQueryDisplay;
+  }
   async executeQuery(
     params: EvmBalanceQueryParams,
     walletStore: WalletStore,

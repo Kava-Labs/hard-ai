@@ -15,6 +15,8 @@ import {
 } from '../stores/walletStore/walletStore';
 
 import { validateChain, validateWallet } from '../utils/wallet';
+import { InProgressTxDisplay } from './components/InProgressTxDisplay';
+import { ConnectWalletPrompt } from './components/ConnectWalletPrompt';
 
 interface SendToolParams {
   chainName: string;
@@ -54,9 +56,9 @@ export class EvmTransferMessage implements ChainMessage<SendToolParams> {
     },
   ];
 
-  //   inProgressComponent() {
-  //     return this.hasValidWallet ? InProgressTxDisplay : ConnectWalletPrompt;
-  //   }
+  inProgressComponent() {
+    return this.hasValidWallet ? InProgressTxDisplay : ConnectWalletPrompt;
+  }
 
   private async validateBalance(
     params: {

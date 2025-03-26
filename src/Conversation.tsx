@@ -7,6 +7,11 @@ import {
 } from 'openai/resources/index';
 import AssistantMessage from './AssistantMessage';
 import { Content } from './Content';
+import { ToolCallProgressCards } from './ToolCallProgressCards';
+import { TextStreamStore } from './stores/textStreamStore';
+import { ToolCallStreamStore } from './stores/toolCallStreamStore';
+import { OperationRegistry } from './types/chain';
+import { ToolMessageContainer } from './services/components/ToolCallMessageContainer';
 
 export type ChatMessage =
   | ChatCompletionMessageParam
@@ -20,6 +25,11 @@ export interface ConversationProps {
   errorText: string;
   isRequesting: boolean;
   onRendered: () => void;
+
+  progressStore: TextStreamStore;
+  toolCallStreamStore: ToolCallStreamStore;
+  operationRegistry: OperationRegistry<unknown>;
+  isOperationValidated: boolean;
 }
 
 const ConversationComponent = ({
@@ -29,6 +39,11 @@ const ConversationComponent = ({
   errorText,
   assistantStream,
   onRendered,
+
+  progressStore,
+  toolCallStreamStore,
+  operationRegistry,
+  isOperationValidated,
 }: ConversationProps) => {
   return (
     <div className={styles.conversationContainer}>
@@ -47,6 +62,20 @@ const ConversationComponent = ({
         if (message.role === 'assistant' && message.content) {
           return (
             <AssistantMessage key={index} content={message.content as string} />
+          );
+        }
+
+        if (message.role === 'tool') {
+          return (
+            <ToolMessageContainer
+              key={index}
+              message={message}
+              prevMessage={
+                messages[index - 1] as ChatCompletionAssistantMessageParam
+              }
+              onRendered={onRendered}
+              operationRegistry={operationRegistry}
+            />
           );
         }
 
@@ -85,6 +114,14 @@ const ConversationComponent = ({
           </div>
         </div>
       )}
+
+      <ToolCallProgressCards
+        isOperationValidated={isOperationValidated}
+        onRendered={onRendered}
+        progressStore={progressStore}
+        toolCallStreamStore={toolCallStreamStore}
+        operationRegistry={operationRegistry}
+      />
     </div>
   );
 };

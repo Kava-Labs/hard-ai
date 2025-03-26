@@ -6,6 +6,7 @@ import type {
 import type { MessageHistoryStore } from './stores/messageHistoryStore';
 import type { TextStreamStore } from './stores/textStreamStore';
 import OpenAI from 'openai/index';
+import { ToolCallStreamStore } from './stores/toolCallStreamStore';
 
 export type ActiveChat = {
   id: string;
@@ -14,7 +15,9 @@ export type ActiveChat = {
   model: string;
   abortController: AbortController;
   client: OpenAI;
+  isOperationValidated: boolean;
 
+  toolCallStreamStore: ToolCallStreamStore;
   messageHistoryStore: MessageHistoryStore;
   messageStore: TextStreamStore;
   progressStore: TextStreamStore;

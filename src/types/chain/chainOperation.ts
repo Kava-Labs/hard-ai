@@ -1,3 +1,4 @@
+import { TextStreamStore } from '../../stores/textStreamStore';
 import { ToolCallStream } from '../../stores/toolCallStreamStore';
 import { WalletTypes, WalletStore } from '../../stores/walletStore/walletStore';
 import { ChainType } from './chainsRegistry';
@@ -13,6 +14,13 @@ export interface MessageParam {
 export enum OperationType {
   TRANSACTION = 'transaction',
   QUERY = 'query',
+}
+
+export interface InProgressComponentProps {
+  toolCall: ToolCallStream;
+  progressStore: TextStreamStore;
+  onRendered?: () => void;
+  isOperationValidated: boolean;
 }
 
 /**
@@ -40,10 +48,7 @@ export interface ChainOperation<T> {
   validate(params: T, walletStore: WalletStore): boolean | Promise<boolean>;
 
   /** Optional React component that displays as the model is streaming the tool call arguments */
-  inProgressComponent?: () => React.FunctionComponent<{
-    toolCall: ToolCallStream;
-    onRendered?: () => void;
-  }>;
+  inProgressComponent?: () => React.FunctionComponent<InProgressComponentProps>;
 }
 
 /**
