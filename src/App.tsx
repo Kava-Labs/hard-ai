@@ -29,7 +29,7 @@ export const App = () => {
     setIsSearchHistoryOpen(false);
   };
 
-  const onClickSearchHistory = async () => {
+  const onClickSearchHistory = () => {
     setIsSearchHistoryOpen(true);
   };
 
