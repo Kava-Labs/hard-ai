@@ -17,10 +17,10 @@ import { deleteConversation } from './api/deleteConversation';
 import { updateConversation } from './api/updateConversation';
 import { getAllConversations } from './api/getAllConversations';
 import { saveConversation } from './api/saveConversation';
-import { initializeToolCallRegistry } from './services/chain';
+import { initializeToolCallRegistry } from './toolcalls/chain';
 import { ToolCallStreamStore } from './stores/toolCallStreamStore';
 import { useExecuteToolCall } from './useExecuteToolCall';
-import { WalletStore } from './stores/walletStore/walletStore';
+import { WalletStore } from './stores/walletStore';
 import { getSearchableHistory } from './api/getSearchableHistory';
 
 const activeChats: Record<string, ActiveChat> = {};

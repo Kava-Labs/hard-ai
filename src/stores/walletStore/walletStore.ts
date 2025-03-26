@@ -3,7 +3,7 @@ import {
   EIP712SignerParams,
   ChainNames,
   chainRegistry,
-} from '../../services/chain';
+} from '../../toolcalls/chain';
 
 type Listener = () => void;
 
@@ -150,7 +150,7 @@ export class WalletStore {
         }
         case SignatureTypes.EIP712: {
           const { eip712SignAndBroadcast } = await import(
-            '../../services/chain/msgs/eip712'
+            '../../toolcalls/chain/msgs/eip712'
           );
 
           return eip712SignAndBroadcast(opts.payload as EIP712SignerParams);

@@ -3,7 +3,7 @@ import {
   ChainToolCallOperation,
   ChainToolCallQuery,
   OperationType,
-} from './chainOperation';
+} from './chainToolCallOperation';
 import type { ChatCompletionTool } from 'openai/resources/index';
 import {
   defaultInputPlaceholderText,

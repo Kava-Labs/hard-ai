@@ -10,8 +10,8 @@ import { Content } from './Content';
 import { ToolCallProgressCards } from './ToolCallProgressCards';
 import { TextStreamStore } from './stores/textStreamStore';
 import { ToolCallStreamStore } from './stores/toolCallStreamStore';
-import { ToolCallRegistry } from './services/chain';
-import { ToolMessageContainer } from './services/components/ToolCallMessageContainer';
+import { ToolCallRegistry } from './toolcalls/chain';
+import { ToolMessageContainer } from './toolcalls/components/ToolCallMessageContainer';
 
 export type ChatMessage =
   | ChatCompletionMessageParam

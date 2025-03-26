@@ -3,7 +3,7 @@ import { render, screen } from '@testing-library/react';
 import { Conversation, ChatMessage } from './Conversation';
 import { TextStreamStore } from './stores/textStreamStore';
 import { ToolCallStreamStore } from './stores/toolCallStreamStore';
-import { initializeToolCallRegistry } from './services/chain';
+import { initializeToolCallRegistry } from './toolcalls/chain';
 
 vi.mock('./Content', () => ({
   Content: ({ content, role }: { content: string; role: string }) => (

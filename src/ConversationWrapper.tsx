@@ -2,7 +2,7 @@ import { Conversation } from './Conversation';
 import { useMessageHistoryStore } from './stores/messageHistoryStore';
 import { useTextStreamStore } from './stores/textStreamStore';
 import { ActiveChat } from './types';
-import { ToolCallRegistry } from './services/chain';
+import { ToolCallRegistry } from './toolcalls/chain';
 
 interface ConversationWrapperProps {
   activeChat: ActiveChat;

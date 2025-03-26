@@ -5,7 +5,7 @@ import { NavBar } from './NavBar';
 import { ConversationWrapper } from './ConversationWrapper';
 import { ActiveChat, ChatMessage } from './types';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { ToolCallRegistry } from './services/chain';
+import { ToolCallRegistry } from './toolcalls/chain';
 
 interface ChatInterfaceProps {
   activeChat: ActiveChat;

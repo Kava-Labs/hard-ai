@@ -13,7 +13,7 @@ import {
   SignatureTypes,
   WalletStore,
   WalletTypes,
-} from '../stores/walletStore/walletStore';
+} from '../stores/walletStore';
 import { erc20ABI } from './erc20ABI';
 import { ConnectWalletPrompt } from './components/ConnectWalletPrompt';
 import { InProgressTxDisplay } from './components/InProgressTxDisplay';

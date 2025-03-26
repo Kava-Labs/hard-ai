@@ -1,8 +1,8 @@
 import type { ActiveChat } from '../types';
-import type { OperationResult, ExecuteToolCall } from '../services/chain';
+import type { OperationResult, ExecuteToolCall } from '../toolcalls/chain';
 import type { ChatCompletionChunk } from 'openai/resources/index';
 import { formatConversationTitle } from '../utils/helpers';
-import { ToolCallRegistry } from '../services/chain/ToolCallRegistry';
+import { ToolCallRegistry } from '../toolcalls/chain/ToolCallRegistry';
 import { ToolCallStreamStore } from '../stores/toolCallStreamStore';
 import { MessageHistoryStore } from '../stores/messageHistoryStore';
 

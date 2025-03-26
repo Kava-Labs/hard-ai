@@ -1,6 +1,6 @@
 import { TextStreamStore } from '../../stores/textStreamStore';
 import { ToolCallStream } from '../../stores/toolCallStreamStore';
-import { WalletTypes, WalletStore } from '../../stores/walletStore/walletStore';
+import { WalletTypes, WalletStore } from '../../stores/walletStore';
 import { ChainType } from './chainsRegistry';
 
 export interface MessageParam {

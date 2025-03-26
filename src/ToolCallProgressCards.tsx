@@ -1,6 +1,6 @@
 import { useSyncExternalStore } from 'react';
 import { ToolCallStreamStore } from './stores/toolCallStreamStore';
-import { ToolCallRegistry } from './services/chain';
+import { ToolCallRegistry } from './toolcalls/chain';
 import { TextStreamStore } from './stores/textStreamStore';
 
 export const ToolCallProgressCards = ({

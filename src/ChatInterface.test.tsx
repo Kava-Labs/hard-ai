@@ -4,7 +4,7 @@ import { ChatInterface } from './ChatInterface';
 import { TextStreamStore } from './stores/textStreamStore';
 import { ToolCallStreamStore } from './stores/toolCallStreamStore';
 
-import { initializeToolCallRegistry } from './services/chain';
+import { initializeToolCallRegistry } from './toolcalls/chain';
 import { ActiveChat } from './types';
 import { useIsMobileLayout } from './theme/useIsMobileLayout';
 

@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import { WalletStore, WalletTypes } from './stores/walletStore/walletStore';
+import { WalletStore, WalletTypes } from './stores/walletStore';
 import {
   ChainNames,
   chainNameToolCallParam,
@@ -9,7 +9,7 @@ import {
   ChainToolCallMessage,
   ChainToolCallQuery,
   ToolCallRegistry,
-} from './services/chain';
+} from './toolcalls/chain';
 
 export const useExecuteToolCall = (
   registry: ToolCallRegistry<unknown>,

@@ -1,6 +1,6 @@
 import { ChainToolCallQuery, ChainType, OperationType } from './chain';
 import { erc20ABI } from './erc20ABI';
-import { WalletStore, WalletTypes } from '../stores/walletStore/walletStore';
+import { WalletStore, WalletTypes } from '../stores/walletStore';
 import { chainNameToolCallParam, chainRegistry, EVMChainConfig } from './chain';
 import { validateChain, validateWallet } from '../utils/wallet';
 import { InProgressQueryDisplay } from './components/InProgressQueryDisplay';
