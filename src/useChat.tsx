@@ -258,6 +258,7 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
       onDeleteConversation,
       onUpdateConversationTitle,
       searchableHistory,
+      fetchSearchHistory,
     ],
   );
 };
