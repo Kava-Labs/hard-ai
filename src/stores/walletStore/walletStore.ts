@@ -1,6 +1,9 @@
-import { ChainNames, chainRegistry } from '../../types/chain/chainsRegistry';
-import type { EIP712SignerParams } from '../../types/chain';
-import { ChainType } from '../../types/chain';
+import {
+  ChainType,
+  EIP712SignerParams,
+  ChainNames,
+  chainRegistry,
+} from '../../services/chain';
 
 type Listener = () => void;
 
@@ -147,7 +150,7 @@ export class WalletStore {
         }
         case SignatureTypes.EIP712: {
           const { eip712SignAndBroadcast } = await import(
-            '../../types/chain/msgs/eip712'
+            '../../services/chain/msgs/eip712'
           );
 
           return eip712SignAndBroadcast(opts.payload as EIP712SignerParams);

@@ -1,5 +1,5 @@
 import styles from './DisplayCards.module.css';
-import { InProgressComponentProps } from '../../types/chain';
+import { InProgressComponentProps } from '../chain';
 import { useScrollToBottom } from '../../useScrollToBottom';
 
 export const InProgressTxDisplay = ({

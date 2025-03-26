@@ -1,15 +1,15 @@
 import type { ActiveChat } from '../types';
-import type { OperationResult, ExecuteOperation } from '../types/chain';
+import type { OperationResult, ExecuteToolCall } from '../services/chain';
 import type { ChatCompletionChunk } from 'openai/resources/index';
 import { formatConversationTitle } from '../utils/helpers';
-import { OperationRegistry } from '../types/chain/operationRegistry';
+import { ToolCallRegistry } from '../services/chain/ToolCallRegistry';
 import { ToolCallStreamStore } from '../stores/toolCallStreamStore';
 import { MessageHistoryStore } from '../stores/messageHistoryStore';
 
 export const doChat = async (
   activeChat: ActiveChat,
-  operationRegistry: OperationRegistry<unknown>,
-  executeOperation: ExecuteOperation,
+  toolCallRegistry: ToolCallRegistry<unknown>,
+  executeOperation: ExecuteToolCall,
 ) => {
   activeChat.progressStore.setText('Thinking');
 
@@ -19,7 +19,7 @@ export const doChat = async (
         model: activeChat.model,
         messages: activeChat.messageHistoryStore.getSnapshot(),
         stream: true,
-        tools: operationRegistry.getToolDefinitions(),
+        tools: toolCallRegistry.getToolDefinitions(),
       },
       {
         signal: activeChat.abortController.signal,
@@ -66,7 +66,7 @@ export const doChat = async (
       );
 
       // inform the model of the tool call responses
-      await doChat(activeChat, operationRegistry, executeOperation);
+      await doChat(activeChat, toolCallRegistry, executeOperation);
     }
   } catch (e) {
     console.error(`An error occurred: ${e} `);
@@ -185,7 +185,7 @@ export const generateConversationTitle = async (
 export async function callTools(
   toolCallStreamStore: ToolCallStreamStore,
   messageHistoryStore: MessageHistoryStore,
-  executeOperation: ExecuteOperation,
+  executeOperation: ExecuteToolCall,
 ): Promise<void> {
   for (const toolCall of toolCallStreamStore.getSnapShot()) {
     const name = toolCall.function?.name;

@@ -27,7 +27,7 @@ export interface InProgressComponentProps {
  * Base interface for all chain operations.
  * Both messages (transactions) and queries extend this interface.
  */
-export interface ChainOperation<T> {
+export interface ChainToolCallOperation<T> {
   /** Unique identifier for the operation name */
   name: string;
   chainType: ChainType;
@@ -55,7 +55,7 @@ export interface ChainOperation<T> {
  * Interface for blockchain transaction messages.
  * Extends ChainOperation to add transaction-specific functionality.
  */
-export interface ChainMessage<T> extends ChainOperation<T> {
+export interface ChainToolCallMessage<T> extends ChainToolCallOperation<T> {
   /** Builds the transaction object from the provided parameters */
   buildTransaction(params: T, walletStore: WalletStore): Promise<string>;
 }
@@ -64,7 +64,7 @@ export interface ChainMessage<T> extends ChainOperation<T> {
  * Interface for blockchain queries.
  * Extends ChainOperation to add query-specific functionality.
  */
-export interface ChainQuery<T> extends ChainOperation<T> {
+export interface ChainToolCallQuery<T> extends ChainToolCallOperation<T> {
   /** Executes the query with the provided parameters */
   executeQuery(params: T, walletStore: WalletStore): Promise<string>;
 }

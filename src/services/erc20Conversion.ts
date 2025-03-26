@@ -3,11 +3,11 @@ import {
   chainRegistry,
   CosmosChainConfig,
   EVMChainConfig,
-  ChainMessage,
+  ChainToolCallMessage,
   ChainType,
   OperationType,
   EIP712SignerParams,
-} from '../types/chain';
+} from './chain';
 
 import {
   SignatureTypes,
@@ -27,7 +27,7 @@ interface ERC20ConvertParams {
 }
 
 export class ERC20ConversionMessage
-  implements ChainMessage<ERC20ConvertParams>
+  implements ChainToolCallMessage<ERC20ConvertParams>
 {
   name = 'erc20Convert';
   description =

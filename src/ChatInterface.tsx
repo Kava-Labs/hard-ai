@@ -5,14 +5,14 @@ import { NavBar } from './NavBar';
 import { ConversationWrapper } from './ConversationWrapper';
 import { ActiveChat, ChatMessage } from './types';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { OperationRegistry } from './types/chain';
+import { ToolCallRegistry } from './services/chain';
 
 interface ChatInterfaceProps {
   activeChat: ActiveChat;
   handleChatCompletion: (messages: ChatMessage[]) => void;
   handleCancel: () => void;
   handleNewChat: () => void;
-  operationRegistry: OperationRegistry<unknown>;
+  toolCallRegistry: ToolCallRegistry<unknown>;
   isSideBarOpen: boolean;
   onMenuClick: () => void;
 }
@@ -22,7 +22,7 @@ export const ChatInterface = ({
   handleChatCompletion,
   handleCancel,
   handleNewChat,
-  operationRegistry,
+  toolCallRegistry,
   isSideBarOpen,
   onMenuClick,
 }: ChatInterfaceProps) => {
@@ -86,7 +86,7 @@ export const ChatInterface = ({
             >
               {isConversationStarted && (
                 <ConversationWrapper
-                  operationRegistry={operationRegistry}
+                  toolCallRegistry={toolCallRegistry}
                   activeChat={activeChat}
                   onRendered={handleContentRendered}
                 />

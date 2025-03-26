@@ -3,7 +3,8 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { ChatInterface } from './ChatInterface';
 import { TextStreamStore } from './stores/textStreamStore';
 import { ToolCallStreamStore } from './stores/toolCallStreamStore';
-import { initializeMessageRegistry } from './types/chain';
+
+import { initializeToolCallRegistry } from './services/chain';
 import { ActiveChat } from './types';
 import { useIsMobileLayout } from './theme/useIsMobileLayout';
 
@@ -30,7 +31,7 @@ describe('ChatInterface', () => {
     progressStore: new TextStreamStore(),
     isOperationValidated: false,
     toolCallStreamStore: new ToolCallStreamStore(),
-    operationRegistry: initializeMessageRegistry(),
+    toolCallRegistry: initializeToolCallRegistry(),
     isSideBarOpen: true,
     onMenuClick: vi.fn(),
   };

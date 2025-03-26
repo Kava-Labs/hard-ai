@@ -1,13 +1,13 @@
 import { erc20ABI } from './erc20ABI';
 import { getERC20Record } from '../utils/helpers';
 import {
-  ChainMessage,
+  ChainToolCallMessage,
   OperationType,
   ChainType,
   chainNameToolCallParam,
   chainRegistry,
   EVMChainConfig,
-} from '../types/chain';
+} from './chain';
 import {
   SignatureTypes,
   WalletStore,
@@ -25,7 +25,9 @@ interface SendToolParams {
   denom: string;
 }
 
-export class EvmTransferMessage implements ChainMessage<SendToolParams> {
+export class EvmTransferMessage
+  implements ChainToolCallMessage<SendToolParams>
+{
   name = 'evm-transfer';
   description = 'Send erc20 tokens from one address to another';
   operationType = OperationType.TRANSACTION;

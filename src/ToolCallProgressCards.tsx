@@ -1,19 +1,19 @@
 import { useSyncExternalStore } from 'react';
 import { ToolCallStreamStore } from './stores/toolCallStreamStore';
-import { OperationRegistry } from './types/chain';
+import { ToolCallRegistry } from './services/chain';
 import { TextStreamStore } from './stores/textStreamStore';
 
 export const ToolCallProgressCards = ({
   onRendered,
   toolCallStreamStore,
-  operationRegistry,
+  toolCallRegistry,
   progressStore,
   isOperationValidated,
 }: {
   onRendered: () => void;
   progressStore: TextStreamStore;
   toolCallStreamStore: ToolCallStreamStore;
-  operationRegistry: OperationRegistry<unknown>;
+  toolCallRegistry: ToolCallRegistry<unknown>;
   isOperationValidated: boolean;
 }) => {
   const toolCallStreams = useSyncExternalStore(
@@ -24,7 +24,7 @@ export const ToolCallProgressCards = ({
   if (!toolCallStreams.length) return null;
 
   return toolCallStreams.map((toolCall) => {
-    const operation = operationRegistry.get(toolCall.function.name ?? '');
+    const operation = toolCallRegistry.get(toolCall.function.name ?? '');
     if (operation && operation.inProgressComponent) {
       const Component = operation.inProgressComponent();
       return (

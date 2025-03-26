@@ -17,9 +17,9 @@ import { deleteConversation } from './api/deleteConversation';
 import { updateConversation } from './api/updateConversation';
 import { getAllConversations } from './api/getAllConversations';
 import { saveConversation } from './api/saveConversation';
-import { initializeMessageRegistry } from './types/chain/operationRegistry';
+import { initializeToolCallRegistry } from './services/chain';
 import { ToolCallStreamStore } from './stores/toolCallStreamStore';
-import { useExecuteOperation } from './useExecuteOperation';
+import { useExecuteToolCall } from './useExecuteToolCall';
 import { WalletStore } from './stores/walletStore/walletStore';
 import { getSearchableHistory } from './api/getSearchableHistory';
 
@@ -56,7 +56,7 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
 
   // **********
 
-  const [operationRegistry] = useState(() => initializeMessageRegistry());
+  const [toolCallRegistry] = useState(() => initializeToolCallRegistry());
 
   const [walletStore] = useState(() => new WalletStore());
 
@@ -70,8 +70,8 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
     [],
   );
 
-  const { executeOperation } = useExecuteOperation(
-    operationRegistry,
+  const { executeOperation } = useExecuteToolCall(
+    toolCallRegistry,
     walletStore,
     activeChat.isOperationValidated,
     setIsOperationValidated,
@@ -136,7 +136,7 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
 
       // no need to catch
       // doChat won't throw and automatically sets errors in the activeChat's errorStore
-      await doChat(newActiveChat, operationRegistry, executeOperation);
+      await doChat(newActiveChat, toolCallRegistry, executeOperation);
       setActiveChat((prev) => ({
         ...prev,
         isRequesting: false,
@@ -163,7 +163,7 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
           delete activeChats[activeChat.id];
         });
     },
-    [activeChat, conversationHistories, operationRegistry, executeOperation],
+    [activeChat, conversationHistories, toolCallRegistry, executeOperation],
   );
 
   const handleCancel = useCallback(() => {
@@ -278,7 +278,7 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
       onUpdateConversationTitle,
       searchableHistory,
       fetchSearchHistory,
-      operationRegistry,
+      toolCallRegistry,
     }),
     [
       activeChat,
@@ -290,7 +290,7 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
       onDeleteConversation,
       onUpdateConversationTitle,
       searchableHistory,
-      operationRegistry,
+      toolCallRegistry,
     ],
   );
 };
