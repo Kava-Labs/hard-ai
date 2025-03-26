@@ -14,7 +14,6 @@ interface SearchModalBodyProps {
   groupedConversations: GroupedSearchHistories;
   onSelectConversation: (id: string) => void;
   handleSearchTermChange: (searchTerm: string) => void;
-  inputValue: string;
   onClose: () => void;
   searchTerm: string;
 }
@@ -23,7 +22,6 @@ export const SearchHistoryModalBody = ({
   groupedConversations,
   onSelectConversation,
   handleSearchTermChange,
-  inputValue,
   onClose,
   searchTerm,
 }: SearchModalBodyProps) => {
@@ -58,7 +56,7 @@ export const SearchHistoryModalBody = ({
           type="text"
           className={styles.searchInput}
           placeholder="Search conversations..."
-          value={inputValue}
+          value={searchTerm}
           onChange={(e) => handleSearchTermChange(e.target.value)}
           onKeyDown={handleKeyDown}
           autoFocus

@@ -14,13 +14,11 @@ describe('SearchHistoryModalBody', () => {
   const onSelectConversation = vi.fn();
   const handleSearchTermChange = vi.fn();
   const onClose = vi.fn();
-  const searchTerm = 'This';
 
   const props = {
     onSelectConversation,
     onClose,
     handleSearchTermChange,
-    searchTerm,
   };
 
   beforeEach(() => {
@@ -36,7 +34,7 @@ describe('SearchHistoryModalBody', () => {
       <SearchHistoryModalBody
         {...props}
         groupedConversations={groupedConversations}
-        inputValue="test"
+        searchTerm="test"
       />,
     );
 
@@ -65,7 +63,7 @@ describe('SearchHistoryModalBody', () => {
       <SearchHistoryModalBody
         {...props}
         groupedConversations={groupedConversations}
-        inputValue="conversation"
+        searchTerm="conversation"
       />,
     );
 
@@ -84,7 +82,7 @@ describe('SearchHistoryModalBody', () => {
       <SearchHistoryModalBody
         {...props}
         groupedConversations={groupedConversations}
-        inputValue="nonexistent"
+        searchTerm="nonexistent"
       />,
     );
 
@@ -105,7 +103,7 @@ describe('SearchHistoryModalBody', () => {
       <SearchHistoryModalBody
         {...props}
         groupedConversations={groupedConversations}
-        inputValue="test"
+        searchTerm="test"
       />,
     );
 
@@ -122,8 +120,8 @@ describe('SearchHistoryModalBody', () => {
       title: 'Test Conversation About Bitcoin',
       messages: [{ role: 'user', content: 'This is about something else' }],
     };
-    const searchTerm = 'Bitcoin';
 
+    const searchTerm = 'Bitcoin';
     const expectedTitle = 'Test Conversation About <strong>Bitcoin</strong>';
 
     const groupedConversations: GroupedSearchHistories = {
@@ -132,11 +130,8 @@ describe('SearchHistoryModalBody', () => {
 
     render(
       <SearchHistoryModalBody
+        {...props}
         groupedConversations={groupedConversations}
-        onSelectConversation={onSelectConversation}
-        handleSearchTermChange={handleSearchTermChange}
-        inputValue={searchTerm}
-        onClose={onClose}
         searchTerm={searchTerm}
       />,
     );
@@ -153,7 +148,6 @@ describe('SearchHistoryModalBody', () => {
     };
 
     const searchTerm = 'Ethereum';
-
     const expectedSnippet = 'This is about <strong>Ethereum</strong>';
 
     const groupedConversations: GroupedSearchHistories = {
@@ -162,11 +156,8 @@ describe('SearchHistoryModalBody', () => {
 
     render(
       <SearchHistoryModalBody
+        {...props}
         groupedConversations={groupedConversations}
-        onSelectConversation={onSelectConversation}
-        handleSearchTermChange={handleSearchTermChange}
-        inputValue={searchTerm}
-        onClose={onClose}
         searchTerm={searchTerm}
       />,
     );
@@ -191,11 +182,8 @@ describe('SearchHistoryModalBody', () => {
 
     render(
       <SearchHistoryModalBody
+        {...props}
         groupedConversations={groupedConversations}
-        onSelectConversation={onSelectConversation}
-        handleSearchTermChange={handleSearchTermChange}
-        inputValue={searchTerm}
-        onClose={onClose}
         searchTerm={searchTerm}
       />,
     );
@@ -228,7 +216,6 @@ describe('SearchHistoryModalBody', () => {
         groupedConversations={groupedConversations}
         onSelectConversation={onSelectConversation}
         handleSearchTermChange={handleSearchTermChange}
-        inputValue={searchTerm}
         onClose={onClose}
         searchTerm={searchTerm}
       />,
