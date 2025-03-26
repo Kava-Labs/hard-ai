@@ -11,22 +11,6 @@ export const App = () => {
   const [isDesktopSideBarOpen, setIsDesktopSideBarOpen] = useState(true);
   const [isSearchHistoryOpen, setIsSearchHistoryOpen] = useState(false);
 
-  const openMobileSideBar = () => {
-    setIsMobileSideBarOpen(true);
-  };
-
-  const openDesktopSideBar = () => {
-    setIsDesktopSideBarOpen(true);
-  };
-
-  const closeMobileSideBar = () => {
-    setIsMobileSideBarOpen(false);
-  };
-
-  const closeDesktopSideBar = () => {
-    setIsDesktopSideBarOpen(false);
-  };
-
   const onCloseSearchHistory = () => {
     setIsSearchHistoryOpen(false);
   };
@@ -38,8 +22,16 @@ export const App = () => {
   const isMobileLayout = useIsMobileLayout();
 
   const onCloseSideBar = isMobileLayout
-    ? closeMobileSideBar
-    : closeDesktopSideBar;
+    ? () => setIsMobileSideBarOpen(false)
+    : () => setIsDesktopSideBarOpen(false);
+
+  const onOpenSideBar = isMobileLayout
+    ? () => setIsMobileSideBarOpen(true)
+    : () => setIsDesktopSideBarOpen(true);
+
+  const isSideBarOpen = isMobileLayout
+    ? isMobileSideBarOpen
+    : isDesktopSideBarOpen;
 
   const {
     activeChat,
@@ -58,26 +50,23 @@ export const App = () => {
   return (
     <div className={styles.app}>
       <SideBar
-        conversationHistories={conversationHistories}
-        onSelectConversation={onSelectConversation}
         activeConversationId={activeChat.id}
-        onDeleteConversation={onDeleteConversation}
-        onUpdateConversationTitle={onUpdateConversationTitle}
-        onOpenSearchModal={onOpenSearchModal}
-        isMobileSideBarOpen={isMobileSideBarOpen}
-        isDesktopSideBarOpen={isDesktopSideBarOpen}
-        isSearchHistoryOpen={isSearchHistoryOpen}
+        conversationHistories={conversationHistories}
         onCloseClick={onCloseSideBar}
+        onDeleteConversation={onDeleteConversation}
+        onOpenSearchModal={onOpenSearchModal}
+        onSelectConversation={onSelectConversation}
+        onUpdateConversationTitle={onUpdateConversationTitle}
+        isSideBarOpen={isSideBarOpen}
       />
       <ChatInterface
         activeChat={activeChat}
-        handleChatCompletion={handleChatCompletion}
         handleCancel={handleCancel}
+        handleChatCompletion={handleChatCompletion}
         handleNewChat={handleNewChat}
-        isDesktopSideBarOpen={isDesktopSideBarOpen}
-        onMobileMenuClick={openMobileSideBar}
-        onDesktopMenuClick={openDesktopSideBar}
         operationRegistry={operationRegistry}
+        onMenuClick={onOpenSideBar}
+        isSideBarOpen={isSideBarOpen}
       />
       {isSearchHistoryOpen && searchableHistory && (
         <SearchHistoryModal

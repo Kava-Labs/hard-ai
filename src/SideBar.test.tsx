@@ -14,9 +14,7 @@ describe('SideBar', () => {
     onUpdateConversationTitle: vi.fn(),
     onCloseClick: vi.fn(),
     onOpenSearchModal: vi.fn(),
-    isMobileSideBarOpen: false,
-    isDesktopSideBarOpen: true,
-    isSearchHistoryOpen: false,
+    isSideBarOpen: false,
   };
 
   const mockConversationHistories = {
@@ -50,9 +48,11 @@ describe('SideBar', () => {
   test('renders Sidebar in mobile layout when sidebar is open', () => {
     vi.mocked(useIsMobileLayout).mockReturnValue(true);
 
-    render(<SideBar {...mockProps} isMobileSideBarOpen={true} />);
+    render(<SideBar {...mockProps} isSideBarOpen={true} />);
 
-    expect(screen.getByLabelText('Close Mobile Menu')).toBeInTheDocument();
+    expect(
+      screen.getByRole('img', { name: 'Hard AI logo' }),
+    ).toBeInTheDocument();
   });
 
   test('renders Sidebar in desktop layout when sidebar is open', () => {
@@ -60,7 +60,9 @@ describe('SideBar', () => {
 
     render(<SideBar {...mockProps} />);
 
-    expect(screen.getByLabelText('Close Desktop Menu')).toBeInTheDocument();
+    expect(
+      screen.getByRole('img', { name: 'Hard AI logo' }),
+    ).toBeInTheDocument();
   });
 
   test('renders the logo and ChatHistory component', () => {

@@ -7,7 +7,6 @@ import { OperationRegistry } from './types/chain';
 interface ConversationWrapperProps {
   activeChat: ActiveChat;
   onRendered: () => void;
-
   operationRegistry: OperationRegistry<unknown>;
 }
 

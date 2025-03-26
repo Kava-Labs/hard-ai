@@ -25,7 +25,6 @@ export interface ConversationProps {
   errorText: string;
   isRequesting: boolean;
   onRendered: () => void;
-
   progressStore: TextStreamStore;
   toolCallStreamStore: ToolCallStreamStore;
   operationRegistry: OperationRegistry<unknown>;

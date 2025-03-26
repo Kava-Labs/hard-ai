@@ -3,35 +3,37 @@ import hardAILogo from './assets/hardAILogo.svg';
 import { ChatHistory } from './ChatHistory';
 import { ConversationHistories } from './types';
 import { SideBarControls } from './SideBarControls';
+import { useIsMobileLayout } from './theme/useIsMobileLayout';
 
 export interface SideBarProps {
+  activeConversationId: string | null;
   conversationHistories: ConversationHistories;
   onSelectConversation: (id: string) => void;
-  activeConversationId: string | null;
   onDeleteConversation: (id: string) => void;
   onUpdateConversationTitle: (id: string, newTitle: string) => void;
   onOpenSearchModal: () => void;
   onCloseClick: () => void;
-  isMobileSideBarOpen: boolean;
-  isDesktopSideBarOpen: boolean;
-  isSearchHistoryOpen: boolean;
+  isSideBarOpen: boolean;
 }
 
 export const SideBar = ({
+  activeConversationId,
   conversationHistories,
   onSelectConversation,
-  activeConversationId,
   onDeleteConversation,
   onUpdateConversationTitle,
   onOpenSearchModal,
   onCloseClick,
-  isMobileSideBarOpen,
-  isDesktopSideBarOpen,
+  isSideBarOpen,
 }: SideBarProps) => {
+  const isMobileLayout = useIsMobileLayout();
+  const isMobileSideBarOpen = isSideBarOpen && isMobileLayout;
+  const isDesktopSideBarOpen = isSideBarOpen && !isMobileLayout;
   const sideBarStyles = `${styles.sidebar} ${isMobileSideBarOpen ? styles.isOpen : ''} ${isDesktopSideBarOpen ? '' : styles.isHidden}`;
 
   const hasNoConversationHistory =
     Object.keys(conversationHistories).length === 0;
+
   return (
     <div className={sideBarStyles}>
       <div className={styles.sidebarHeader}>
