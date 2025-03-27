@@ -1,4 +1,4 @@
-import { memo, useMemo } from 'react';
+import { memo, useMemo, useState } from 'react';
 import { ChatHistoryItem } from './ChatHistoryItem';
 import styles from './ChatHistory.module.css';
 import { ConversationHistories } from './types';
@@ -26,6 +26,17 @@ export const ChatHistory = memo(
       [chatHistories],
     );
 
+    const [isEditMenuOpen, setIsEditMenuOpen] = useState(false);
+    const [isEditingTitle, setIsEditingTitle] = useState(false);
+
+    const toggleEditingTitle = (isEditing: boolean) => {
+      setIsEditingTitle(isEditing);
+    };
+
+    const handleMenuOpen = (open: boolean) => {
+      setIsEditMenuOpen(open);
+    };
+
     return (
       <div className={styles.chatHistoryContainer}>
         {Object.values(chatHistories).length === 0 ? (
@@ -51,6 +62,10 @@ export const ChatHistory = memo(
                       deleteConversation={onDeleteConversation}
                       updateConversationTitle={onUpdateConversationTitle}
                       isSelected={activeConversationId === conversation.id}
+                      isMenuOpen={isEditMenuOpen}
+                      isEditingTitle={isEditingTitle}
+                      handleMenuOpen={handleMenuOpen}
+                      toggleEditingTitle={toggleEditingTitle}
                     />
                   ))}
                 </div>

@@ -9,6 +9,10 @@ export interface ChatHistoryItemProps {
   onHistoryItemClick: () => void;
   deleteConversation: (id: string) => void;
   updateConversationTitle: (id: string, newTitle: string) => void;
+  isMenuOpen: boolean;
+  handleMenuOpen: (isMenuOpen: boolean) => void;
+  isEditingTitle: boolean;
+  toggleEditingTitle: (isEditing: boolean) => void;
   isSelected?: boolean;
 }
 
@@ -18,12 +22,14 @@ export const ChatHistoryItem = memo(
     onHistoryItemClick,
     deleteConversation,
     updateConversationTitle,
+    isMenuOpen,
+    handleMenuOpen,
+    isEditingTitle,
+    toggleEditingTitle,
     isSelected = false,
   }: ChatHistoryItemProps) => {
     const { id, title } = conversation;
-    const [editingTitle, setEditingTitle] = useState(false);
     const [editInputValue, setEditInputValue] = useState(title);
-    const [isMenuOpen, setIsMenuOpen] = useState(false);
 
     const containerRef = useRef<HTMLDivElement>(null);
     const inputRef = useRef<HTMLInputElement>(null);
@@ -31,18 +37,18 @@ export const ChatHistoryItem = memo(
     const handleMenuClick = (e: React.MouseEvent) => {
       e.preventDefault();
       e.stopPropagation();
-      if (editingTitle) {
-        setEditingTitle(false);
+      if (isEditingTitle) {
+        toggleEditingTitle(false);
         setEditInputValue(title);
       }
-      setIsMenuOpen((prev) => !prev);
+      handleMenuOpen(!isMenuOpen);
     };
 
     const handleSaveTitle = useCallback(() => {
       const trimmedTitle = editInputValue.trim();
       if (trimmedTitle === '') {
         setEditInputValue(title);
-        setEditingTitle(false);
+        toggleEditingTitle(false);
         return;
       }
 
@@ -50,24 +56,25 @@ export const ChatHistoryItem = memo(
         updateConversationTitle(id, trimmedTitle);
       }
 
-      setEditingTitle(false);
-    }, [editInputValue, title, id, updateConversationTitle]);
+      toggleEditingTitle(false);
+    }, [
+      editInputValue,
+      title,
+      toggleEditingTitle,
+      updateConversationTitle,
+      id,
+    ]);
 
     const handleDelete = (e: React.MouseEvent) => {
       e.stopPropagation();
       deleteConversation(id);
-      setIsMenuOpen(false);
+      handleMenuOpen(false);
     };
 
     const handleEdit = (e: React.MouseEvent) => {
       e.stopPropagation();
-      if (editingTitle) {
-        setEditInputValue(title);
-        setEditingTitle(false);
-      } else {
-        setEditInputValue(title);
-        setEditingTitle(true);
-      }
+      setEditInputValue(title);
+      toggleEditingTitle(!isEditingTitle);
     };
 
     const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -76,24 +83,24 @@ export const ChatHistoryItem = memo(
         handleSaveTitle();
       } else if (e.key === 'Escape') {
         setEditInputValue(title);
-        setEditingTitle(false);
+        toggleEditingTitle(false);
       }
     };
 
     useEffect(() => {
-      if (editingTitle && inputRef.current) {
+      if (isEditingTitle && inputRef.current) {
         inputRef.current.focus();
         inputRef.current.select();
       }
-    }, [editingTitle]);
+    }, [isEditingTitle]);
 
     useEffect(() => {
       const handleClickOutside = (event: MouseEvent) => {
         const target = event.target as Node;
 
         if (containerRef.current && !containerRef.current.contains(target)) {
-          setIsMenuOpen(false);
-          if (editingTitle) {
+          handleMenuOpen(false);
+          if (isEditingTitle) {
             handleSaveTitle();
           }
         }
@@ -102,7 +109,7 @@ export const ChatHistoryItem = memo(
       document.addEventListener('mousedown', handleClickOutside);
       return () =>
         document.removeEventListener('mousedown', handleClickOutside);
-    }, [editingTitle, handleSaveTitle]);
+    }, [handleMenuOpen, handleSaveTitle, isEditingTitle]);
 
     return (
       <div
@@ -112,9 +119,9 @@ export const ChatHistoryItem = memo(
         <div className={styles.chatHistoryContent}>
           <div
             className={styles.titleContainer}
-            onClick={editingTitle ? undefined : onHistoryItemClick}
+            onClick={isEditingTitle ? undefined : onHistoryItemClick}
           >
-            {editingTitle ? (
+            {isEditingTitle ? (
               <input
                 ref={inputRef}
                 type="text"
@@ -146,9 +153,9 @@ export const ChatHistoryItem = memo(
           <button
             className={styles.menuButton}
             onClick={handleEdit}
-            aria-label={editingTitle ? 'Cancel Rename Title' : 'Rename Title'}
+            aria-label={isEditingTitle ? 'Cancel Rename Title' : 'Rename Title'}
           >
-            {editingTitle ? (
+            {isEditingTitle ? (
               <>
                 <X size={16} />
                 <span>Cancel</span>

@@ -111,6 +111,7 @@ describe('ChatHistory Component', () => {
 
     expect(mockProps.onDeleteConversation).toHaveBeenCalledWith('conv-today-1');
   });
+
   it('clicking rename button opens an editable input', async () => {
     render(
       <ChatHistory
@@ -149,5 +150,176 @@ describe('ChatHistory Component', () => {
     fireEvent.click(screen.getByLabelText('Chat Options'));
 
     expect(editInput).not.toBeInTheDocument();
+  });
+
+  it('should update input value as user types', () => {
+    render(
+      <ChatHistory
+        chatHistories={mockHistories}
+        activeConversationId={'123'}
+        {...mockProps}
+      />,
+    );
+
+    const menuButton = screen.getByRole('button', { name: 'Chat Options' });
+    fireEvent.click(menuButton);
+
+    const renameButton = screen.getByRole('button', { name: 'Rename Title' });
+    fireEvent.click(renameButton);
+
+    const input = screen.getByLabelText('Edit Title Input');
+    fireEvent.change(input, { target: { value: '' } });
+    fireEvent.change(input, { target: { value: 'Updated Title' } });
+
+    expect(input).toHaveValue('Updated Title');
+  });
+
+  it('should save title when Enter key is pressed', () => {
+    render(
+      <ChatHistory
+        chatHistories={mockHistories}
+        activeConversationId={'123'}
+        {...mockProps}
+      />,
+    );
+
+    const menuButton = screen.getByRole('button', { name: 'Chat Options' });
+    fireEvent.click(menuButton);
+
+    const renameButton = screen.getByRole('button', { name: 'Rename Title' });
+    fireEvent.click(renameButton);
+
+    const input = screen.getByLabelText('Edit Title Input');
+    fireEvent.change(input, { target: { value: '' } });
+    fireEvent.change(input, { target: { value: 'Updated Title' } });
+    fireEvent.keyDown(input, { key: 'Enter' });
+
+    expect(mockProps.onUpdateConversationTitle).toHaveBeenCalledWith(
+      'conv-today-1',
+      'Updated Title',
+    );
+  });
+
+  it('should save title when clicking outside while in edit mode', () => {
+    render(
+      <div>
+        <div data-testid="outside-element">Outside Element</div>
+        <ChatHistory
+          chatHistories={mockHistories}
+          activeConversationId={'123'}
+          {...mockProps}
+        />
+      </div>,
+    );
+
+    const menuButton = screen.getByRole('button', { name: 'Chat Options' });
+    fireEvent.click(menuButton);
+
+    const renameButton = screen.getByRole('button', { name: 'Rename Title' });
+    fireEvent.click(renameButton);
+
+    const input = screen.getByLabelText('Edit Title Input');
+    fireEvent.change(input, { target: { value: '' } });
+    fireEvent.change(input, {
+      target: { value: 'New Title from Outside Click' },
+    });
+
+    fireEvent.mouseDown(screen.getByTestId('outside-element'));
+
+    expect(mockProps.onUpdateConversationTitle).toHaveBeenCalledWith(
+      'conv-today-1',
+      'New Title from Outside Click',
+    );
+  });
+
+  it('should not save empty title but revert to original', () => {
+    render(
+      <ChatHistory
+        chatHistories={mockHistories}
+        activeConversationId={'123'}
+        {...mockProps}
+      />,
+    );
+
+    const menuButton = screen.getByRole('button', { name: 'Chat Options' });
+    fireEvent.click(menuButton);
+
+    const renameButton = screen.getByRole('button', { name: 'Rename Title' });
+    fireEvent.click(renameButton);
+
+    const input = screen.getByLabelText('Edit Title Input');
+    fireEvent.change(input, { target: { value: '' } });
+    fireEvent.keyDown(input, { key: 'Enter' });
+
+    expect(mockProps.onUpdateConversationTitle).not.toHaveBeenCalled();
+    expect(screen.getByText('First Today Conversation')).toBeInTheDocument();
+  });
+
+  it('should cancel editing when Escape key is pressed', () => {
+    render(
+      <ChatHistory
+        chatHistories={mockHistories}
+        activeConversationId={'123'}
+        {...mockProps}
+      />,
+    );
+
+    const menuButton = screen.getByRole('button', { name: 'Chat Options' });
+    fireEvent.click(menuButton);
+
+    const renameButton = screen.getByRole('button', { name: 'Rename Title' });
+    fireEvent.click(renameButton);
+
+    const input = screen.getByLabelText('Edit Title Input');
+    fireEvent.change(input, { target: { value: '' } });
+    fireEvent.change(input, { target: { value: 'Updated Title' } });
+    fireEvent.keyDown(input, { key: 'Escape' });
+
+    expect(mockProps.onUpdateConversationTitle).not.toHaveBeenCalled();
+    expect(screen.queryByLabelText('Edit Title Input')).not.toBeInTheDocument();
+    expect(screen.getByText('First Today Conversation')).toBeInTheDocument();
+  });
+
+  it('should delete conversation when delete button is clicked', () => {
+    render(
+      <ChatHistory
+        chatHistories={mockHistories}
+        activeConversationId={'123'}
+        {...mockProps}
+      />,
+    );
+
+    const menuButton = screen.getByRole('button', { name: 'Chat Options' });
+    fireEvent.click(menuButton);
+
+    const deleteButton = screen.getByRole('button', { name: 'Delete Chat' });
+    fireEvent.click(deleteButton);
+
+    expect(mockProps.onDeleteConversation).toHaveBeenCalledWith('conv-today-1');
+  });
+
+  it('should not update title if the trimmed value is the same as the original', () => {
+    render(
+      <ChatHistory
+        chatHistories={mockHistories}
+        activeConversationId={'123'}
+        {...mockProps}
+      />,
+    );
+
+    const menuButton = screen.getByRole('button', { name: 'Chat Options' });
+    fireEvent.click(menuButton);
+
+    const renameButton = screen.getByRole('button', { name: 'Rename Title' });
+    fireEvent.click(renameButton);
+
+    const input = screen.getByLabelText('Edit Title Input');
+    fireEvent.change(input, { target: { value: '' } });
+    fireEvent.change(input, {
+      target: { value: '   First Today Conversation    ' },
+    });
+    fireEvent.keyDown(input, { key: 'Enter' });
+
+    expect(mockProps.onUpdateConversationTitle).not.toHaveBeenCalled();
   });
 });
