@@ -153,8 +153,7 @@ export const groupAndFilterConversations = (
   const isSearching = searchTerm.trim() !== '';
   const searchRegex = isSearching ? new RegExp(searchTerm.trim(), 'i') : null;
 
-  // Filter conversations if searching
-  const filteredConversationsObj: Record<string, SearchableChatHistory> = {};
+  const filteredConversationsObj: SearchableChatHistories = {};
 
   Object.entries(conversations).forEach(([id, conversation]) => {
     if (!isSearching) {
@@ -168,7 +167,7 @@ export const groupAndFilterConversations = (
       return;
     }
 
-    // Secondary search is for content matches
+    //  Secondary search is for content matches
     const messageMatches = conversation.messages.some((message) => {
       const textContent = extractTextContent(message);
       return searchRegex?.test(textContent);
