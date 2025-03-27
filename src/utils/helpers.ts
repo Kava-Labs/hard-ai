@@ -6,12 +6,22 @@ import {
   SearchableChatHistory,
 } from '../types';
 
+const timeGroupLabels = [
+  'Today',
+  'Yesterday',
+  'Last week',
+  '2 weeks ago',
+  'Last week',
+  'Last month',
+  'Older',
+] as const;
+type TimeGroupLabel = (typeof timeGroupLabels)[number];
 /**
  * Determines the time group label for a given timestamp
  * @param timestamp - Unix timestamp in milliseconds
  * @returns A string representing the time group (e.g., 'Today', 'Yesterday', 'Last week')
  */
-export const getTimeGroup = (timestamp: number): string => {
+export const getTimeGroup = (timestamp: number): TimeGroupLabel => {
   const now = new Date();
   const diffDays = Math.floor(
     (now.getTime() - timestamp) / (1000 * 60 * 60 * 24),
@@ -132,53 +142,50 @@ export const extractTextContent = (msg: ChatMessage): string => {
  * @param searchTerm - Optional term to filter conversations (matches title or message content)
  * @returns An object with time groups as keys and arrays of matching conversations as values
  */
+
 export const groupAndFilterConversations = (
   conversations: SearchableChatHistories,
   searchTerm = '',
 ): GroupedSearchHistories => {
-  const groupedFilteredResults: GroupedSearchHistories = {};
-
-  if (!conversations) return groupedFilteredResults;
+  if (!conversations) return {};
 
   const isSearching = searchTerm.trim() !== '';
   const searchRegex = isSearching ? new RegExp(searchTerm.trim(), 'i') : null;
 
-  Object.values(conversations).forEach((conversation) => {
-    //  If we aren't searching, return all histories, sorted by time
-    if (isSearching && searchRegex) {
-      //  Primary search is for title match
-      const titleMatches = searchRegex.test(conversation.title);
+  // Filter conversations if searching
+  const filteredConversationsObj: Record<string, SearchableChatHistory> = {};
 
-      //  Secondary search is for content matches
-      if (!titleMatches) {
-        const messageMatches = conversation.messages.some((message) => {
-          const textContent = extractTextContent(message);
-          return searchRegex.test(textContent);
-        });
-
-        //  if we haven't found any title or content matches, return (triggers 'No results')
-        if (!messageMatches) return;
-      }
+  Object.entries(conversations).forEach(([id, conversation]) => {
+    if (!isSearching) {
+      filteredConversationsObj[id] = conversation;
+      return;
     }
 
-    const timeGroup = getTimeGroup(conversation.lastSaved);
-
-    //  Initialize the time group if it doesn't exist yet
-    if (!groupedFilteredResults[timeGroup]) {
-      groupedFilteredResults[timeGroup] = [];
+    //  Primary search is for title match
+    if (searchRegex?.test(conversation.title)) {
+      filteredConversationsObj[id] = conversation;
+      return;
     }
 
-    groupedFilteredResults[timeGroup].push(conversation);
+    // Secondary search is for content matches
+    const messageMatches = conversation.messages.some((message) => {
+      const textContent = extractTextContent(message);
+      return searchRegex?.test(textContent);
+    });
+
+    if (messageMatches) {
+      filteredConversationsObj[id] = conversation;
+    }
   });
 
-  for (const tGroup in groupedFilteredResults) {
-    //  Only sort if the group has more than one entry
-    if (groupedFilteredResults[tGroup].length > 1) {
-      groupedFilteredResults[tGroup].sort((a, b) => b.lastSaved - a.lastSaved);
-    }
-  }
+  const groupedResults = groupConversationsByTime(filteredConversationsObj);
 
-  return groupedFilteredResults;
+  //  Remove empty groups and ensure correct order
+  return Object.fromEntries(
+    timeGroupLabels
+      .filter((group) => groupedResults[group]?.length > 0)
+      .map((group) => [group, groupedResults[group]]),
+  );
 };
 
 const removeSystemMessages = (messages: ChatMessage[]) => {
