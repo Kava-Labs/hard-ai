@@ -15,6 +15,7 @@ const timeGroupLabels = [
   'Last month',
   'Older',
 ] as const;
+
 type TimeGroupLabel = (typeof timeGroupLabels)[number];
 /**
  * Determines the time group label for a given timestamp
