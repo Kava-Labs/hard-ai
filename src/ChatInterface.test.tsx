@@ -10,13 +10,13 @@ import { useIsMobileLayout } from './theme/useIsMobileLayout';
 
 vi.mock('./theme/useIsMobileLayout');
 
-vi.mock('./ConversationWrapper', () => ({
-  ConversationWrapper: ({ activeChat }: { activeChat: ActiveChat }) => (
-    <div data-testid="conversation-wrapper">
-      Conversation ID: {activeChat.id}
-    </div>
-  ),
-}));
+// vi.mock('./ConversationWrapper', () => ({
+//   ConversationWrapper: ({ activeChat }: { activeChat: ActiveChat }) => (
+//     <div data-testid="conversation-wrapper">
+//       Conversation ID: {activeChat.id}
+//     </div>
+//   ),
+// }));
 
 describe('ChatInterface', () => {
   const mockProps = {
@@ -54,7 +54,7 @@ describe('ChatInterface', () => {
     expect(input).toBeInTheDocument();
   });
 
-  it('renders correctly with active conversation', () => {
+  it.only('renders correctly with active conversation', () => {
     const activeProps = {
       ...mockProps,
       activeChat: {
@@ -64,6 +64,8 @@ describe('ChatInterface', () => {
     };
 
     render(<ChatInterface {...activeProps} />);
+
+    screen.debug(undefined, Infinity);
 
     expect(screen.getByTestId('conversation-wrapper')).toBeInTheDocument();
     expect(screen.queryByTestId('landing-content')).not.toBeInTheDocument();
