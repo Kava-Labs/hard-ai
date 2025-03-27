@@ -153,17 +153,17 @@ export const groupAndFilterConversations = (
   const isSearching = searchTerm.trim() !== '';
   const searchRegex = isSearching ? new RegExp(searchTerm.trim(), 'i') : null;
 
-  const filteredConversationsObj: SearchableChatHistories = {};
+  const filteredConversations: SearchableChatHistories = {};
 
   Object.entries(conversations).forEach(([id, conversation]) => {
     if (!isSearching) {
-      filteredConversationsObj[id] = conversation;
+      filteredConversations[id] = conversation;
       return;
     }
 
     //  Primary search is for title match
     if (searchRegex?.test(conversation.title)) {
-      filteredConversationsObj[id] = conversation;
+      filteredConversations[id] = conversation;
       return;
     }
 
@@ -174,11 +174,11 @@ export const groupAndFilterConversations = (
     });
 
     if (messageMatches) {
-      filteredConversationsObj[id] = conversation;
+      filteredConversations[id] = conversation;
     }
   });
 
-  const groupedResults = groupConversationsByTime(filteredConversationsObj);
+  const groupedResults = groupConversationsByTime(filteredConversations);
 
   //  Remove empty groups and ensure correct order
   return Object.fromEntries(
