@@ -178,14 +178,7 @@ export const groupAndFilterConversations = (
     }
   });
 
-  const groupedResults = groupConversationsByTime(filteredConversations);
-
-  //  Remove empty groups and ensure correct order
-  return Object.fromEntries(
-    timeGroupLabels
-      .filter((group) => groupedResults[group]?.length > 0)
-      .map((group) => [group, groupedResults[group]]),
-  );
+  return groupConversationsByTime(filteredConversations);
 };
 
 const removeSystemMessages = (messages: ChatMessage[]) => {
