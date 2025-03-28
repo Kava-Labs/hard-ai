@@ -6,23 +6,12 @@ import {
   SearchableChatHistory,
 } from '../types';
 
-const timeGroupLabels = [
-  'Today',
-  'Yesterday',
-  'Last week',
-  '2 weeks ago',
-  'Last week',
-  'Last month',
-  'Older',
-] as const;
-
-type TimeGroupLabel = (typeof timeGroupLabels)[number];
 /**
  * Determines the time group label for a given timestamp
  * @param timestamp - Unix timestamp in milliseconds
  * @returns A string representing the time group (e.g., 'Today', 'Yesterday', 'Last week')
  */
-export const getTimeGroup = (timestamp: number): TimeGroupLabel => {
+export const getTimeGroup = (timestamp: number): string => {
   const now = new Date();
   const diffDays = Math.floor(
     (now.getTime() - timestamp) / (1000 * 60 * 60 * 24),
@@ -155,15 +144,15 @@ export const groupAndFilterConversations = (
 
   const filteredConversations: SearchableChatHistories = {};
 
-  Object.entries(conversations).forEach(([id, conversation]) => {
+  Object.values(conversations).forEach((conversation) => {
     if (!isSearching) {
-      filteredConversations[id] = conversation;
+      filteredConversations[conversation.id] = conversation;
       return;
     }
 
     //  Primary search is for title match
     if (searchRegex?.test(conversation.title)) {
-      filteredConversations[id] = conversation;
+      filteredConversations[conversation.id] = conversation;
       return;
     }
 
@@ -174,7 +163,7 @@ export const groupAndFilterConversations = (
     });
 
     if (messageMatches) {
-      filteredConversations[id] = conversation;
+      filteredConversations[conversation.id] = conversation;
     }
   });
 
