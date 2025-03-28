@@ -11,7 +11,7 @@ export const doChat = async (
   toolCallRegistry: ToolCallRegistry<unknown>,
   executeOperation: ExecuteToolCall,
 ) => {
-  activeChat.progressStore.setText('Thinking');
+  activeChat.loadingStore.loadingBegins();
 
   try {
     const stream = await activeChat.client.chat.completions.create(
@@ -27,8 +27,8 @@ export const doChat = async (
     );
 
     for await (const chunk of stream) {
-      if (activeChat.progressStore.getSnapshot() !== '') {
-        activeChat.progressStore.setText('');
+      if (activeChat.loadingStore.getSnapshot() === true) {
+        activeChat.loadingStore.loadingCompletes();
       }
 
       if (isContentChunk(chunk)) {
@@ -76,9 +76,8 @@ export const doChat = async (
         : `An error occurred: ${JSON.stringify(e)} `,
     );
   } finally {
-    // Clear progress text if not cleared already
-    if (activeChat.progressStore.getSnapshot() !== '') {
-      activeChat.progressStore.setText('');
+    if (activeChat.loadingStore.getSnapshot() === true) {
+      activeChat.loadingStore.loadingCompletes();
     }
 
     // Ensure content is published on abort

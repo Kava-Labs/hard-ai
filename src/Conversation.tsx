@@ -12,6 +12,7 @@ import { TextStreamStore } from './stores/textStreamStore';
 import { ToolCallStreamStore } from './stores/toolCallStreamStore';
 import { ToolCallRegistry } from './toolcalls/chain';
 import { ToolMessageContainer } from './toolcalls/components/ToolCallMessageContainer';
+import { BrainIcon } from 'lucide-react';
 
 export type ChatMessage =
   | ChatCompletionMessageParam
@@ -23,6 +24,7 @@ export interface ConversationProps {
   progressText: string;
   assistantStream: string;
   errorText: string;
+  loadingState: boolean;
   isRequesting: boolean;
   onRendered: () => void;
   progressStore: TextStreamStore;
@@ -38,7 +40,7 @@ const ConversationComponent = ({
   errorText,
   assistantStream,
   onRendered,
-
+  loadingState,
   progressStore,
   toolCallStreamStore,
   toolCallRegistry,
@@ -84,15 +86,14 @@ const ConversationComponent = ({
       {isRequesting && (
         <div className={styles.assistantOutputContainer}>
           <div className={styles.assistantContainer}>
-            {progressText.length ? (
-              <div className={styles.progressStream}>
-                <Content
-                  content={progressText}
-                  role="assistant"
-                  onRendered={onRendered}
+            {loadingState && (
+              <div className={`${styles.brainIconContainer} ${styles.pulsing}`}>
+                <BrainIcon
+                  className={`${styles.brainIcon} ${styles.pulsing}`}
+                  aria-label="Progress Icon"
                 />
               </div>
-            ) : null}
+            )}
             <Content
               content={assistantStream}
               role="assistant"

@@ -7,6 +7,7 @@ import type { MessageHistoryStore } from './stores/messageHistoryStore';
 import type { TextStreamStore } from './stores/textStreamStore';
 import OpenAI from 'openai/index';
 import { ToolCallStreamStore } from './stores/toolCallStreamStore';
+import { LoadingStore } from './stores/loadingStore/loadingStore';
 
 export type ActiveChat = {
   id: string;
@@ -21,6 +22,7 @@ export type ActiveChat = {
   messageHistoryStore: MessageHistoryStore;
   messageStore: TextStreamStore;
   progressStore: TextStreamStore;
+  loadingStore: LoadingStore;
   errorStore: TextStreamStore;
 };
 
