@@ -14,5 +14,19 @@
 
 .introText {
   color: var(--colors-textSecondary);
-  font-size: 2.8rem;
+  font-size: 2.2rem;
+}
+
+.startLogoContainer {
+  width: 212px;
+}
+
+@media (min-width: 768px) {
+  .startLogoContainer {
+    width: 256px;
+    max-width: 50%;
+  }
+  .introText {
+    font-size: 2.8rem;
+  }
 }
