@@ -1,15 +1,15 @@
 type Listener = () => void;
 
-export class LoadingStore {
+export class ProcessingStore {
   private currentValue: boolean = false;
   private listeners: Set<Listener> = new Set();
 
-  public loadingBegins = () => {
+  public initiateProcessing = () => {
     this.currentValue = true;
     this.emitChange();
   };
 
-  public loadingCompletes = () => {
+  public finishProcessing = () => {
     this.currentValue = false;
     this.emitChange();
   };

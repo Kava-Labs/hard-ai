@@ -11,7 +11,7 @@ export const doChat = async (
   toolCallRegistry: ToolCallRegistry<unknown>,
   executeOperation: ExecuteToolCall,
 ) => {
-  activeChat.loadingStore.loadingBegins();
+  activeChat.processingStore.initiateProcessing();
 
   try {
     const stream = await activeChat.client.chat.completions.create(
@@ -27,8 +27,8 @@ export const doChat = async (
     );
 
     for await (const chunk of stream) {
-      if (activeChat.loadingStore.getSnapshot() === true) {
-        activeChat.loadingStore.loadingCompletes();
+      if (activeChat.processingStore.getSnapshot() === true) {
+        activeChat.processingStore.finishProcessing();
       }
 
       if (isContentChunk(chunk)) {
@@ -76,8 +76,8 @@ export const doChat = async (
         : `An error occurred: ${JSON.stringify(e)} `,
     );
   } finally {
-    if (activeChat.loadingStore.getSnapshot() === true) {
-      activeChat.loadingStore.loadingCompletes();
+    if (activeChat.processingStore.getSnapshot() === true) {
+      activeChat.processingStore.finishProcessing();
     }
 
     // Ensure content is published on abort

@@ -1,6 +1,6 @@
 import { useSyncExternalStore } from 'react';
-import { LoadingStore } from './loadingStore';
+import { ProcessingStore } from './processingStore';
 
-export const useLoadingStore = (store: LoadingStore) => {
+export const useProcessingStore = (store: ProcessingStore) => {
   return useSyncExternalStore(store.subscribe, store.getSnapshot);
 };

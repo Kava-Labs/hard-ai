@@ -22,7 +22,7 @@ import { ToolCallStreamStore } from './stores/toolCallStreamStore';
 import { useExecuteToolCall } from './useExecuteToolCall';
 import { WalletStore } from './stores/walletStore';
 import { getSearchableHistory } from './api/getSearchableHistory';
-import { LoadingStore } from './stores/loadingStore/loadingStore';
+import { ProcessingStore } from './stores/loadingStore/processingStore';
 
 const activeChats: Record<string, ActiveChat> = {};
 
@@ -47,7 +47,7 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
     abortController: new AbortController(),
     client: client,
     isOperationValidated: false,
-    loadingStore: new LoadingStore(),
+    processingStore: new ProcessingStore(),
     toolCallStreamStore: new ToolCallStreamStore(),
     messageHistoryStore: new MessageHistoryStore(initValues),
     messageStore: new TextStreamStore(),
@@ -170,7 +170,7 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
   const handleCancel = useCallback(() => {
     activeChat.abortController.abort();
     activeChat.messageStore.setText('');
-    activeChat.progressStore.setText('');
+    activeChat.processingStore.finishProcessing();
     setActiveChat((prev) => ({ ...prev, isRequesting: false }));
   }, [activeChat]);
 
@@ -184,7 +184,7 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
       model: initModel ? initModel : 'gpt-4o',
       abortController: new AbortController(),
       client: client,
-      loadingStore: new LoadingStore(),
+      processingStore: new ProcessingStore(),
       toolCallStreamStore: new ToolCallStreamStore(),
       messageHistoryStore: new MessageHistoryStore(),
       messageStore: new TextStreamStore(),
@@ -213,7 +213,7 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
               Array.isArray(messages) &&
               messages.some((msg) => msg.role === 'assistant'),
             messageHistoryStore: new MessageHistoryStore(messages ?? []),
-            loadingStore: new LoadingStore(),
+            processingStore: new ProcessingStore(),
             toolCallStreamStore: new ToolCallStreamStore(),
             progressStore: new TextStreamStore(),
             errorStore: new TextStreamStore(),

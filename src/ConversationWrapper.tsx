@@ -3,7 +3,7 @@ import { useMessageHistoryStore } from './stores/messageHistoryStore';
 import { useTextStreamStore } from './stores/textStreamStore';
 import { ActiveChat } from './types';
 import { ToolCallRegistry } from './toolcalls/chain';
-import { useLoadingStore } from './stores/loadingStore/useLoadingStore';
+import { useProcessingStore } from './stores/loadingStore/useProcessingStore';
 
 interface ConversationWrapperProps {
   activeChat: ActiveChat;
@@ -17,9 +17,8 @@ export const ConversationWrapper = ({
   toolCallRegistry,
 }: ConversationWrapperProps) => {
   const messages = useMessageHistoryStore(activeChat.messageHistoryStore);
-  const loadingState = useLoadingStore(activeChat.loadingStore);
+  const isProcessing = useProcessingStore(activeChat.processingStore);
   const assistantStream = useTextStreamStore(activeChat.messageStore);
-  const progressText = useTextStreamStore(activeChat.progressStore);
   const errorText = useTextStreamStore(activeChat.errorStore);
   const isRequesting = activeChat.isRequesting;
 
@@ -27,10 +26,9 @@ export const ConversationWrapper = ({
     <Conversation
       messages={messages}
       assistantStream={assistantStream}
-      progressText={progressText}
       errorText={errorText}
       isRequesting={isRequesting}
-      loadingState={loadingState}
+      isProcessing={isProcessing}
       isOperationValidated={activeChat.isOperationValidated}
       onRendered={onRendered}
       progressStore={activeChat.progressStore}

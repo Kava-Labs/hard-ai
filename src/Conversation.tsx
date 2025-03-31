@@ -21,10 +21,9 @@ export type ChatMessage =
 
 export interface ConversationProps {
   messages: ChatMessage[];
-  progressText: string;
   assistantStream: string;
   errorText: string;
-  loadingState: boolean;
+  isProcessing: boolean;
   isRequesting: boolean;
   onRendered: () => void;
   progressStore: TextStreamStore;
@@ -36,11 +35,10 @@ export interface ConversationProps {
 const ConversationComponent = ({
   messages,
   isRequesting,
-  progressText,
   errorText,
   assistantStream,
   onRendered,
-  loadingState,
+  isProcessing,
   progressStore,
   toolCallStreamStore,
   toolCallRegistry,
@@ -86,7 +84,7 @@ const ConversationComponent = ({
       {isRequesting && (
         <div className={styles.assistantOutputContainer}>
           <div className={styles.assistantContainer}>
-            {loadingState && (
+            {isProcessing && (
               <div className={`${styles.brainIconContainer} ${styles.pulsing}`}>
                 <BrainIcon
                   className={`${styles.brainIcon} ${styles.pulsing}`}
