@@ -82,19 +82,20 @@ const ConversationComponent = ({
       {isRequesting && (
         <div className={styles.assistantOutputContainer}>
           <div className={styles.assistantContainer}>
-            {assistantStream.length === 0 && (
+            {assistantStream.length === 0 ? (
               <div className={`${styles.brainIconContainer} ${styles.pulsing}`}>
                 <BrainIcon
                   className={`${styles.brainIcon} ${styles.pulsing}`}
                   aria-label="Progress Icon"
                 />
               </div>
+            ) : (
+              <Content
+                content={assistantStream}
+                role="assistant"
+                onRendered={onRendered}
+              />
             )}
-            <Content
-              content={assistantStream}
-              role="assistant"
-              onRendered={onRendered}
-            />
           </div>
         </div>
       )}
