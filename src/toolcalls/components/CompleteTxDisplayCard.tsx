@@ -11,8 +11,6 @@ export interface CompleteTxDisplayProps {
 export const CompleteTxDisplay = ({ hash, chain }: CompleteTxDisplayProps) => {
   const explorerUrl = chain.blockExplorerUrls[0] + 'tx/' + hash;
 
-  //   useScrollToBottom(onRendered);
-
   return (
     <div className={styles.transactionContainer}>
       <div className={styles.transactionCard}>

@@ -20,7 +20,6 @@ export type ActiveChat = {
   toolCallStreamStore: ToolCallStreamStore;
   messageHistoryStore: MessageHistoryStore;
   messageStore: TextStreamStore;
-  progressStore: TextStreamStore;
   errorStore: TextStreamStore;
 };
 

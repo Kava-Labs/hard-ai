@@ -1,7 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { Conversation, ChatMessage } from './Conversation';
-import { TextStreamStore } from './stores/textStreamStore';
 import { ToolCallStreamStore } from './stores/toolCallStreamStore';
 import { initializeToolCallRegistry } from './toolcalls/chain';
 
@@ -20,7 +19,6 @@ describe('Conversation Component', () => {
         errorText=""
         assistantStream=""
         onRendered={vi.fn()}
-        progressStore={new TextStreamStore()}
         isOperationValidated={false}
         toolCallStreamStore={new ToolCallStreamStore()}
         toolCallRegistry={initializeToolCallRegistry()}
@@ -42,7 +40,6 @@ describe('Conversation Component', () => {
         errorText=""
         assistantStream=""
         onRendered={vi.fn()}
-        progressStore={new TextStreamStore()}
         isOperationValidated={false}
         toolCallStreamStore={new ToolCallStreamStore()}
         toolCallRegistry={initializeToolCallRegistry()}
@@ -69,7 +66,6 @@ describe('Conversation Component', () => {
         errorText=""
         assistantStream=""
         onRendered={vi.fn()}
-        progressStore={new TextStreamStore()}
         isOperationValidated={false}
         toolCallStreamStore={new ToolCallStreamStore()}
         toolCallRegistry={initializeToolCallRegistry()}

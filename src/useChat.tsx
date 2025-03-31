@@ -46,11 +46,9 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
     abortController: new AbortController(),
     client: client,
     isOperationValidated: false,
-
     toolCallStreamStore: new ToolCallStreamStore(),
     messageHistoryStore: new MessageHistoryStore(initValues),
     messageStore: new TextStreamStore(),
-    progressStore: new TextStreamStore(),
     errorStore: new TextStreamStore(),
   });
 
@@ -169,7 +167,6 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
   const handleCancel = useCallback(() => {
     activeChat.abortController.abort();
     activeChat.messageStore.setText('');
-    activeChat.progressStore.setText('');
     setActiveChat((prev) => ({ ...prev, isRequesting: false }));
   }, [activeChat]);
 
@@ -186,7 +183,6 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
       toolCallStreamStore: new ToolCallStreamStore(),
       messageHistoryStore: new MessageHistoryStore(),
       messageStore: new TextStreamStore(),
-      progressStore: new TextStreamStore(),
       errorStore: new TextStreamStore(),
     });
   }, [initModel, client]);
@@ -212,7 +208,6 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
               messages.some((msg) => msg.role === 'assistant'),
             messageHistoryStore: new MessageHistoryStore(messages ?? []),
             toolCallStreamStore: new ToolCallStreamStore(),
-            progressStore: new TextStreamStore(),
             errorStore: new TextStreamStore(),
             messageStore: new TextStreamStore(),
             client: activeChat.client,

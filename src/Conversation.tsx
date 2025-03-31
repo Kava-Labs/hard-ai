@@ -8,7 +8,6 @@ import {
 import AssistantMessage from './AssistantMessage';
 import { Content } from './Content';
 import { ToolCallProgressCards } from './ToolCallProgressCards';
-import { TextStreamStore } from './stores/textStreamStore';
 import { ToolCallStreamStore } from './stores/toolCallStreamStore';
 import { ToolCallRegistry } from './toolcalls/chain';
 import { ToolMessageContainer } from './toolcalls/components/ToolCallMessageContainer';
@@ -25,7 +24,6 @@ export interface ConversationProps {
   errorText: string;
   isRequesting: boolean;
   onRendered: () => void;
-  progressStore: TextStreamStore;
   toolCallStreamStore: ToolCallStreamStore;
   toolCallRegistry: ToolCallRegistry<unknown>;
   isOperationValidated: boolean;
@@ -37,7 +35,6 @@ const ConversationComponent = ({
   errorText,
   assistantStream,
   onRendered,
-  progressStore,
   toolCallStreamStore,
   toolCallRegistry,
   isOperationValidated,
@@ -115,7 +112,6 @@ const ConversationComponent = ({
       <ToolCallProgressCards
         isOperationValidated={isOperationValidated}
         onRendered={onRendered}
-        progressStore={progressStore}
         toolCallStreamStore={toolCallStreamStore}
         toolCallRegistry={toolCallRegistry}
       />

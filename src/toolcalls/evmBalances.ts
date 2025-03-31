@@ -3,7 +3,6 @@ import { erc20ABI } from './erc20ABI';
 import { WalletStore, WalletTypes } from '../stores/walletStore';
 import { chainNameToolCallParam, chainRegistry, EVMChainConfig } from './chain';
 import { validateChain, validateWallet } from '../utils/wallet';
-import { InProgressQueryDisplay } from './components/InProgressQueryDisplay';
 
 type EvmBalanceQueryParams = {
   chainName: string;
@@ -17,7 +16,6 @@ export class EvmBalancesQuery
   parameters = [chainNameToolCallParam];
   operationType = OperationType.QUERY;
   chainType = ChainType.EVM;
-
   walletMustMatchChainID = false;
   needsWallet = [WalletTypes.METAMASK];
 
@@ -28,9 +26,6 @@ export class EvmBalancesQuery
     return true;
   }
 
-  inProgressComponent() {
-    return InProgressQueryDisplay;
-  }
   async executeQuery(
     params: EvmBalanceQueryParams,
     walletStore: WalletStore,
