@@ -13,10 +13,7 @@ import {
   WalletStore,
   WalletTypes,
 } from '../stores/walletStore/walletStore';
-
 import { validateChain, validateWallet } from '../utils/wallet';
-import { InProgressTxDisplay } from './components/InProgressTxDisplay';
-import { ConnectWalletPrompt } from './components/ConnectWalletPrompt';
 
 interface SendToolParams {
   chainName: string;
@@ -57,10 +54,6 @@ export class EvmTransferMessage
       required: true,
     },
   ];
-
-  inProgressComponent() {
-    return this.hasValidWallet ? InProgressTxDisplay : ConnectWalletPrompt;
-  }
 
   private async validateBalance(
     params: {
@@ -175,10 +168,6 @@ export class EvmTransferMessage
     try {
       let txParams: Record<string, string>;
 
-      //   const { masksToValues } = getStoredMasks();
-
-      //  validate method will check that these mask-addresses exist
-      //   const addressTo = masksToValues[toAddress];
       const addressTo = toAddress;
       const addressFrom = walletStore.getSnapshot().walletAddress;
 

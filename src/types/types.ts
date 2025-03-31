@@ -14,10 +14,8 @@ export type ActiveChat = {
   model: string;
   abortController: AbortController;
   client: OpenAI;
-
   messageHistoryStore: MessageHistoryStore;
   messageStore: TextStreamStore;
-  progressStore: TextStreamStore;
   errorStore: TextStreamStore;
 };
 

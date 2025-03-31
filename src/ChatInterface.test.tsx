@@ -1,7 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { ChatInterface } from './ChatInterface';
-import { TextStreamStore } from './stores/textStreamStore';
 import { ToolCallStreamStore } from './stores/toolCallStreamStore';
 
 import { initializeToolCallRegistry } from './toolcalls/chain';
@@ -28,7 +27,6 @@ describe('ChatInterface', () => {
     handleChatCompletion: vi.fn(),
     handleCancel: vi.fn(),
     handleNewChat: vi.fn(),
-    progressStore: new TextStreamStore(),
     isOperationValidated: false,
     toolCallStreamStore: new ToolCallStreamStore(),
     toolCallRegistry: initializeToolCallRegistry(),

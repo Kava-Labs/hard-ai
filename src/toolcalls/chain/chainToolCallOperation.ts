@@ -1,4 +1,3 @@
-import { TextStreamStore } from '../../stores/textStreamStore';
 import { ToolCallStream } from '../../stores/toolCallStreamStore';
 import { WalletTypes, WalletStore } from '../../stores/walletStore';
 import { ChainType } from './chainsRegistry';
@@ -18,7 +17,6 @@ export enum OperationType {
 
 export interface InProgressComponentProps {
   toolCall: ToolCallStream;
-  progressStore: TextStreamStore;
   onRendered?: () => void;
   isOperationValidated: boolean;
 }
