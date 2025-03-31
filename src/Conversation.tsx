@@ -88,13 +88,13 @@ const ConversationComponent = ({
                   className={`${styles.brainIcon} ${styles.pulsing}`}
                   aria-label="Progress Icon"
                 />
-                <Content
-                  content={assistantStream}
-                  role="assistant"
-                  onRendered={onRendered}
-                />
               </div>
             )}
+            <Content
+              content={assistantStream}
+              role="assistant"
+              onRendered={onRendered}
+            />
           </div>
         </div>
       )}
