@@ -17,7 +17,7 @@ describe('Conversation Component', () => {
       <Conversation
         isRequesting={false}
         messages={[]}
-        loadingState={false}
+        isProcessing={false}
         errorText=""
         assistantStream=""
         onRendered={vi.fn()}
@@ -40,7 +40,7 @@ describe('Conversation Component', () => {
       <Conversation
         isRequesting={false}
         messages={messages}
-        loadingState={false}
+        isProcessing={false}
         errorText=""
         assistantStream=""
         onRendered={vi.fn()}
@@ -68,7 +68,7 @@ describe('Conversation Component', () => {
       <Conversation
         isRequesting={false}
         messages={messages}
-        loadingState={false}
+        isProcessing={false}
         errorText=""
         assistantStream=""
         onRendered={vi.fn()}
