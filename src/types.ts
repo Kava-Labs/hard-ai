@@ -11,16 +11,15 @@ import { ToolCallStreamStore } from './stores/toolCallStreamStore';
 export type ActiveChat = {
   id: string;
   isRequesting: boolean;
+  isProcessing: boolean;
   isConversationStarted: boolean;
   model: string;
   abortController: AbortController;
   client: OpenAI;
   isOperationValidated: boolean;
-
   toolCallStreamStore: ToolCallStreamStore;
   messageHistoryStore: MessageHistoryStore;
   messageStore: TextStreamStore;
-  progressStore: TextStreamStore;
   errorStore: TextStreamStore;
 };
 

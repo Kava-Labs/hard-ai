@@ -41,6 +41,7 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
   const [activeChat, setActiveChat] = useState<ActiveChat>({
     id: uuidv4(), // add uuid v4 for conversation id
     isRequesting: false,
+    isProcessing: false,
     isConversationStarted: false,
     model: initModel ? initModel : 'gpt-4o',
     abortController: new AbortController(),
@@ -50,7 +51,6 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
     toolCallStreamStore: new ToolCallStreamStore(),
     messageHistoryStore: new MessageHistoryStore(initValues),
     messageStore: new TextStreamStore(),
-    progressStore: new TextStreamStore(),
     errorStore: new TextStreamStore(),
   });
 
@@ -96,6 +96,7 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
       const newActiveChat: ActiveChat = {
         ...activeChat,
         isRequesting: true,
+        isProcessing: true, // Set isProcessing to true instead of using progressStore
         isConversationStarted: true,
         abortController: new AbortController(),
       };
@@ -140,8 +141,13 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
       setActiveChat((prev) => ({
         ...prev,
         isRequesting: false,
+        isProcessing: false, // Set isProcessing to false when done
       }));
-      activeChats[activeChat.id] = { ...newActiveChat, isRequesting: false };
+      activeChats[activeChat.id] = {
+        ...newActiveChat,
+        isRequesting: false,
+        isProcessing: false, // Set isProcessing to false here too
+      };
 
       if (conversation.title === defaultNewChatTitle) {
         try {
@@ -169,8 +175,11 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
   const handleCancel = useCallback(() => {
     activeChat.abortController.abort();
     activeChat.messageStore.setText('');
-    activeChat.progressStore.setText('');
-    setActiveChat((prev) => ({ ...prev, isRequesting: false }));
+    setActiveChat((prev) => ({
+      ...prev,
+      isRequesting: false,
+      isProcessing: false, // Set isProcessing to false when canceling
+    }));
   }, [activeChat]);
 
   //  handler specific to the New Chat button
@@ -178,6 +187,7 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
     setActiveChat({
       id: uuidv4(),
       isRequesting: false,
+      isProcessing: false,
       isConversationStarted: false,
       isOperationValidated: false,
       model: initModel ? initModel : 'gpt-4o',
@@ -186,7 +196,6 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
       toolCallStreamStore: new ToolCallStreamStore(),
       messageHistoryStore: new MessageHistoryStore(),
       messageStore: new TextStreamStore(),
-      progressStore: new TextStreamStore(),
       errorStore: new TextStreamStore(),
     });
   }, [initModel, client]);
@@ -207,12 +216,12 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
             model: selectedConversation.model,
             isOperationValidated: false,
             isRequesting: false,
+            isProcessing: false,
             isConversationStarted:
               Array.isArray(messages) &&
               messages.some((msg) => msg.role === 'assistant'),
             messageHistoryStore: new MessageHistoryStore(messages ?? []),
             toolCallStreamStore: new ToolCallStreamStore(),
-            progressStore: new TextStreamStore(),
             errorStore: new TextStreamStore(),
             messageStore: new TextStreamStore(),
             client: activeChat.client,

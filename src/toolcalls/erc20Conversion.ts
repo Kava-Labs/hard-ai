@@ -15,7 +15,6 @@ import {
   WalletTypes,
 } from '../stores/walletStore';
 import { erc20ABI } from './erc20ABI';
-import { ConnectWalletPrompt } from './components/ConnectWalletPrompt';
 import { InProgressTxDisplay } from './components/InProgressTxDisplay';
 import { getCoinRecord, getERC20Record } from '../utils/helpers';
 
@@ -35,9 +34,7 @@ export class ERC20ConversionMessage
   chainType = ChainType.COSMOS;
   operationType = OperationType.TRANSACTION;
   walletMustMatchChainID = true;
-
   needsWallet = [WalletTypes.METAMASK];
-  private hasValidWallet = false;
 
   /**
    * Parameter definitions for the message.
@@ -74,7 +71,7 @@ export class ERC20ConversionMessage
   ];
 
   inProgressComponent() {
-    return this.hasValidWallet ? InProgressTxDisplay : ConnectWalletPrompt;
+    return InProgressTxDisplay;
   }
 
   async validate(
@@ -83,7 +80,6 @@ export class ERC20ConversionMessage
   ): Promise<boolean> {
     const { ethers, Contract } = await import('ethers');
 
-    this.hasValidWallet = false;
     if (!walletStore.getSnapshot().isWalletConnected) {
       throw new Error('please connect to a compatible wallet');
     }
@@ -97,8 +93,6 @@ export class ERC20ConversionMessage
     if (!chainRegistry[this.chainType][params.chainName]) {
       throw new Error(`unknown chain name ${params.chainName}`);
     }
-
-    this.hasValidWallet = true;
 
     const { amount, denom } = params;
 

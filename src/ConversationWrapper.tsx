@@ -17,20 +17,19 @@ export const ConversationWrapper = ({
 }: ConversationWrapperProps) => {
   const messages = useMessageHistoryStore(activeChat.messageHistoryStore);
   const assistantStream = useTextStreamStore(activeChat.messageStore);
-  const progressText = useTextStreamStore(activeChat.progressStore);
   const errorText = useTextStreamStore(activeChat.errorStore);
   const isRequesting = activeChat.isRequesting;
+  const isProcessing = activeChat.isProcessing;
 
   return (
     <Conversation
       messages={messages}
       assistantStream={assistantStream}
-      progressText={progressText}
       errorText={errorText}
       isRequesting={isRequesting}
+      isProcessing={isProcessing}
       isOperationValidated={activeChat.isOperationValidated}
       onRendered={onRendered}
-      progressStore={activeChat.progressStore}
       toolCallStreamStore={activeChat.toolCallStreamStore}
       toolCallRegistry={toolCallRegistry}
     />

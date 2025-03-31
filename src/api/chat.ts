@@ -11,7 +11,7 @@ export const doChat = async (
   toolCallRegistry: ToolCallRegistry<unknown>,
   executeOperation: ExecuteToolCall,
 ) => {
-  activeChat.progressStore.setText('Thinking');
+  activeChat.isProcessing = true;
 
   try {
     const stream = await activeChat.client.chat.completions.create(
@@ -27,16 +27,23 @@ export const doChat = async (
     );
 
     for await (const chunk of stream) {
-      if (activeChat.progressStore.getSnapshot() !== '') {
-        activeChat.progressStore.setText('');
+      if (activeChat.isProcessing) {
+        activeChat.isProcessing = false;
       }
-
       if (isContentChunk(chunk)) {
         //  Add content from chunks that have it and not the final usage chunk if it exists
         if (
           chunk.choices.length &&
           typeof chunk['choices'][0]['delta']['content'] === 'string'
         ) {
+          // Set isProcessing to false as soon as we start getting content
+          if (
+            activeChat.isProcessing &&
+            chunk['choices'][0]['delta']['content'].trim() !== ''
+          ) {
+            activeChat.isProcessing = false;
+          }
+
           activeChat.messageStore.appendText(
             chunk['choices'][0]['delta']['content'],
           );
@@ -76,10 +83,8 @@ export const doChat = async (
         : `An error occurred: ${JSON.stringify(e)} `,
     );
   } finally {
-    // Clear progress text if not cleared already
-    if (activeChat.progressStore.getSnapshot() !== '') {
-      activeChat.progressStore.setText('');
-    }
+    //  Set isProcessing to false when done (as a fallback)
+    activeChat.isProcessing = false;
 
     // Ensure content is published on abort
     if (activeChat.messageStore.getSnapshot() !== '') {

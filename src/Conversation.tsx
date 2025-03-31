@@ -8,7 +8,6 @@ import {
 import AssistantMessage from './AssistantMessage';
 import { Content } from './Content';
 import { ToolCallProgressCards } from './ToolCallProgressCards';
-import { TextStreamStore } from './stores/textStreamStore';
 import { ToolCallStreamStore } from './stores/toolCallStreamStore';
 import { ToolCallRegistry } from './toolcalls/chain';
 import { ToolMessageContainer } from './toolcalls/components/ToolCallMessageContainer';
@@ -21,12 +20,11 @@ export type ChatMessage =
 
 export interface ConversationProps {
   messages: ChatMessage[];
-  progressText: string;
+  isProcessing: boolean;
   assistantStream: string;
   errorText: string;
   isRequesting: boolean;
   onRendered: () => void;
-  progressStore: TextStreamStore;
   toolCallStreamStore: ToolCallStreamStore;
   toolCallRegistry: ToolCallRegistry<unknown>;
   isOperationValidated: boolean;
@@ -35,12 +33,10 @@ export interface ConversationProps {
 const ConversationComponent = ({
   messages,
   isRequesting,
-  progressText,
+  isProcessing,
   errorText,
   assistantStream,
   onRendered,
-
-  progressStore,
   toolCallStreamStore,
   toolCallRegistry,
   isOperationValidated,
@@ -85,12 +81,14 @@ const ConversationComponent = ({
       {isRequesting && (
         <div className={styles.assistantOutputContainer}>
           <div className={styles.assistantContainer}>
-            <div className={`${styles.brainIconContainer} ${styles.pulsing}`}>
-              <BrainIcon
-                className={`${styles.brainIcon} ${styles.pulsing}`}
-                aria-label="Progress Icon"
-              />
-            </div>
+            {isProcessing && (
+              <div className={`${styles.brainIconContainer} ${styles.pulsing}`}>
+                <BrainIcon
+                  className={`${styles.brainIcon} ${styles.pulsing}`}
+                  aria-label="Progress Icon"
+                />
+              </div>
+            )}
             <Content
               content={assistantStream}
               role="assistant"
@@ -115,7 +113,6 @@ const ConversationComponent = ({
       <ToolCallProgressCards
         isOperationValidated={isOperationValidated}
         onRendered={onRendered}
-        progressStore={progressStore}
         toolCallStreamStore={toolCallStreamStore}
         toolCallRegistry={toolCallRegistry}
       />
