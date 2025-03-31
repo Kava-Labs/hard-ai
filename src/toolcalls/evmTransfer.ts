@@ -14,6 +14,7 @@ import {
   WalletTypes,
 } from '../stores/walletStore/walletStore';
 import { validateChain, validateWallet } from '../utils/wallet';
+import { InProgressTxDisplay } from './components/InProgressTxDisplay';
 
 interface SendToolParams {
   chainName: string;
@@ -54,6 +55,10 @@ export class EvmTransferMessage
       required: true,
     },
   ];
+
+  inProgressComponent() {
+    return InProgressTxDisplay;
+  }
 
   private async validateBalance(
     params: {
