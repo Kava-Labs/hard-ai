@@ -3,6 +3,7 @@ import { useMessageHistoryStore } from './stores/messageHistoryStore';
 import { useTextStreamStore } from './stores/textStreamStore';
 import { ActiveChat } from './types';
 import { ToolCallRegistry } from './toolcalls/chain';
+import { useToolCallStreamStore } from './stores/toolCallStreamStore';
 
 interface ConversationWrapperProps {
   activeChat: ActiveChat;
@@ -15,10 +16,19 @@ export const ConversationWrapper = ({
   onRendered,
   toolCallRegistry,
 }: ConversationWrapperProps) => {
-  const messages = useMessageHistoryStore(activeChat.messageHistoryStore);
-  const assistantStream = useTextStreamStore(activeChat.messageStore);
-  const errorText = useTextStreamStore(activeChat.errorStore);
-  const isRequesting = activeChat.isRequesting;
+  const {
+    messageHistoryStore,
+    messageStore,
+    toolCallStreamStore,
+    errorStore,
+    isRequesting,
+    isOperationValidated,
+  } = activeChat;
+
+  const messages = useMessageHistoryStore(messageHistoryStore);
+  const assistantStream = useTextStreamStore(messageStore);
+  const toolCallStreams = useToolCallStreamStore(toolCallStreamStore);
+  const errorText = useTextStreamStore(errorStore);
 
   return (
     <Conversation
@@ -26,9 +36,9 @@ export const ConversationWrapper = ({
       assistantStream={assistantStream}
       errorText={errorText}
       isRequesting={isRequesting}
-      isOperationValidated={activeChat.isOperationValidated}
+      isOperationValidated={isOperationValidated}
       onRendered={onRendered}
-      toolCallStreamStore={activeChat.toolCallStreamStore}
+      toolCallStreams={toolCallStreams}
       toolCallRegistry={toolCallRegistry}
     />
   );

@@ -8,7 +8,7 @@ import {
 import AssistantMessage from './AssistantMessage';
 import { Content } from './Content';
 import { ToolCallProgressCards } from './ToolCallProgressCards';
-import { ToolCallStreamStore } from './stores/toolCallStreamStore';
+import { ToolCallStream } from './stores/toolCallStreamStore';
 import { ToolCallRegistry } from './toolcalls/chain';
 import { ToolMessageContainer } from './toolcalls/components/ToolCallMessageContainer';
 import { BrainIcon } from 'lucide-react';
@@ -24,7 +24,7 @@ export interface ConversationProps {
   errorText: string;
   isRequesting: boolean;
   onRendered: () => void;
-  toolCallStreamStore: ToolCallStreamStore;
+  toolCallStreams: Array<ToolCallStream>;
   toolCallRegistry: ToolCallRegistry<unknown>;
   isOperationValidated: boolean;
 }
@@ -35,7 +35,7 @@ const ConversationComponent = ({
   errorText,
   assistantStream,
   onRendered,
-  toolCallStreamStore,
+  toolCallStreams,
   toolCallRegistry,
   isOperationValidated,
 }: ConversationProps) => {
@@ -112,7 +112,7 @@ const ConversationComponent = ({
       <ToolCallProgressCards
         isOperationValidated={isOperationValidated}
         onRendered={onRendered}
-        toolCallStreamStore={toolCallStreamStore}
+        toolCallStreams={toolCallStreams}
         toolCallRegistry={toolCallRegistry}
       />
     </div>

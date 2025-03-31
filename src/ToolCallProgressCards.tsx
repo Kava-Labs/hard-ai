@@ -1,23 +1,17 @@
-import { useSyncExternalStore } from 'react';
-import { ToolCallStreamStore } from './stores/toolCallStreamStore';
+import { ToolCallStream } from './stores/toolCallStreamStore';
 import { ToolCallRegistry } from './toolcalls/chain';
 
 export const ToolCallProgressCards = ({
   onRendered,
-  toolCallStreamStore,
+  toolCallStreams,
   toolCallRegistry,
   isOperationValidated,
 }: {
   onRendered: () => void;
-  toolCallStreamStore: ToolCallStreamStore;
+  toolCallStreams: Array<ToolCallStream>;
   toolCallRegistry: ToolCallRegistry<unknown>;
   isOperationValidated: boolean;
 }) => {
-  const toolCallStreams = useSyncExternalStore(
-    toolCallStreamStore.subscribe,
-    toolCallStreamStore.getSnapShot,
-  );
-
   if (!toolCallStreams.length) return null;
 
   return toolCallStreams.map((toolCall) => {

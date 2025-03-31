@@ -1,7 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { Conversation, ChatMessage } from './Conversation';
-import { ToolCallStreamStore } from './stores/toolCallStreamStore';
 import { initializeToolCallRegistry } from './toolcalls/chain';
 
 vi.mock('./Content', () => ({
@@ -20,7 +19,7 @@ describe('Conversation Component', () => {
         assistantStream=""
         onRendered={vi.fn()}
         isOperationValidated={false}
-        toolCallStreamStore={new ToolCallStreamStore()}
+        toolCallStreams={[]}
         toolCallRegistry={initializeToolCallRegistry()}
       />,
     );
@@ -41,7 +40,7 @@ describe('Conversation Component', () => {
         assistantStream=""
         onRendered={vi.fn()}
         isOperationValidated={false}
-        toolCallStreamStore={new ToolCallStreamStore()}
+        toolCallStreams={[]}
         toolCallRegistry={initializeToolCallRegistry()}
       />,
     );
@@ -67,7 +66,7 @@ describe('Conversation Component', () => {
         assistantStream=""
         onRendered={vi.fn()}
         isOperationValidated={false}
-        toolCallStreamStore={new ToolCallStreamStore()}
+        toolCallStreams={[]}
         toolCallRegistry={initializeToolCallRegistry()}
       />,
     );
