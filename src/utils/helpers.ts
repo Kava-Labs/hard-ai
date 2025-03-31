@@ -132,53 +132,42 @@ export const extractTextContent = (msg: ChatMessage): string => {
  * @param searchTerm - Optional term to filter conversations (matches title or message content)
  * @returns An object with time groups as keys and arrays of matching conversations as values
  */
+
 export const groupAndFilterConversations = (
   conversations: SearchableChatHistories,
   searchTerm = '',
 ): GroupedSearchHistories => {
-  const groupedFilteredResults: GroupedSearchHistories = {};
-
-  if (!conversations) return groupedFilteredResults;
+  if (!conversations) return {};
 
   const isSearching = searchTerm.trim() !== '';
   const searchRegex = isSearching ? new RegExp(searchTerm.trim(), 'i') : null;
 
+  const filteredConversations: SearchableChatHistories = {};
+
   Object.values(conversations).forEach((conversation) => {
-    //  If we aren't searching, return all histories, sorted by time
-    if (isSearching && searchRegex) {
-      //  Primary search is for title match
-      const titleMatches = searchRegex.test(conversation.title);
-
-      //  Secondary search is for content matches
-      if (!titleMatches) {
-        const messageMatches = conversation.messages.some((message) => {
-          const textContent = extractTextContent(message);
-          return searchRegex.test(textContent);
-        });
-
-        //  if we haven't found any title or content matches, return (triggers 'No results')
-        if (!messageMatches) return;
-      }
+    if (!isSearching) {
+      filteredConversations[conversation.id] = conversation;
+      return;
     }
 
-    const timeGroup = getTimeGroup(conversation.lastSaved);
-
-    //  Initialize the time group if it doesn't exist yet
-    if (!groupedFilteredResults[timeGroup]) {
-      groupedFilteredResults[timeGroup] = [];
+    //  Primary search is for title match
+    if (searchRegex?.test(conversation.title)) {
+      filteredConversations[conversation.id] = conversation;
+      return;
     }
 
-    groupedFilteredResults[timeGroup].push(conversation);
+    //  Secondary search is for content matches
+    const messageMatches = conversation.messages.some((message) => {
+      const textContent = extractTextContent(message);
+      return searchRegex?.test(textContent);
+    });
+
+    if (messageMatches) {
+      filteredConversations[conversation.id] = conversation;
+    }
   });
 
-  for (const tGroup in groupedFilteredResults) {
-    //  Only sort if the group has more than one entry
-    if (groupedFilteredResults[tGroup].length > 1) {
-      groupedFilteredResults[tGroup].sort((a, b) => b.lastSaved - a.lastSaved);
-    }
-  }
-
-  return groupedFilteredResults;
+  return groupConversationsByTime(filteredConversations);
 };
 
 const removeSystemMessages = (messages: ChatMessage[]) => {
