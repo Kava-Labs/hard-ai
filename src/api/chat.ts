@@ -150,7 +150,7 @@ export const generateConversationTitle = async (
                     `,
         },
       ],
-      model: 'gpt-4o-mini',
+      model: 'o3-mini',
     });
 
     title = data.choices[0].message.content ?? 'New Chat';

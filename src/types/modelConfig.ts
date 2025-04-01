@@ -1,7 +1,9 @@
 import { ComponentType } from 'react';
 import type { ChatCompletionTool } from 'openai/resources/index';
 
-export type SupportedModels = 'gpt-4o';
+const supportedModels = ['o3-mini'];
+
+export type SupportedModels = (typeof supportedModels)[number];
 
 export interface ModelConfig {
   id: SupportedModels;

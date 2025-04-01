@@ -42,7 +42,7 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
     id: uuidv4(), // add uuid v4 for conversation id
     isRequesting: false,
     isConversationStarted: false,
-    model: initModel ? initModel : 'gpt-4o',
+    model: initModel ? initModel : 'o3-mini',
     abortController: new AbortController(),
     client: client,
     isOperationValidated: false,
@@ -177,7 +177,7 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
       isRequesting: false,
       isConversationStarted: false,
       isOperationValidated: false,
-      model: initModel ? initModel : 'gpt-4o',
+      model: initModel ? initModel : 'o3-mini',
       abortController: new AbortController(),
       client: client,
       toolCallStreamStore: new ToolCallStreamStore(),
