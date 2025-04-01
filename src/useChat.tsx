@@ -7,7 +7,7 @@ import {
   ConversationHistory,
   SearchableChatHistories,
 } from './types';
-import { TextStreamStore } from './stores/textStreamStore';
+import { TextStreamStore } from 'lib-kava-ai';
 import { v4 as uuidv4 } from 'uuid';
 import OpenAI from 'openai/index';
 import { doChat, generateConversationTitle } from './api/chat';
