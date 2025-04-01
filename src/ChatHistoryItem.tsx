@@ -15,7 +15,7 @@ export interface ChatHistoryItemProps {
   conversation: ConversationHistory;
   onHistoryItemClick: () => void;
   deleteConversation: (id: string) => void;
-  updateConversationTitle: (id: string, newTitle: string) => void;
+  updateConversationTitle: (id: string, updatedTitle: string) => void;
   isSelected?: boolean;
 }
 
@@ -31,7 +31,6 @@ export const ChatHistoryItem = memo(
     const [editingTitle, setEditingTitle] = useState(false);
     const [editInputValue, setEditInputValue] = useState(title);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
-
     const [optimisticTitle, setOptimisticTitle] = useOptimistic(
       title,
       (_currentState, newTitle: string) => newTitle,
@@ -67,7 +66,7 @@ export const ChatHistoryItem = memo(
 
         setEditingTitle(false);
       },
-      [title, updateConversationTitle, id],
+      [title, setOptimisticTitle, updateConversationTitle, id],
     );
 
     const handleDelete = (e: React.MouseEvent) => {
@@ -81,8 +80,6 @@ export const ChatHistoryItem = memo(
       if (editingTitle) {
         setEditingTitle(false);
       } else {
-        // Always use the current title value when entering edit mode
-        setEditInputValue(title);
         setEditingTitle(true);
       }
     };
@@ -96,13 +93,6 @@ export const ChatHistoryItem = memo(
         setEditingTitle(false);
       }
     };
-
-    useEffect(() => {
-      if (editingTitle && inputRef.current) {
-        inputRef.current.focus();
-        inputRef.current.select();
-      }
-    }, [editingTitle]);
 
     useEffect(() => {
       const handleClickOutside = (event: MouseEvent) => {
@@ -145,6 +135,7 @@ export const ChatHistoryItem = memo(
                 onClick={(e) => {
                   e.stopPropagation();
                 }}
+                autoFocus
               />
             ) : (
               <small>{optimisticTitle}</small>
