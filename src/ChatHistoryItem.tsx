@@ -28,30 +28,37 @@ export const ChatHistoryItem = memo(
     const containerRef = useRef<HTMLDivElement>(null);
     const inputRef = useRef<HTMLInputElement>(null);
 
+    const saveTitle = useCallback(
+      (inputValue: string) => {
+        const trimmedTitle = inputValue.trim();
+
+        if (trimmedTitle === '') {
+          setEditInputValue(title);
+          setEditingTitle(false);
+          return;
+        }
+
+        if (trimmedTitle !== title) {
+          updateConversationTitle(id, trimmedTitle);
+        }
+
+        setEditingTitle(false);
+      },
+      [id, title, updateConversationTitle],
+    );
+
     const handleMenuClick = (e: React.MouseEvent) => {
       e.preventDefault();
       e.stopPropagation();
       if (editingTitle) {
         setEditingTitle(false);
-        setEditInputValue(title);
       }
       setIsMenuOpen((prev) => !prev);
     };
 
     const handleSaveTitle = useCallback(() => {
-      const trimmedTitle = editInputValue.trim();
-      if (trimmedTitle === '') {
-        setEditInputValue(title);
-        setEditingTitle(false);
-        return;
-      }
-
-      if (trimmedTitle !== title) {
-        updateConversationTitle(id, trimmedTitle);
-      }
-
-      setEditingTitle(false);
-    }, [editInputValue, title, id, updateConversationTitle]);
+      saveTitle(editInputValue);
+    }, [editInputValue, saveTitle]);
 
     const handleDelete = (e: React.MouseEvent) => {
       e.stopPropagation();
@@ -93,8 +100,9 @@ export const ChatHistoryItem = memo(
 
         if (containerRef.current && !containerRef.current.contains(target)) {
           setIsMenuOpen(false);
+
           if (editingTitle) {
-            handleSaveTitle();
+            saveTitle(editInputValue);
           }
         }
       };
@@ -102,7 +110,7 @@ export const ChatHistoryItem = memo(
       document.addEventListener('mousedown', handleClickOutside);
       return () =>
         document.removeEventListener('mousedown', handleClickOutside);
-    }, [editingTitle, handleSaveTitle]);
+    }, [editingTitle, editInputValue, saveTitle]);
 
     return (
       <div
