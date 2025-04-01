@@ -2,8 +2,8 @@ import {
   memo,
   useState,
   useRef,
-  useCallback,
   useEffect,
+  useCallback,
   useOptimistic,
 } from 'react';
 import ButtonIcon from './ButtonIcon';
@@ -31,6 +31,7 @@ export const ChatHistoryItem = memo(
     const [editingTitle, setEditingTitle] = useState(false);
     const [editInputValue, setEditInputValue] = useState(title);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+
     const [optimisticTitle, setOptimisticTitle] = useOptimistic(
       title,
       (_currentState, newTitle: string) => newTitle,
@@ -80,7 +81,7 @@ export const ChatHistoryItem = memo(
       if (editingTitle) {
         setEditingTitle(false);
       } else {
-        // Always set the input value to match the current title when entering edit mode
+        // Always use the current title value when entering edit mode
         setEditInputValue(title);
         setEditingTitle(true);
       }
