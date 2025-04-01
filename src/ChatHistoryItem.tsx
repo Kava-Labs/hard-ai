@@ -77,6 +77,7 @@ export const ChatHistoryItem = memo(
 
     const handleEdit = (e: React.MouseEvent) => {
       e.stopPropagation();
+      setEditInputValue(title);
       if (editingTitle) {
         setEditingTitle(false);
       } else {
