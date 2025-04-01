@@ -1,9 +1,9 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import { describe, vi, beforeEach, it, expect, Mock } from 'vitest';
 import { Content, ContentComponent } from './Content';
-import { sanitizeContent } from './utils/sanitize';
+import { sanitizeContent } from 'lib-kava-ai';
 
-vi.mock('./utils/sanitize');
+vi.mock('lib-kava-ai');
 
 describe('Content Component', () => {
   const mockContent = 'Test content';
