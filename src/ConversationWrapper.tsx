@@ -1,6 +1,6 @@
 import { Conversation } from './Conversation';
 import { useMessageHistoryStore } from './stores/messageHistoryStore';
-import { useTextStreamStore } from './stores/textStreamStore';
+import { useTextStreamStore } from 'lib-kava-ai';
 import { ActiveChat } from './types';
 import { ToolCallRegistry } from './toolcalls/chain';
 import { useToolCallStreamStore } from './stores/toolCallStreamStore';

@@ -4,7 +4,7 @@ import type {
   ChatCompletionToolMessageParam,
 } from 'openai/resources/index';
 import type { MessageHistoryStore } from '../stores/messageHistoryStore';
-import type { TextStreamStore } from '../stores/textStreamStore';
+import type { TextStreamStore } from 'lib-kava-ai';
 import OpenAI from 'openai/index';
 
 export type ActiveChat = {

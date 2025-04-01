@@ -1,6 +1,6 @@
 import { memo, useEffect, useState } from 'react';
 import styles from './Content.module.css';
-import { sanitizeContent } from './utils/sanitize';
+import { sanitizeContent } from 'lib-kava-ai';
 import { useScrollToBottom } from './useScrollToBottom';
 
 export interface ContentProps {
