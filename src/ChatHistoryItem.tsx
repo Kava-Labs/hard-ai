@@ -38,20 +38,23 @@ export const ChatHistoryItem = memo(
       setIsMenuOpen((prev) => !prev);
     };
 
-    const handleSaveTitle = useCallback(() => {
-      const trimmedTitle = editInputValue.trim();
-      if (trimmedTitle === '') {
-        setEditInputValue(title);
+    const handleSaveTitle = useCallback(
+      (currentTitle: string) => {
+        const trimmedTitle = currentTitle.trim();
+        if (trimmedTitle === '') {
+          setEditInputValue(title);
+          setEditingTitle(false);
+          return;
+        }
+
+        if (trimmedTitle !== title) {
+          updateConversationTitle(id, trimmedTitle);
+        }
+
         setEditingTitle(false);
-        return;
-      }
-
-      if (trimmedTitle !== title) {
-        updateConversationTitle(id, trimmedTitle);
-      }
-
-      setEditingTitle(false);
-    }, [editInputValue, title, id, updateConversationTitle]);
+      },
+      [title, updateConversationTitle, id],
+    );
 
     const handleDelete = (e: React.MouseEvent) => {
       e.stopPropagation();
@@ -73,7 +76,7 @@ export const ChatHistoryItem = memo(
     const handleKeyDown = (e: React.KeyboardEvent) => {
       e.stopPropagation();
       if (e.key === 'Enter') {
-        handleSaveTitle();
+        handleSaveTitle(editInputValue);
       } else if (e.key === 'Escape') {
         setEditInputValue(title);
         setEditingTitle(false);
@@ -94,7 +97,7 @@ export const ChatHistoryItem = memo(
         if (containerRef.current && !containerRef.current.contains(target)) {
           setIsMenuOpen(false);
           if (editingTitle) {
-            handleSaveTitle();
+            handleSaveTitle(editInputValue);
           }
         }
       };
@@ -102,7 +105,7 @@ export const ChatHistoryItem = memo(
       document.addEventListener('mousedown', handleClickOutside);
       return () =>
         document.removeEventListener('mousedown', handleClickOutside);
-    }, [editingTitle, handleSaveTitle]);
+    }, [editInputValue, editingTitle, handleSaveTitle]);
 
     return (
       <div
