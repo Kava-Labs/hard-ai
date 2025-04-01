@@ -1,4 +1,11 @@
-import { memo, useState, useRef, useCallback, useEffect } from 'react';
+import {
+  memo,
+  useState,
+  useRef,
+  useCallback,
+  useEffect,
+  useOptimistic,
+} from 'react';
 import ButtonIcon from './ButtonIcon';
 import { EllipsisVertical, Pencil, X, Trash2 } from 'lucide-react';
 import styles from './ChatHistoryItem.module.css';
@@ -24,6 +31,10 @@ export const ChatHistoryItem = memo(
     const [editingTitle, setEditingTitle] = useState(false);
     const [editInputValue, setEditInputValue] = useState(title);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const [optimisticTitle, setOptimisticTitle] = useOptimistic(
+      title,
+      (_currentState, newTitle: string) => newTitle,
+    );
 
     const containerRef = useRef<HTMLDivElement>(null);
     const inputRef = useRef<HTMLInputElement>(null);
@@ -33,7 +44,6 @@ export const ChatHistoryItem = memo(
       e.stopPropagation();
       if (editingTitle) {
         setEditingTitle(false);
-        setEditInputValue(title);
       }
       setIsMenuOpen((prev) => !prev);
     };
@@ -48,6 +58,9 @@ export const ChatHistoryItem = memo(
         }
 
         if (trimmedTitle !== title) {
+          //  Apply UI change first
+          setOptimisticTitle(trimmedTitle);
+          //  Then fire off request to db
           updateConversationTitle(id, trimmedTitle);
         }
 
@@ -65,9 +78,9 @@ export const ChatHistoryItem = memo(
     const handleEdit = (e: React.MouseEvent) => {
       e.stopPropagation();
       if (editingTitle) {
-        setEditInputValue(title);
         setEditingTitle(false);
       } else {
+        // Always set the input value to match the current title when entering edit mode
         setEditInputValue(title);
         setEditingTitle(true);
       }
@@ -96,8 +109,10 @@ export const ChatHistoryItem = memo(
 
         if (containerRef.current && !containerRef.current.contains(target)) {
           setIsMenuOpen(false);
+
           if (editingTitle) {
             handleSaveTitle(editInputValue);
+            setEditingTitle(false);
           }
         }
       };
@@ -131,7 +146,7 @@ export const ChatHistoryItem = memo(
                 }}
               />
             ) : (
-              <small>{title}</small>
+              <small>{optimisticTitle}</small>
             )}
           </div>
           <ButtonIcon
