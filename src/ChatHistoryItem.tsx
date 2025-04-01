@@ -44,6 +44,7 @@ export const ChatHistoryItem = memo(
       e.stopPropagation();
       if (editingTitle) {
         setEditingTitle(false);
+        setEditInputValue(title);
       }
       setIsMenuOpen((prev) => !prev);
     };
