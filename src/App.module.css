@@ -149,16 +149,6 @@
   gap: var(--spacing-xs);
 }
 
-.content {
-  background: var(--colors-bgPrimary);
-  transition: margin-left 0.3s ease;
-
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  min-height: 0;
-}
-
 @media (min-width: 768px) {
   .sidebar {
     transform: translateX(0);
