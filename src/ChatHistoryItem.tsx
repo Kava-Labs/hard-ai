@@ -28,6 +28,15 @@ export const ChatHistoryItem = memo(
     const containerRef = useRef<HTMLDivElement>(null);
     const inputRef = useRef<HTMLInputElement>(null);
 
+    const handleMenuClick = (e: React.MouseEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      if (editingTitle) {
+        setEditingTitle(false);
+      }
+      setIsMenuOpen((prev) => !prev);
+    };
+
     const handleSaveTitle = useCallback(() => {
       const trimmedTitle = editInputValue.trim();
 
@@ -43,15 +52,6 @@ export const ChatHistoryItem = memo(
 
       setEditingTitle(false);
     }, [editInputValue, id, title, updateConversationTitle]);
-
-    const handleMenuClick = (e: React.MouseEvent) => {
-      e.preventDefault();
-      e.stopPropagation();
-      if (editingTitle) {
-        setEditingTitle(false);
-      }
-      setIsMenuOpen((prev) => !prev);
-    };
 
     const handleDelete = (e: React.MouseEvent) => {
       e.stopPropagation();
