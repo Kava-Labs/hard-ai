@@ -103,7 +103,6 @@ export const ChatHistoryItem = memo(
 
           if (editingTitle) {
             handleSaveTitle(editInputValue);
-            setEditingTitle(false);
           }
         }
       };
