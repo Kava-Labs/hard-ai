@@ -32,6 +32,7 @@ export const ChatHistoryItem = memo(
       e.preventDefault();
       e.stopPropagation();
       if (editingTitle) {
+        setEditInputValue(title);
         setEditingTitle(false);
       }
       setIsMenuOpen((prev) => !prev);
@@ -51,7 +52,7 @@ export const ChatHistoryItem = memo(
       }
 
       setEditingTitle(false);
-    }, [editInputValue, id, title, updateConversationTitle]);
+    }, [editInputValue, title, id, updateConversationTitle]);
 
     const handleDelete = (e: React.MouseEvent) => {
       e.stopPropagation();
