@@ -28,24 +28,21 @@ export const ChatHistoryItem = memo(
     const containerRef = useRef<HTMLDivElement>(null);
     const inputRef = useRef<HTMLInputElement>(null);
 
-    const saveTitle = useCallback(
-      (inputValue: string) => {
-        const trimmedTitle = inputValue.trim();
+    const handleSaveTitle = useCallback(() => {
+      const trimmedTitle = editInputValue.trim();
 
-        if (trimmedTitle === '') {
-          setEditInputValue(title);
-          setEditingTitle(false);
-          return;
-        }
-
-        if (trimmedTitle !== title) {
-          updateConversationTitle(id, trimmedTitle);
-        }
-
+      if (trimmedTitle === '') {
+        setEditInputValue(title);
         setEditingTitle(false);
-      },
-      [id, title, updateConversationTitle],
-    );
+        return;
+      }
+
+      if (trimmedTitle !== title) {
+        updateConversationTitle(id, trimmedTitle);
+      }
+
+      setEditingTitle(false);
+    }, [editInputValue, id, title, updateConversationTitle]);
 
     const handleMenuClick = (e: React.MouseEvent) => {
       e.preventDefault();
@@ -55,10 +52,6 @@ export const ChatHistoryItem = memo(
       }
       setIsMenuOpen((prev) => !prev);
     };
-
-    const handleSaveTitle = useCallback(() => {
-      saveTitle(editInputValue);
-    }, [editInputValue, saveTitle]);
 
     const handleDelete = (e: React.MouseEvent) => {
       e.stopPropagation();
@@ -102,7 +95,7 @@ export const ChatHistoryItem = memo(
           setIsMenuOpen(false);
 
           if (editingTitle) {
-            saveTitle(editInputValue);
+            handleSaveTitle();
           }
         }
       };
@@ -110,7 +103,7 @@ export const ChatHistoryItem = memo(
       document.addEventListener('mousedown', handleClickOutside);
       return () =>
         document.removeEventListener('mousedown', handleClickOutside);
-    }, [editingTitle, editInputValue, saveTitle]);
+    }, [editingTitle, handleSaveTitle]);
 
     return (
       <div
