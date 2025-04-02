@@ -95,14 +95,11 @@ export const ChatHistoryItem = memo(
 
     useEffect(() => {
       const handleClickOutside = (event: MouseEvent) => {
-        if (
-          containerRef.current &&
-          !containerRef.current?.contains(event.target as Node)
-        ) {
+        const target = event.target as Node;
+        if (containerRef.current && !containerRef.current?.contains(target)) {
           setIsMenuOpen(false);
           if (editingTitle) {
             handleSaveTitle();
-            setEditingTitle(false);
           }
         }
       };
