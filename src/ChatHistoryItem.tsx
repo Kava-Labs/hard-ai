@@ -44,31 +44,27 @@ export const ChatHistoryItem = memo(
       e.stopPropagation();
       if (editingTitle) {
         setEditingTitle(false);
-        setEditInputValue(title);
+        setEditInputValue(optimisticTitle);
       }
       setIsMenuOpen((prev) => !prev);
     };
 
-    const handleSaveTitle = useCallback(
-      (currentTitle: string) => {
-        const trimmedTitle = currentTitle.trim();
-        if (trimmedTitle === '') {
-          setEditInputValue(title);
-          setEditingTitle(false);
-          return;
-        }
+    const editInputRef = useRef(editInputValue);
 
-        if (trimmedTitle !== title) {
-          //  Apply UI change first
-          setOptimisticTitle(trimmedTitle);
-          //  Then fire off request to db
-          updateConversationTitle(id, trimmedTitle);
-        }
+    const handleSaveTitle = useCallback(() => {
+      const currentTitle = editInputRef.current.trim();
 
+      if (currentTitle === '' || currentTitle === optimisticTitle) {
+        setEditInputValue(optimisticTitle);
         setEditingTitle(false);
-      },
-      [title, setOptimisticTitle, updateConversationTitle, id],
-    );
+        return;
+      }
+
+      setOptimisticTitle(currentTitle);
+      updateConversationTitle(id, currentTitle);
+
+      setEditingTitle(false);
+    }, [optimisticTitle, setOptimisticTitle, updateConversationTitle, id]);
 
     const handleDelete = (e: React.MouseEvent) => {
       e.stopPropagation();
@@ -78,8 +74,8 @@ export const ChatHistoryItem = memo(
 
     const handleEdit = (e: React.MouseEvent) => {
       e.stopPropagation();
-      setEditInputValue(title);
       if (editingTitle) {
+        setEditInputValue(optimisticTitle);
         setEditingTitle(false);
       } else {
         setEditingTitle(true);
@@ -89,7 +85,8 @@ export const ChatHistoryItem = memo(
     const handleKeyDown = (e: React.KeyboardEvent) => {
       e.stopPropagation();
       if (e.key === 'Enter') {
-        handleSaveTitle(editInputValue);
+        e.preventDefault();
+        handleSaveTitle();
       } else if (e.key === 'Escape') {
         setEditInputValue(title);
         setEditingTitle(false);
@@ -98,13 +95,14 @@ export const ChatHistoryItem = memo(
 
     useEffect(() => {
       const handleClickOutside = (event: MouseEvent) => {
-        const target = event.target as Node;
-
-        if (containerRef.current && !containerRef.current.contains(target)) {
+        if (
+          containerRef.current &&
+          !containerRef.current?.contains(event.target as Node)
+        ) {
           setIsMenuOpen(false);
-
           if (editingTitle) {
-            handleSaveTitle(editInputValue);
+            setEditingTitle(false);
+            handleSaveTitle();
           }
         }
       };
@@ -130,7 +128,10 @@ export const ChatHistoryItem = memo(
                 type="text"
                 value={editInputValue}
                 aria-label="Edit Title Input"
-                onChange={(e) => setEditInputValue(e.target.value)}
+                onChange={(e) => {
+                  setEditInputValue(e.target.value);
+                  editInputRef.current = e.target.value; // Update ref on every change
+                }}
                 onKeyDown={handleKeyDown}
                 className={styles.chatHistoryTitleInput}
                 onClick={(e) => {
