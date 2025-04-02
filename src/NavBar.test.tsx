@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { NavBar, NavBarProps } from './NavBar';
-import * as useIsMobileLayoutModule from './theme/useIsMobileLayout';
+import * as useIsMobileLayoutModule from 'lib-kava-ai';
 
 describe('NavBar', () => {
   const mockProps: NavBarProps = {
