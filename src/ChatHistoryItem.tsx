@@ -127,7 +127,7 @@ export const ChatHistoryItem = memo(
                 aria-label="Edit Title Input"
                 onChange={(e) => {
                   setEditInputValue(e.target.value);
-                  editInputRef.current = e.target.value; // Update ref on every change
+                  editInputRef.current = e.target.value;
                 }}
                 onKeyDown={handleKeyDown}
                 className={styles.chatHistoryTitleInput}
