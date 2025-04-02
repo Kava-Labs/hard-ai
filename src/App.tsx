@@ -2,8 +2,7 @@ import styles from './App.module.css';
 import { useState } from 'react';
 import { useChat } from './useChat';
 import { ChatInterface } from './ChatInterface';
-import { SearchHistoryModal } from './SearchHistoryModal';
-import { SideBar, useIsMobileLayout } from 'lib-kava-ai';
+import { SideBar, useIsMobileLayout, SearchHistoryModal } from 'lib-kava-ai';
 import hardAILogo from './assets/hardAILogo.svg';
 
 const sideBarLogo = <img src={hardAILogo} alt="Hard AI logo" height={18} />;
