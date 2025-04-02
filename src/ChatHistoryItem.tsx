@@ -43,8 +43,8 @@ export const ChatHistoryItem = memo(
       e.preventDefault();
       e.stopPropagation();
       if (editingTitle) {
-        setEditingTitle(false);
         setEditInputValue(optimisticTitle);
+        setEditingTitle(false);
       }
       setIsMenuOpen((prev) => !prev);
     };
@@ -61,9 +61,9 @@ export const ChatHistoryItem = memo(
       }
 
       setOptimisticTitle(currentTitle);
-      updateConversationTitle(id, currentTitle);
-
       setEditingTitle(false);
+
+      updateConversationTitle(id, currentTitle);
     }, [optimisticTitle, setOptimisticTitle, updateConversationTitle, id]);
 
     const handleDelete = (e: React.MouseEvent) => {
@@ -101,8 +101,8 @@ export const ChatHistoryItem = memo(
         ) {
           setIsMenuOpen(false);
           if (editingTitle) {
-            setEditingTitle(false);
             handleSaveTitle();
+            setEditingTitle(false);
           }
         }
       };
