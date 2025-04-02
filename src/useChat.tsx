@@ -11,17 +11,19 @@ import { TextStreamStore } from 'lib-kava-ai';
 import { v4 as uuidv4 } from 'uuid';
 import OpenAI from 'openai/index';
 import { doChat, generateConversationTitle } from './api/chat';
-import { idbEventTarget } from './api/idb';
-import { getConversationMessages } from './api/getConversationMessages';
-import { deleteConversation } from './api/deleteConversation';
-import { updateConversation } from './api/updateConversation';
-import { getAllConversations } from './api/getAllConversations';
-import { saveConversation } from './api/saveConversation';
+import {
+  idbEventTarget,
+  getAllConversations,
+  getConversationMessages,
+  updateConversation,
+  getSearchableHistory,
+  saveConversation,
+  deleteConversation,
+} from 'lib-kava-ai';
 import { initializeToolCallRegistry } from './toolcalls/chain';
 import { ToolCallStreamStore } from './stores/toolCallStreamStore';
 import { useExecuteToolCall } from './useExecuteToolCall';
 import { WalletStore } from './stores/walletStore';
-import { getSearchableHistory } from './api/getSearchableHistory';
 
 const activeChats: Record<string, ActiveChat> = {};
 
