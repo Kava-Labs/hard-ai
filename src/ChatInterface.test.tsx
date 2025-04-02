@@ -2,12 +2,9 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { ChatInterface } from './ChatInterface';
 import { ToolCallStreamStore } from './stores/toolCallStreamStore';
-
 import { initializeToolCallRegistry } from './toolcalls/chain';
 import { ActiveChat } from './types';
-import { useIsMobileLayout } from './theme/useIsMobileLayout';
-
-vi.mock('./theme/useIsMobileLayout');
+import { useIsMobileLayout } from 'lib-kava-ai';
 
 vi.mock('./ConversationWrapper', () => ({
   ConversationWrapper: ({ activeChat }: { activeChat: ActiveChat }) => (

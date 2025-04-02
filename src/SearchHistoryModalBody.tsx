@@ -1,6 +1,5 @@
 import styles from './SearchHistoryModal.module.css';
 import { useRef } from 'react';
-import { useIsMobileLayout } from './theme/useIsMobileLayout';
 import ButtonIcon from './ButtonIcon';
 import { X } from 'lucide-react';
 import { GroupedSearchHistories } from './types';
@@ -8,6 +7,7 @@ import {
   highlightMatch,
   formatContentSnippet,
   formatConversationTitle,
+  useIsMobileLayout,
 } from 'lib-kava-ai';
 
 interface SearchModalBodyProps {
