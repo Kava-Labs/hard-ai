@@ -3,7 +3,7 @@ import { ModalWrapper } from './ModalWrapper';
 import { useRef, useState } from 'react';
 import { SearchHistoryModalBody } from './SearchHistoryModalBody';
 import { SearchableChatHistories } from './types';
-import { groupAndFilterConversations } from './utils/helpers';
+import { groupAndFilterConversations } from 'lib-kava-ai';
 
 interface SearchHistoryProps {
   searchableHistory: SearchableChatHistories;

@@ -4,8 +4,11 @@ import { useIsMobileLayout } from './theme/useIsMobileLayout';
 import ButtonIcon from './ButtonIcon';
 import { X } from 'lucide-react';
 import { GroupedSearchHistories } from './types';
-import { formatContentSnippet, formatConversationTitle } from './utils/helpers';
-import { highlightMatch } from 'lib-kava-ai';
+import {
+  highlightMatch,
+  formatContentSnippet,
+  formatConversationTitle,
+} from 'lib-kava-ai';
 
 interface SearchModalBodyProps {
   groupedConversations: GroupedSearchHistories;
