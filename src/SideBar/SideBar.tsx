@@ -1,8 +1,6 @@
 import styles from '../App.module.css';
-import { ChatHistory } from './ChatHistory';
+import { ChatHistory, SideBarControls, useIsMobileLayout } from 'lib-kava-ai';
 import type { ConversationHistories } from 'lib-kava-ai';
-import { SideBarControls } from './SideBarControls';
-import { useIsMobileLayout } from 'lib-kava-ai';
 import { JSX } from 'react';
 
 export interface SideBarProps {
