@@ -1,4 +1,4 @@
-import styles from '../App.module.css';
+import styles from './App.module.css';
 import { ChatHistory, SideBarControls, useIsMobileLayout } from 'lib-kava-ai';
 import type { ConversationHistories } from 'lib-kava-ai';
 import { JSX } from 'react';
