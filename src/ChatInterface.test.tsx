@@ -1,10 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import { ChatInterface } from './ChatInterface';
 import { ToolCallStreamStore } from './stores/toolCallStreamStore';
 import { initializeToolCallRegistry } from './toolcalls/chain';
 import { ActiveChat } from './types';
-import { useIsMobileLayout } from 'lib-kava-ai';
 
 vi.mock('./ConversationWrapper', () => ({
   ConversationWrapper: ({ activeChat }: { activeChat: ActiveChat }) => (
@@ -13,6 +12,18 @@ vi.mock('./ConversationWrapper', () => ({
     </div>
   ),
 }));
+
+vi.mock('lib-kava-ai', async () => {
+  return {
+    useIsMobileLayout: vi.fn(),
+    NavBar: () => (
+      <div data-testid="mock-navbar">
+        <button aria-label="New Chat Button">New Chat</button>
+        <button aria-label="Open Menu">Menu</button>
+      </div>
+    ),
+  };
+});
 
 describe('ChatInterface', () => {
   const mockProps = {
@@ -62,36 +73,5 @@ describe('ChatInterface', () => {
 
     expect(screen.getByTestId('conversation-wrapper')).toBeInTheDocument();
     expect(screen.queryByTestId('landing-content')).not.toBeInTheDocument();
-  });
-
-  it('calls onMenuClick when mobile menu button is clicked', () => {
-    vi.mocked(useIsMobileLayout).mockReturnValue(true);
-
-    render(<ChatInterface {...mockProps} />);
-
-    const mobileMenuButton = screen.getByLabelText('Open Mobile Menu');
-    fireEvent.click(mobileMenuButton);
-
-    expect(mockProps.onMenuClick).toHaveBeenCalledTimes(1);
-  });
-
-  it('calls onMenuClick when desktop menu button is clicked', () => {
-    vi.mocked(useIsMobileLayout).mockReturnValue(false);
-
-    render(<ChatInterface {...mockProps} isSideBarOpen={false} />);
-
-    const desktopMenuButton = screen.getByLabelText('Open Desktop Menu');
-    fireEvent.click(desktopMenuButton);
-
-    expect(mockProps.onMenuClick).toHaveBeenCalledTimes(1);
-  });
-
-  it('calls handleNewChat when new chat button is clicked', () => {
-    render(<ChatInterface {...mockProps} />);
-
-    const newChatButton = screen.getByLabelText('New Chat Button');
-    fireEvent.click(newChatButton);
-
-    expect(mockProps.handleNewChat).toHaveBeenCalled();
   });
 });

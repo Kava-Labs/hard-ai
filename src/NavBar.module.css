@@ -1,0 +1,67 @@
+.nav {
+  height: 100%;
+  background: var(--colors-bgPrimary);
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  padding-left: calc(var(--spacing-md) + 0.2rem);
+  padding-right: calc(var(--spacing-md) + 0.2rem);
+}
+
+.leftSection {
+  display: flex;
+  align-items: center;
+}
+
+.desktopControls {
+  display: none;
+}
+
+.menu {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  padding: var(--spacing-md) 0 var(--spacing-md) 0;
+  width: 100%;
+  justify-content: center;
+}
+
+.centerSection {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.rightSection {
+  display: flex;
+  align-items: center;
+}
+
+/* Desktop styles */
+@media (min-width: 768px) {
+  .menu {
+    display: none;
+  }
+
+  .desktopControls {
+    display: flex;
+    align-items: center;
+  }
+
+  .logo {
+    width: auto;
+    padding: 0;
+  }
+
+  .newChatDesktop {
+    margin-right: var(--spacing-sm);
+  }
+}
