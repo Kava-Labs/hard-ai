@@ -12,13 +12,6 @@ export class MessageHistoryStore {
     }
   }
 
-  public hasUserMessages(): boolean {
-    return (
-      this.currentValue.filter((message) => message.role !== 'system').length >
-      0
-    );
-  }
-
   public addMessage(msg: ChatMessage) {
     const newMessages = [...this.currentValue, msg];
     this.currentValue = newMessages;
