@@ -1,8 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import {
-  MessageHistoryStore,
-  useMessageHistoryStore,
-} from './stores/messageHistoryStore';
+import { MessageHistoryStore } from './stores/messageHistoryStore';
 import {
   ChatMessage,
   ActiveChat,
