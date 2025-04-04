@@ -40,6 +40,9 @@ describe('ChatInterface', () => {
     toolCallRegistry: initializeToolCallRegistry(),
     isSideBarOpen: true,
     onMenuClick: vi.fn(),
+    styles: {
+      content: '',
+    },
   };
 
   beforeEach(() => {

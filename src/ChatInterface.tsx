@@ -1,6 +1,5 @@
 import { LandingContent } from './LandingContent';
 import { ChatInput } from './ChatInput';
-import styles from './App.module.css';
 import { NavBar } from 'lib-kava-ai';
 import { ConversationWrapper } from './ConversationWrapper';
 import { ActiveChat, ChatMessage } from './types';
@@ -15,6 +14,7 @@ interface ChatInterfaceProps {
   toolCallRegistry: ToolCallRegistry<unknown>;
   isSideBarOpen: boolean;
   onMenuClick: () => void;
+  styles: Record<string, string>;
 }
 
 export const ChatInterface = ({
@@ -25,6 +25,7 @@ export const ChatInterface = ({
   toolCallRegistry,
   isSideBarOpen,
   onMenuClick,
+  styles,
 }: ChatInterfaceProps) => {
   const { isConversationStarted, isRequesting } = activeChat;
   const containerRef = useRef<HTMLDivElement>(null);
