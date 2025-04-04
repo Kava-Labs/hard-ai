@@ -1,5 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { MessageHistoryStore } from './stores/messageHistoryStore';
+import {
+  MessageHistoryStore,
+  useMessageHistoryStore,
+} from './stores/messageHistoryStore';
 import {
   ChatMessage,
   ActiveChat,
@@ -24,6 +27,7 @@ import { initializeToolCallRegistry } from './toolcalls/chain';
 import { ToolCallStreamStore } from './stores/toolCallStreamStore';
 import { useExecuteToolCall } from './useExecuteToolCall';
 import { WalletStore } from './stores/walletStore';
+import { defaultSystemPrompt } from './toolcalls/chain/prompts';
 
 const activeChats: Record<string, ActiveChat> = {};
 
@@ -99,6 +103,12 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
         isConversationStarted: true,
         abortController: new AbortController(),
       };
+      if (newActiveChat.messageHistoryStore.getSnapshot().length === 0) {
+        newActiveChat.messageHistoryStore.addMessage({
+          role: 'system',
+          content: defaultSystemPrompt,
+        });
+      }
       // update isRequesting state and create a new abortController
       setActiveChat(newActiveChat);
       activeChats[activeChat.id] = newActiveChat;
