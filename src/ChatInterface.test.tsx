@@ -4,6 +4,7 @@ import { ChatInterface } from './ChatInterface';
 import { ToolCallStreamStore } from './stores/toolCallStreamStore';
 import { initializeToolCallRegistry } from './toolcalls/chain';
 import { ActiveChat } from './types';
+import { Record } from '@kava-labs/javascript-sdk/lib/proto/cosmos/crypto/keyring/v1/record';
 
 vi.mock('./ConversationWrapper', () => ({
   ConversationWrapper: ({ activeChat }: { activeChat: ActiveChat }) => (
@@ -40,6 +41,9 @@ describe('ChatInterface', () => {
     toolCallRegistry: initializeToolCallRegistry(),
     isSideBarOpen: true,
     onMenuClick: vi.fn(),
+    styles: {
+      content: '',
+    },
   };
 
   beforeEach(() => {
