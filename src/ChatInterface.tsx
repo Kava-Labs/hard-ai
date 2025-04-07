@@ -5,6 +5,7 @@ import { ConversationWrapper } from './ConversationWrapper';
 import { ActiveChat, ChatMessage } from './types';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { ToolCallRegistry } from './toolcalls/chain';
+import ConnectWalletButton from './ConnectWalletButton';
 
 interface ChatInterfaceProps {
   activeChat: ActiveChat;
@@ -79,6 +80,7 @@ export const ChatInterface = ({
               onMenuClick={onMenuClick}
               isSideBarOpen={isSideBarOpen}
               onNewChatClick={handleNewChat}
+              primaryControlComponent={<ConnectWalletButton />}
             />
           </div>
           <div className={styles.chatContainer}>
