@@ -38,7 +38,7 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
   });
 
   const [conversationHistories, setConversationHistories] =
-    useState<ConversationHistories>({});
+    useState<ConversationHistories | null>(null);
 
   // **********
   const [activeChat, setActiveChat] = useState<ActiveChat>({
@@ -119,7 +119,7 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
       // todo: sync local storage before response
       let conversation: ConversationHistory;
 
-      if (conversationHistories[activeChat.id]) {
+      if (conversationHistories && conversationHistories[activeChat.id]) {
         conversation = conversationHistories[activeChat.id];
         conversation.lastSaved = Date.now();
       } else {
@@ -199,7 +199,7 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
   const onSelectConversation = useCallback(
     async (id: string) => {
       // already selected
-      if (id === activeChat.id) return;
+      if (id === activeChat.id || !conversationHistories) return;
 
       if (activeChats[id]) {
         setActiveChat(activeChats[id]);
