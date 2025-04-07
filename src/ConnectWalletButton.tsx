@@ -29,16 +29,19 @@ const ConnectWalletButton = ({
     setIsDropdownOpen(false);
   };
 
+  const onConnectClick = async () => {
+    if (!walletAddress) {
+      await connectWallet();
+    }
+  };
+
   return (
     <div
       className={styles.walletButtonContainer}
       onMouseEnter={() => walletAddress && setIsDropdownOpen(true)}
       onMouseLeave={() => setIsDropdownOpen(false)}
     >
-      <button
-        onClick={walletAddress ? () => ({}) : connectWallet}
-        className={styles.walletButton}
-      >
+      <button onClick={onConnectClick} className={styles.walletButton}>
         {displayedButtonText}
       </button>
 
