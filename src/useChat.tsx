@@ -63,16 +63,16 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
   const [walletStore] = useState(() => new WalletStore());
   const walletAddress = useWalletStore(walletStore).walletAddress;
 
-  const connectWallet = async () => {
+  const connectWallet = useCallback(async () => {
     await walletStore.connectWallet({
       chainId: '2222',
       walletType: WalletTypes.METAMASK,
     });
-  };
+  }, [walletStore]);
 
-  const disconnectWallet = () => {
+  const disconnectWallet = useCallback(() => {
     walletStore.disconnectWallet();
-  };
+  }, [walletStore]);
 
   const setIsOperationValidated = useCallback(
     (isOperationValidated: boolean) => {
