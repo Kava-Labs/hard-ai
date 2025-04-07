@@ -1,30 +1,31 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { MessageHistoryStore } from './stores/messageHistoryStore';
 import {
-  ChatMessage,
   ActiveChat,
+  ChatMessage,
   ConversationHistories,
   ConversationHistory,
   SearchableChatHistories,
 } from './types';
-import { TextStreamStore } from 'lib-kava-ai';
+import {
+  deleteConversation,
+  getAllConversations,
+  getConversationMessages,
+  getSearchableHistory,
+  idbEventTarget,
+  saveConversation,
+  TextStreamStore,
+  updateConversation,
+} from 'lib-kava-ai';
 import { v4 as uuidv4 } from 'uuid';
 import OpenAI from 'openai/index';
 import { doChat, generateConversationTitle } from './api/chat';
-import {
-  idbEventTarget,
-  getAllConversations,
-  getConversationMessages,
-  updateConversation,
-  getSearchableHistory,
-  saveConversation,
-  deleteConversation,
-} from 'lib-kava-ai';
 import { initializeToolCallRegistry } from './toolcalls/chain';
 import { ToolCallStreamStore } from './stores/toolCallStreamStore';
 import { useExecuteToolCall } from './useExecuteToolCall';
-import { WalletStore } from './stores/walletStore';
+import { WalletStore, WalletTypes } from './stores/walletStore';
 import { defaultSystemPrompt } from './toolcalls/chain/prompts';
+import { useWalletStore } from './stores/walletStore/useWalletStore';
 
 const activeChats: Record<string, ActiveChat> = {};
 
@@ -60,6 +61,18 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
   const [toolCallRegistry] = useState(() => initializeToolCallRegistry());
 
   const [walletStore] = useState(() => new WalletStore());
+  const walletAddress = useWalletStore(walletStore).walletAddress;
+
+  const connectWallet = useCallback(async () => {
+    await walletStore.connectWallet({
+      chainId: '2222',
+      walletType: WalletTypes.METAMASK,
+    });
+  }, [walletStore]);
+
+  const disconnectWallet = useCallback(() => {
+    walletStore.disconnectWallet();
+  }, [walletStore]);
 
   const setIsOperationValidated = useCallback(
     (isOperationValidated: boolean) => {
@@ -283,6 +296,9 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
       searchableHistory,
       fetchSearchHistory,
       toolCallRegistry,
+      walletAddress,
+      connectWallet,
+      disconnectWallet,
     }),
     [
       activeChat,
@@ -295,6 +311,9 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
       onUpdateConversationTitle,
       searchableHistory,
       toolCallRegistry,
+      walletAddress,
+      connectWallet,
+      disconnectWallet,
     ],
   );
 };

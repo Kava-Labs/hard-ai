@@ -1,7 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
-import { ChatInterface } from './ChatInterface';
-import { ToolCallStreamStore } from './stores/toolCallStreamStore';
+import { ChatInterface, ChatInterfaceProps } from './ChatInterface';
 import { initializeToolCallRegistry } from './toolcalls/chain';
 import { ActiveChat } from './types';
 
@@ -26,7 +25,7 @@ vi.mock('lib-kava-ai', async () => {
 });
 
 describe('ChatInterface', () => {
-  const mockProps = {
+  const mockProps: ChatInterfaceProps = {
     activeChat: {
       id: 'test-chat-id',
       isConversationStarted: false,
@@ -35,14 +34,15 @@ describe('ChatInterface', () => {
     handleChatCompletion: vi.fn(),
     handleCancel: vi.fn(),
     handleNewChat: vi.fn(),
-    isOperationValidated: false,
-    toolCallStreamStore: new ToolCallStreamStore(),
     toolCallRegistry: initializeToolCallRegistry(),
     isSideBarOpen: true,
     onMenuClick: vi.fn(),
     styles: {
       content: '',
     },
+    walletAddress: '',
+    connectWallet: vi.fn(),
+    disconnectWallet: vi.fn(),
   };
 
   beforeEach(() => {
