@@ -7,6 +7,10 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { ToolCallRegistry } from './toolcalls/chain';
 import ConnectWalletButton from './ConnectWalletButton';
 
+const showWalletConnect =
+  // @ts-expect-error: env exists
+  import.meta.env['VITE_FEAT_WALLET_CONNECT'] === 'true';
+
 interface ChatInterfaceProps {
   activeChat: ActiveChat;
   handleChatCompletion: (messages: ChatMessage[]) => void;
@@ -80,7 +84,9 @@ export const ChatInterface = ({
               onMenuClick={onMenuClick}
               isSideBarOpen={isSideBarOpen}
               onNewChatClick={handleNewChat}
-              primaryControlComponent={<ConnectWalletButton />}
+              primaryControlComponent={
+                showWalletConnect && <ConnectWalletButton />
+              }
             />
           </div>
           <div className={styles.chatContainer}>
