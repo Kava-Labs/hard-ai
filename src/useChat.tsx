@@ -61,8 +61,7 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
   const [toolCallRegistry] = useState(() => initializeToolCallRegistry());
 
   const [walletStore] = useState(() => new WalletStore());
-  const walletState = useWalletStore(walletStore);
-  const walletAddress = walletState.walletAddress;
+  const walletAddress = useWalletStore(walletStore).walletAddress;
 
   const connectWallet = async () => {
     await walletStore.connectWallet({
