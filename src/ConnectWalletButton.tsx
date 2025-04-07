@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import styles from './ConnectWalletButton.module.css';
+import { formatWalletAddress } from './utils/wallet';
 
 interface ConnectWalletButtonProps {
   walletAddress: string;
@@ -14,10 +15,20 @@ const ConnectWalletButton = ({
 }: ConnectWalletButtonProps) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
-  const formatWalletAddress = (address: string) => {
-    if (!address) return '';
-    return `${address.substring(0, 6)}...${address.substring(address.length - 4)}`;
+  const displayedButtonText = walletAddress
+    ? formatWalletAddress(walletAddress)
+    : 'Connect Wallet';
+
+  const copyAddressToClipboard = async () => {
+    await navigator.clipboard.writeText(walletAddress);
+    setIsDropdownOpen(false);
   };
+
+  const onDisconnectClick = () => {
+    disconnectWallet();
+    setIsDropdownOpen(false);
+  };
+
   return (
     <div
       className={styles.walletButtonContainer}
@@ -28,21 +39,15 @@ const ConnectWalletButton = ({
         onClick={walletAddress ? () => ({}) : connectWallet}
         className={styles.walletButton}
       >
-        {walletAddress ? formatWalletAddress(walletAddress) : 'Connect Wallet'}
+        {displayedButtonText}
       </button>
 
-      {isDropdownOpen && walletAddress && (
+      {isDropdownOpen && (
         <div className={styles.dropdown}>
-          <div
-            className={styles.dropdownItem}
-            onClick={() => {
-              navigator.clipboard.writeText(walletAddress);
-              setIsDropdownOpen(false);
-            }}
-          >
+          <div className={styles.dropdownItem} onClick={copyAddressToClipboard}>
             Copy Address
           </div>
-          <div className={styles.dropdownItem} onClick={disconnectWallet}>
+          <div className={styles.dropdownItem} onClick={onDisconnectClick}>
             Disconnect
           </div>
         </div>
