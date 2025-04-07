@@ -4,7 +4,7 @@ import styles from './ConnectWalletButton.module.css';
 interface ConnectWalletButtonProps {
   walletAddress: string;
   connectWallet: () => Promise<void>;
-  disconnectWallet: () => Promise<void>;
+  disconnectWallet: () => void;
 }
 
 const ConnectWalletButton = ({

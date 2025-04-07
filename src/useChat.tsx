@@ -1,30 +1,31 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { MessageHistoryStore } from './stores/messageHistoryStore';
 import {
-  ChatMessage,
   ActiveChat,
+  ChatMessage,
   ConversationHistories,
   ConversationHistory,
   SearchableChatHistories,
 } from './types';
-import { TextStreamStore } from 'lib-kava-ai';
+import {
+  deleteConversation,
+  getAllConversations,
+  getConversationMessages,
+  getSearchableHistory,
+  idbEventTarget,
+  saveConversation,
+  TextStreamStore,
+  updateConversation,
+} from 'lib-kava-ai';
 import { v4 as uuidv4 } from 'uuid';
 import OpenAI from 'openai/index';
 import { doChat, generateConversationTitle } from './api/chat';
-import {
-  idbEventTarget,
-  getAllConversations,
-  getConversationMessages,
-  updateConversation,
-  getSearchableHistory,
-  saveConversation,
-  deleteConversation,
-} from 'lib-kava-ai';
 import { initializeToolCallRegistry } from './toolcalls/chain';
 import { ToolCallStreamStore } from './stores/toolCallStreamStore';
 import { useExecuteToolCall } from './useExecuteToolCall';
-import { WalletStore } from './stores/walletStore';
+import { WalletStore, WalletTypes } from './stores/walletStore';
 import { defaultSystemPrompt } from './toolcalls/chain/prompts';
+import { useWalletStore } from './stores/walletStore/useWalletStore';
 
 const activeChats: Record<string, ActiveChat> = {};
 
@@ -60,71 +61,18 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
   const [toolCallRegistry] = useState(() => initializeToolCallRegistry());
 
   const [walletStore] = useState(() => new WalletStore());
-  const [walletAddress, setWalletAddress] = useState('');
-
-  useEffect(() => {
-    const checkWalletConnection = async () => {
-      if (window.ethereum) {
-        const accounts = await window.ethereum.request({
-          method: 'eth_accounts',
-        });
-
-        if (accounts.length > 0) {
-          setWalletAddress(accounts[0]);
-        }
-      }
-    };
-
-    checkWalletConnection();
-  }, []);
-
-  useEffect(() => {
-    if (window.ethereum) {
-      // @ts-expect-error: window.ethereum.on exists
-      window.ethereum.on('accountsChanged', (accounts: string[]) => {
-        if (accounts.length > 0) {
-          setWalletAddress(accounts[0]);
-        } else {
-          setWalletAddress('');
-        }
-      });
-    }
-
-    return () => {
-      if (window.ethereum) {
-        // @ts-expect-error: window.ethereum.removeListener exists
-        window.ethereum.removeListener('accountsChanged', () => {});
-      }
-    };
-  }, []);
+  const walletState = useWalletStore(walletStore);
+  const walletAddress = walletState.walletAddress;
 
   const connectWallet = async () => {
-    if (!window.ethereum) {
-      return;
-    }
-
-    try {
-      const accounts = await window.ethereum.request({
-        method: 'eth_requestAccounts',
-      });
-
-      setWalletAddress(accounts[0]);
-    } catch (error) {
-      console.error('Error connecting to MetaMask:', error);
-    }
+    await walletStore.connectWallet({
+      chainId: '2222',
+      walletType: WalletTypes.METAMASK,
+    });
   };
 
-  const disconnectWallet = async () => {
-    try {
-      setWalletAddress('');
-
-      // @ts-expect-error: window.ethereum.on exists
-      window.ethereum.on('disconnect', () => {
-        setWalletAddress('');
-      });
-    } catch (error) {
-      console.error('Error disconnecting from MetaMask:', error);
-    }
+  const disconnectWallet = () => {
+    walletStore.disconnectWallet();
   };
 
   const setIsOperationValidated = useCallback(
@@ -365,6 +313,8 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
       searchableHistory,
       toolCallRegistry,
       walletAddress,
+      connectWallet,
+      disconnectWallet,
     ],
   );
 };

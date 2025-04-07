@@ -21,7 +21,7 @@ export interface ChatInterfaceProps {
   styles: Record<string, string>;
   walletAddress: string;
   connectWallet: () => Promise<void>;
-  disconnectWallet: () => Promise<void>;
+  disconnectWallet: () => void;
 }
 
 export const ChatInterface = ({
