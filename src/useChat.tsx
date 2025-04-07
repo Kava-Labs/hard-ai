@@ -352,7 +352,6 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
       walletAddress,
       connectWallet,
       disconnectWallet,
-      walletStore,
     }),
     [
       activeChat,
@@ -366,7 +365,6 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
       searchableHistory,
       toolCallRegistry,
       walletAddress,
-      walletStore,
     ],
   );
 };
