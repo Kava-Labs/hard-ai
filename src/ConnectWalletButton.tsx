@@ -92,7 +92,6 @@ const ConnectWalletButton = () => {
 
   return (
     <div
-      className={styles.walletContainer}
       onMouseEnter={() => walletAddress && setIsDropdownOpen(true)}
       onMouseLeave={() => setIsDropdownOpen(false)}
     >
