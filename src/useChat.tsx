@@ -60,6 +60,72 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
   const [toolCallRegistry] = useState(() => initializeToolCallRegistry());
 
   const [walletStore] = useState(() => new WalletStore());
+  const [walletAddress, setWalletAddress] = useState('');
+
+  useEffect(() => {
+    const checkWalletConnection = async () => {
+      if (window.ethereum) {
+        const accounts = await window.ethereum.request({
+          method: 'eth_accounts',
+        });
+
+        if (accounts.length > 0) {
+          setWalletAddress(accounts[0]);
+        }
+      }
+    };
+
+    checkWalletConnection();
+  }, []);
+
+  useEffect(() => {
+    if (window.ethereum) {
+      // @ts-expect-error: window.ethereum.on exists
+      window.ethereum.on('accountsChanged', (accounts: string[]) => {
+        if (accounts.length > 0) {
+          setWalletAddress(accounts[0]);
+        } else {
+          setWalletAddress('');
+        }
+      });
+    }
+
+    return () => {
+      if (window.ethereum) {
+        // @ts-expect-error: window.ethereum.removeListener exists
+        window.ethereum.removeListener('accountsChanged', () => {});
+      }
+    };
+  }, []);
+
+  const connectWallet = async () => {
+    if (!window.ethereum) {
+      return;
+    }
+
+    try {
+      const accounts = await window.ethereum.request({
+        method: 'eth_requestAccounts',
+      });
+
+      setWalletAddress(accounts[0]);
+    } catch (error) {
+      console.error('Error connecting to MetaMask:', error);
+    }
+  };
+
+  const disconnectWallet = async () => {
+    try {
+      setWalletAddress('');
+
+      // @ts-expect-error: window.ethereum.on exists
+      window.ethereum.on('disconnect', () => {
+        setWalletAddress('');
+      });
+    } catch (error) {
+      console.error('Error disconnecting from MetaMask:', error);
+    }
+  };
 
   const setIsOperationValidated = useCallback(
     (isOperationValidated: boolean) => {
@@ -283,6 +349,10 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
       searchableHistory,
       fetchSearchHistory,
       toolCallRegistry,
+      walletAddress,
+      connectWallet,
+      disconnectWallet,
+      walletStore,
     }),
     [
       activeChat,
@@ -295,6 +365,8 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
       onUpdateConversationTitle,
       searchableHistory,
       toolCallRegistry,
+      walletAddress,
+      walletStore,
     ],
   );
 };

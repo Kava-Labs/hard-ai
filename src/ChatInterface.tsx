@@ -10,7 +10,7 @@ import ConnectWalletButton from './ConnectWalletButton';
 const showWalletConnect =
   import.meta.env['VITE_FEAT_WALLET_CONNECT'] === 'true';
 
-interface ChatInterfaceProps {
+export interface ChatInterfaceProps {
   activeChat: ActiveChat;
   handleChatCompletion: (messages: ChatMessage[]) => void;
   handleCancel: () => void;
@@ -19,6 +19,9 @@ interface ChatInterfaceProps {
   isSideBarOpen: boolean;
   onMenuClick: () => void;
   styles: Record<string, string>;
+  walletAddress: string;
+  connectWallet: () => Promise<void>;
+  disconnectWallet: () => Promise<void>;
 }
 
 export const ChatInterface = ({
@@ -30,6 +33,9 @@ export const ChatInterface = ({
   isSideBarOpen,
   onMenuClick,
   styles,
+  walletAddress,
+  connectWallet,
+  disconnectWallet,
 }: ChatInterfaceProps) => {
   const { isConversationStarted, isRequesting } = activeChat;
   const containerRef = useRef<HTMLDivElement>(null);
@@ -84,7 +90,13 @@ export const ChatInterface = ({
               isSideBarOpen={isSideBarOpen}
               onNewChatClick={handleNewChat}
               primaryControlComponent={
-                showWalletConnect && <ConnectWalletButton />
+                showWalletConnect && (
+                  <ConnectWalletButton
+                    connectWallet={connectWallet}
+                    disconnectWallet={disconnectWallet}
+                    walletAddress={walletAddress}
+                  />
+                )
               }
             />
           </div>

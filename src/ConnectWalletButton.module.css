@@ -1,3 +1,8 @@
+.walletButtonContainer {
+  position: relative;
+  display: inline-block;
+}
+
 .walletButton {
   background-color: var(--colors-accent);
   border-radius: var(--borderRadius-sm);

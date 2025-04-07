@@ -46,6 +46,9 @@ export const App = () => {
     searchableHistory,
     fetchSearchHistory,
     toolCallRegistry,
+    walletAddress,
+    connectWallet,
+    disconnectWallet,
   } = useChat();
 
   return (
@@ -71,6 +74,9 @@ export const App = () => {
         onMenuClick={onOpenSideBar}
         isSideBarOpen={isSideBarOpen}
         styles={styles}
+        walletAddress={walletAddress}
+        connectWallet={connectWallet}
+        disconnectWallet={disconnectWallet}
       />
       {isSearchHistoryOpen && searchableHistory && (
         <SearchHistoryModal
