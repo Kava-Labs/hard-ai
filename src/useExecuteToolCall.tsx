@@ -89,13 +89,14 @@ export const useExecuteToolCall = (
                 `0x${chainRegistry[ChainType.EVM][evmChainName].chainID.toString(16)}` !==
                 walletStore.getSnapshot().walletChainId
               ) {
-                await walletStore.metamaskSwitchNetwork(evmChainName);
+                //  todo - reintroduce
+                // await walletStore.metamaskSwitchNetwork(evmChainName);
               }
             }
             break;
           }
           default: {
-            await walletStore.metamaskSwitchNetwork(chainName);
+            // await walletStore.metamaskSwitchNetwork(chainName);
           }
         }
       }

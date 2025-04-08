@@ -57,10 +57,6 @@ export const App = () => {
     setIsWalletConnectOpen(true);
   };
 
-  const closeWalletConnect = () => {
-    setIsWalletConnectOpen(false);
-  };
-
   return (
     <div className={styles.app}>
       <SideBar
@@ -95,7 +91,7 @@ export const App = () => {
           onCloseSearchHistory={onCloseSearchHistory}
         />
       )}
-      {isWalletConnectOpen && <WalletConnection onClose={closeWalletConnect} />}
+      {isWalletConnectOpen && <WalletConnection />}
     </div>
   );
 };

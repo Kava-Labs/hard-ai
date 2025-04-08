@@ -7,6 +7,7 @@ import { ButtonIcon } from 'lib-kava-ai';
 import { X } from 'lucide-react';
 
 const WalletConnection: React.FC = () => {
+  //  todo - call these in App and pass as props
   const {
     walletConnection,
     walletAddress,
@@ -85,7 +86,8 @@ const WalletConnection: React.FC = () => {
   };
 
   return (
-    <div className="wallet-connection">
+    <>
+      {/*todo - refactor out to app*/}
       <ConnectWalletButton
         walletAddress={walletAddress}
         connectWallet={handleConnectClick}
@@ -94,7 +96,6 @@ const WalletConnection: React.FC = () => {
         providerName={connectedProvider.name}
       />
 
-      {/* Provider Selection Modal */}
       {showProviderModal && (
         <div className={styles.providerModalBackdrop}>
           <div className={styles.providerModal}>
@@ -105,12 +106,6 @@ const WalletConnection: React.FC = () => {
                 aria-label={'Close wallet connect'}
                 onClick={() => setShowProviderModal(false)}
               />
-              {/*<button*/}
-              {/*  className={styles.closeButton}*/}
-              {/*  onClick={() => setShowProviderModal(false)}*/}
-              {/*>*/}
-              {/*  ×*/}
-              {/*</button>*/}
             </div>
 
             <div className={styles.providersList}>
@@ -136,7 +131,7 @@ const WalletConnection: React.FC = () => {
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 };
 

@@ -5,7 +5,6 @@ import { ConversationWrapper } from './ConversationWrapper';
 import { ActiveChat, ChatMessage } from './types';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { ToolCallRegistry } from './toolcalls/chain';
-import ConnectWalletButton from './ConnectWalletButton';
 import WalletConnection from './WalletConnection';
 
 const showWalletConnect =
@@ -34,9 +33,6 @@ export const ChatInterface = ({
   isSideBarOpen,
   onMenuClick,
   styles,
-  walletAddress,
-  connectWallet,
-  disconnectWallet,
 }: ChatInterfaceProps) => {
   const { isConversationStarted, isRequesting } = activeChat;
   const containerRef = useRef<HTMLDivElement>(null);
