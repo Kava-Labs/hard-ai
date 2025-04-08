@@ -23,7 +23,11 @@ import { doChat, generateConversationTitle } from './api/chat';
 import { initializeToolCallRegistry } from './toolcalls/chain';
 import { ToolCallStreamStore } from './stores/toolCallStreamStore';
 import { useExecuteToolCall } from './useExecuteToolCall';
-import { WalletStore, WalletTypes } from './stores/walletStore';
+import {
+  WalletStore,
+  WalletTypes,
+  EIP6963ProviderDetail,
+} from './stores/walletStore';
 import { defaultSystemPrompt } from './toolcalls/chain/prompts';
 import { useWalletStore } from './stores/walletStore/useWalletStore';
 
@@ -61,18 +65,103 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
   const [toolCallRegistry] = useState(() => initializeToolCallRegistry());
 
   const [walletStore] = useState(() => new WalletStore());
-  const walletAddress = useWalletStore(walletStore).walletAddress;
+  const walletConnection = useWalletStore(walletStore);
+  const walletAddress = walletConnection.walletAddress;
 
-  const connectWallet = useCallback(async () => {
-    await walletStore.connectWallet({
-      chainId: '2222',
-      walletType: WalletTypes.METAMASK,
-    });
+  // State for available providers
+  const [availableProviders, setAvailableProviders] = useState<
+    EIP6963ProviderDetail[]
+  >([]);
+
+  // Refresh available providers
+  const refreshProviders = useCallback(() => {
+    setAvailableProviders(walletStore.getProviders());
   }, [walletStore]);
+
+  // Get initial providers and set up polling
+  useEffect(() => {
+    refreshProviders();
+
+    // Poll for new providers every few seconds
+    const interval = setInterval(refreshProviders, 3000);
+
+    return () => clearInterval(interval);
+  }, [refreshProviders]);
+
+  // Connect to MetaMask (legacy method)
+  const connectMetamask = useCallback(
+    async (chainId: string = '2222') => {
+      try {
+        await walletStore.connectWallet({
+          chainId,
+          walletType: WalletTypes.METAMASK,
+        });
+      } catch (error) {
+        console.error('Failed to connect to MetaMask:', error);
+        throw error;
+      }
+    },
+    [walletStore],
+  );
+
+  // Connect to a specific EIP-6963 provider
+  const connectEIP6963Provider = useCallback(
+    async (providerId: string, chainId?: string) => {
+      try {
+        await walletStore.connectWallet({
+          chainId,
+          walletType: WalletTypes.EIP6963,
+          providerId,
+        });
+      } catch (error) {
+        console.error('Failed to connect to wallet provider:', error);
+        throw error;
+      }
+    },
+    [walletStore],
+  );
+
+  // Connect wallet with provider selection
+  const connectWallet = useCallback(async () => {
+    const chainId = '2222';
+    // Refresh providers list first
+    refreshProviders();
+    const providers = walletStore.getProviders();
+
+    console.log({ providers });
+
+    if (providers.length === 0) {
+      // Fallback to MetaMask if no EIP-6963 providers
+      return connectMetamask(chainId);
+    } else if (providers.length === 1) {
+      // Automatically connect to the only provider
+      return connectEIP6963Provider(providers[0].info.uuid, chainId);
+    } else {
+      // Return providers so UI can show selection
+      return {
+        multipleProviders: true,
+        providers,
+      };
+    }
+  }, [walletStore, connectMetamask, connectEIP6963Provider, refreshProviders]);
 
   const disconnectWallet = useCallback(() => {
     walletStore.disconnectWallet();
   }, [walletStore]);
+
+  // Switch network on current wallet
+  const switchNetwork = useCallback(
+    async (chainName: string) => {
+      try {
+        await walletStore.switchNetwork(chainName);
+        return true;
+      } catch (error) {
+        console.error('Failed to switch network:', error);
+        return false;
+      }
+    },
+    [walletStore],
+  );
 
   const setIsOperationValidated = useCallback(
     (isOperationValidated: boolean) => {
@@ -296,9 +385,15 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
       searchableHistory,
       fetchSearchHistory,
       toolCallRegistry,
+      walletConnection,
       walletAddress,
       connectWallet,
+      connectMetamask,
+      connectEIP6963Provider,
       disconnectWallet,
+      switchNetwork,
+      availableProviders,
+      refreshProviders,
     }),
     [
       activeChat,
@@ -311,9 +406,15 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
       onUpdateConversationTitle,
       searchableHistory,
       toolCallRegistry,
+      walletConnection,
       walletAddress,
       connectWallet,
+      connectMetamask,
+      connectEIP6963Provider,
       disconnectWallet,
+      switchNetwork,
+      availableProviders,
+      refreshProviders,
     ],
   );
 };

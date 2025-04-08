@@ -6,6 +6,7 @@ import { ActiveChat, ChatMessage } from './types';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { ToolCallRegistry } from './toolcalls/chain';
 import ConnectWalletButton from './ConnectWalletButton';
+import WalletConnection from './WalletConnection';
 
 const showWalletConnect =
   import.meta.env['VITE_FEAT_WALLET_CONNECT'] === 'true';
@@ -20,7 +21,7 @@ export interface ChatInterfaceProps {
   onMenuClick: () => void;
   styles: Record<string, string>;
   walletAddress: string;
-  connectWallet: () => Promise<void>;
+  connectWallet: () => void;
   disconnectWallet: () => void;
 }
 
@@ -90,13 +91,7 @@ export const ChatInterface = ({
               isSideBarOpen={isSideBarOpen}
               onNewChatClick={handleNewChat}
               primaryControlComponent={
-                showWalletConnect && (
-                  <ConnectWalletButton
-                    connectWallet={connectWallet}
-                    disconnectWallet={disconnectWallet}
-                    walletAddress={walletAddress}
-                  />
-                )
+                showWalletConnect && <WalletConnection />
               }
             />
           </div>

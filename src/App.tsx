@@ -4,6 +4,7 @@ import { useChat } from './useChat';
 import { ChatInterface } from './ChatInterface';
 import { useIsMobileLayout, SearchHistoryModal, SideBar } from 'lib-kava-ai';
 import hardAILogo from './assets/hardAILogo.svg';
+import WalletConnection from './WalletConnection';
 
 const sideBarLogo = <img src={hardAILogo} alt="Hard AI logo" height={18} />;
 
@@ -11,6 +12,7 @@ export const App = () => {
   const [isMobileSideBarOpen, setIsMobileSideBarOpen] = useState(false);
   const [isDesktopSideBarOpen, setIsDesktopSideBarOpen] = useState(true);
   const [isSearchHistoryOpen, setIsSearchHistoryOpen] = useState(false);
+  const [isWalletConnectOpen, setIsWalletConnectOpen] = useState(false);
 
   const onCloseSearchHistory = () => {
     setIsSearchHistoryOpen(false);
@@ -20,6 +22,7 @@ export const App = () => {
     await fetchSearchHistory();
     setIsSearchHistoryOpen(true);
   };
+
   const isMobileLayout = useIsMobileLayout();
 
   const onCloseSideBar = isMobileLayout
@@ -47,9 +50,16 @@ export const App = () => {
     fetchSearchHistory,
     toolCallRegistry,
     walletAddress,
-    connectWallet,
     disconnectWallet,
   } = useChat();
+
+  const openWalletConnect = () => {
+    setIsWalletConnectOpen(true);
+  };
+
+  const closeWalletConnect = () => {
+    setIsWalletConnectOpen(false);
+  };
 
   return (
     <div className={styles.app}>
@@ -75,7 +85,7 @@ export const App = () => {
         isSideBarOpen={isSideBarOpen}
         styles={styles}
         walletAddress={walletAddress}
-        connectWallet={connectWallet}
+        connectWallet={openWalletConnect}
         disconnectWallet={disconnectWallet}
       />
       {isSearchHistoryOpen && searchableHistory && (
@@ -85,6 +95,7 @@ export const App = () => {
           onCloseSearchHistory={onCloseSearchHistory}
         />
       )}
+      {isWalletConnectOpen && <WalletConnection onClose={closeWalletConnect} />}
     </div>
   );
 };

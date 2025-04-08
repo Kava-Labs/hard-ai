@@ -4,7 +4,7 @@ import { formatWalletAddress } from './utils/wallet';
 
 interface ConnectWalletButtonProps {
   walletAddress: string;
-  connectWallet: () => Promise<void>;
+  connectWallet: () => void;
   disconnectWallet: () => void;
 }
 
@@ -31,7 +31,7 @@ const ConnectWalletButton = ({
 
   const onConnectClick = async () => {
     if (!walletAddress) {
-      await connectWallet();
+      connectWallet();
     }
   };
 

@@ -1,0 +1,178 @@
+.modalBackdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modalContent {
+  background-color: #fff;
+  border-radius: 8px;
+  width: 90%;
+  max-width: 400px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  overflow: hidden;
+}
+
+.modalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  border-bottom: 1px solid #eaeaea;
+}
+
+.modalHeader h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.closeButton {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #666;
+}
+
+.modalBody {
+  padding: 20px;
+}
+
+/* Connected wallet styles */
+.connectedWallet {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.walletInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.walletAddress {
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+}
+
+.walletChain, .walletProvider {
+  font-size: 14px;
+  color: #666;
+}
+
+.walletActions {
+  margin-top: 16px;
+}
+
+.disconnectButton {
+  padding: 8px 16px;
+  background-color: #f5f5f5;
+  border: 1px solid #ddd;
+  color: #666;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.disconnectButton:hover {
+  background-color: #eee;
+}
+
+/* Connect wallet styles */
+.connectWallet {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.connectButton {
+  padding: 12px 24px;
+  background-color: #3498db;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-weight: 600;
+  cursor: pointer;
+  width: 100%;
+  transition: background-color 0.2s;
+}
+
+.connectButton:hover {
+  background-color: #2980b9;
+}
+
+.connectButton:disabled {
+  background-color: #95a5a6;
+  cursor: not-allowed;
+}
+
+.errorMessage {
+  color: #e74c3c;
+  font-size: 14px;
+  text-align: center;
+  margin-top: 8px;
+}
+
+/* Provider selection styles */
+.providersList {
+  padding: 16px 20px;
+  border-top: 1px solid #eaeaea;
+}
+
+.providersList h4 {
+  margin: 0 0 16px 0;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.providersGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.providerItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 12px;
+  border: 1px solid #eaeaea;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.providerItem:hover {
+  background-color: #f8f9fa;
+  border-color: #ddd;
+}
+
+.providerIcon {
+  width: 32px;
+  height: 32px;
+  margin-bottom: 8px;
+}
+
+.providerName {
+  font-size: 14px;
+  font-weight: 500;
+  text-align: center;
+}
+
+.noProviders {
+  text-align: center;
+  color: #666;
+  padding: 16px;
+}
