@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useChat } from './useChat';
 import { EIP6963ProviderDetail } from './stores/walletStore';
 import ConnectWalletButton from './ConnectWalletButton';
+import styles from './WalletConnection.module.css';
 
 const WalletConnection: React.FC = () => {
   const {
@@ -72,42 +73,43 @@ const WalletConnection: React.FC = () => {
         connectWallet={handleConnectClick}
         disconnectWallet={handleDisconnect}
       />
-      {/*)}*/}
 
       {/* Provider Selection Modal */}
       {showProviderModal && (
-        <div className="provider-modal-backdrop">
-          <div className="provider-modal">
-            <div className="modal-header">
+        <div className={styles.providerModalBackdrop}>
+          <div className={styles.providerModal}>
+            <div className={styles.modalHeader}>
               <h3>Select a Wallet</h3>
               <button
-                className="close-button"
+                className={styles.closeButton}
                 onClick={() => setShowProviderModal(false)}
               >
                 ×
               </button>
             </div>
 
-            <div className="providers-list">
+            <div className={styles.providersList}>
               {availableProviders.length === 0 ? (
-                <div className="no-providers">
+                <div className={styles.noProviders}>
                   No EIP-6963 compatible wallets found.
                 </div>
               ) : (
                 availableProviders.map((provider) => (
                   <div
                     key={provider.info.uuid}
-                    className="provider-item"
+                    className={styles.providerItem}
                     onClick={() => handleProviderSelect(provider)}
                   >
                     {provider.info.icon && (
                       <img
                         src={provider.info.icon}
                         alt={`${provider.info.name} icon`}
-                        className="provider-icon"
+                        className={styles.providerIcon}
                       />
                     )}
-                    <span className="provider-name">{provider.info.name}</span>
+                    <span className={styles.providerName}>
+                      {provider.info.name}
+                    </span>
                   </div>
                 ))
               )}

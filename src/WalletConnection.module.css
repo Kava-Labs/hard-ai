@@ -1,4 +1,5 @@
-.modalBackdrop {
+/* Provider Selection Modal */
+.providerModalBackdrop {
   position: fixed;
   top: 0;
   left: 0;
@@ -11,8 +12,8 @@
   z-index: 1000;
 }
 
-.modalContent {
-  background-color: #fff;
+.providerModal {
+  background-color: white;
   border-radius: 8px;
   width: 90%;
   max-width: 400px;
@@ -32,6 +33,7 @@
   margin: 0;
   font-size: 18px;
   font-weight: 600;
+  color: #333;
 }
 
 .closeButton {
@@ -40,139 +42,82 @@
   font-size: 24px;
   cursor: pointer;
   color: #666;
-}
-
-.modalBody {
-  padding: 20px;
-}
-
-/* Connected wallet styles */
-.connectedWallet {
   display: flex;
-  flex-direction: column;
-  gap: 16px;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  transition: color 0.2s;
 }
 
-.walletInfo {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.walletAddress {
-  font-size: 18px;
-  font-weight: 600;
+.closeButton:hover {
   color: #333;
 }
 
-.walletChain, .walletProvider {
-  font-size: 14px;
-  color: #666;
-}
-
-.walletActions {
-  margin-top: 16px;
-}
-
-.disconnectButton {
-  padding: 8px 16px;
-  background-color: #f5f5f5;
-  border: 1px solid #ddd;
-  color: #666;
-  border-radius: 4px;
-  cursor: pointer;
-  font-weight: 500;
-  transition: all 0.2s ease;
-}
-
-.disconnectButton:hover {
-  background-color: #eee;
-}
-
-/* Connect wallet styles */
-.connectWallet {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 16px;
-}
-
-.connectButton {
-  padding: 12px 24px;
-  background-color: #3498db;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  font-weight: 600;
-  cursor: pointer;
-  width: 100%;
-  transition: background-color 0.2s;
-}
-
-.connectButton:hover {
-  background-color: #2980b9;
-}
-
-.connectButton:disabled {
-  background-color: #95a5a6;
-  cursor: not-allowed;
-}
-
-.errorMessage {
-  color: #e74c3c;
-  font-size: 14px;
-  text-align: center;
-  margin-top: 8px;
-}
-
-/* Provider selection styles */
 .providersList {
   padding: 16px 20px;
-  border-top: 1px solid #eaeaea;
-}
-
-.providersList h4 {
-  margin: 0 0 16px 0;
-  font-size: 16px;
-  font-weight: 500;
-}
-
-.providersGrid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-}
-
-.providerItem {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 12px;
-  border: 1px solid #eaeaea;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.providerItem:hover {
-  background-color: #f8f9fa;
-  border-color: #ddd;
-}
-
-.providerIcon {
-  width: 32px;
-  height: 32px;
-  margin-bottom: 8px;
-}
-
-.providerName {
-  font-size: 14px;
-  font-weight: 500;
-  text-align: center;
+  max-height: 400px;
+  overflow-y: auto;
 }
 
 .noProviders {
   text-align: center;
   color: #666;
-  padding: 16px;
+  padding: 24px 0;
+  font-size: 14px;
+}
+
+.providerItem {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  border: 1px solid #eaeaea;
+  border-radius: 6px;
+  margin-bottom: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.providerItem:hover {
+  background-color: #f8f9fa;
+  border-color: #ddd;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.providerItem:last-child {
+  margin-bottom: 0;
+}
+
+.providerIcon {
+  width: 32px;
+  height: 32px;
+  margin-right: 12px;
+  object-fit: contain;
+}
+
+.providerName {
+  font-size: 16px;
+  font-weight: 500;
+  color: #333;
+}
+
+/* Animation for modal */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideIn {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.providerModalBackdrop {
+  animation: fadeIn 0.2s ease-out;
+}
+
+.providerModal {
+  animation: slideIn 0.3s ease-out;
 }
