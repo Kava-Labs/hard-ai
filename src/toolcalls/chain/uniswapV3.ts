@@ -95,6 +95,48 @@ export async function getTokenUSDPrice(
   return Number(ethers.formatUnits(amountOut, 6));
 }
 
+export async function getQuoteExactInputSingle(
+  tokenIn: string,
+  tokenOut: string,
+  tokenInAmount: string, // human-readable string like "1.0"
+): Promise<{ amountOut: string; gasEstimate: string }> {
+  if (tokenIn.toLowerCase() === tokenOut.toLowerCase()) {
+    throw new Error('tokenIn must be different than tokenOut');
+  }
+
+  const iface = new ethers.Interface(QUOTER_V2_ABI);
+
+  const token0 = new ethers.Contract(tokenIn, erc20ABI, provider);
+  const token1 = new ethers.Contract(tokenOut, erc20ABI, provider);
+
+  const dec0 = await token0.decimals();
+  const dec1 = await token1.decimals();
+
+  const data = iface.encodeFunctionData('quoteExactInputSingle', [
+    {
+      tokenIn,
+      tokenOut,
+      amountIn: ethers.parseUnits(tokenInAmount, dec0),
+      fee: 0n,
+      sqrtPriceLimitX96: 0n,
+    },
+  ]);
+
+  const result = await provider.call({
+    to: QUOTER_V2_CONTACT_ADDRESS,
+    data,
+  });
+
+  const decoded = iface.decodeFunctionResult('quoteExactInputSingle', result);
+  // console.log(decoded);
+  const [amountOut, , , gasEstimate] = decoded;
+
+  return {
+    amountOut: ethers.formatUnits(amountOut, dec1),
+    gasEstimate: ethers.formatUnits(gasEstimate, 18),
+  };
+}
+
 // export const discoverPools = async () => {
 
 //   const factory = new ethers.Contract(
