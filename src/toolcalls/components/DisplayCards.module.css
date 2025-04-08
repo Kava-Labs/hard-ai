@@ -1,7 +1,7 @@
 .transactionContainer {
   width: 100%;
   max-width: 600px;
-  margin: 15px auto 0;
+  /*margin: 0 auto 0;*/
   font-family:
     system-ui,
     -apple-system,
