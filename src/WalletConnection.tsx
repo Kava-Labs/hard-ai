@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useChat } from './useChat';
 import { EIP6963ProviderDetail } from './stores/walletStore';
 import ConnectWalletButton from './ConnectWalletButton';
@@ -18,6 +18,34 @@ const WalletConnection: React.FC = () => {
   const [showProviderModal, setShowProviderModal] = useState(false);
   const [isConnecting, setIsConnecting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [connectedProvider, setConnectedProvider] = useState<{
+    icon?: string;
+    name?: string;
+  }>({});
+
+  // Find the connected provider when wallet is connected
+  useEffect(() => {
+    if (walletConnection.isWalletConnected && walletConnection.rdns) {
+      // Find the provider that matches the connected wallet's RDNS
+      const provider = availableProviders.find(
+        (p) => p.info.rdns === walletConnection.rdns,
+      );
+
+      if (provider) {
+        setConnectedProvider({
+          icon: provider.info.icon,
+          name: provider.info.name,
+        });
+      }
+    } else if (!walletConnection.isWalletConnected) {
+      // Clear the connected provider when wallet is disconnected
+      setConnectedProvider({});
+    }
+  }, [
+    walletConnection.isWalletConnected,
+    walletConnection.rdns,
+    availableProviders,
+  ]);
 
   const handleConnectClick = async () => {
     setError(null);
@@ -47,6 +75,11 @@ const WalletConnection: React.FC = () => {
 
     try {
       await connectEIP6963Provider(provider.info.uuid, '2222');
+      // Update the connected provider information
+      setConnectedProvider({
+        icon: provider.info.icon,
+        name: provider.info.name,
+      });
     } catch (err) {
       setError(
         `Failed to connect to ${provider.info.name}: ${(err as Error).message}`,
@@ -58,12 +91,7 @@ const WalletConnection: React.FC = () => {
 
   const handleDisconnect = () => {
     disconnectWallet();
-  };
-
-  // Format wallet address for display (0x1234...5678)
-  const formatAddress = (address: string) => {
-    if (!address) return '';
-    return `${address.slice(0, 6)}...${address.slice(-4)}`;
+    setConnectedProvider({});
   };
 
   return (
@@ -72,6 +100,8 @@ const WalletConnection: React.FC = () => {
         walletAddress={walletAddress}
         connectWallet={handleConnectClick}
         disconnectWallet={handleDisconnect}
+        providerIcon={connectedProvider.icon}
+        providerName={connectedProvider.name}
       />
 
       {/* Provider Selection Modal */}

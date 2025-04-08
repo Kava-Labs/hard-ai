@@ -14,10 +14,29 @@
   text-align: center;
   transition: background-color 0.2s, transform 0.1s;
   width: 15rem;
+  /* Only add these properties for the icon */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
 }
 
 .walletButton:hover {
   background-color: var(--colors-accentTransparent);
+}
+
+.providerIcon {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.providerIconSmall {
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
+  flex-shrink: 0;
 }
 
 .dropdown {
@@ -29,6 +48,17 @@
   text-align: center;
   width: 15rem;
   z-index: 10;
+}
+
+.providerInfo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: var(--spacing-sm);
+  color: var(--colors-textPrimary);
+  font-size: 1.4rem;
+  border-bottom: 1px solid var(--colors-bgQuaternary);
 }
 
 .dropdownItem {

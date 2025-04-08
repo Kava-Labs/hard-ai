@@ -6,12 +6,16 @@ interface ConnectWalletButtonProps {
   walletAddress: string;
   connectWallet: () => void;
   disconnectWallet: () => void;
+  providerIcon?: string;
+  providerName?: string;
 }
 
 const ConnectWalletButton = ({
   walletAddress,
   connectWallet,
   disconnectWallet,
+  providerIcon,
+  providerName,
 }: ConnectWalletButtonProps) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
@@ -42,7 +46,14 @@ const ConnectWalletButton = ({
       onMouseLeave={() => setIsDropdownOpen(false)}
     >
       <button onClick={onConnectClick} className={styles.walletButton}>
-        {displayedButtonText}
+        {providerIcon && walletAddress && (
+          <img
+            src={providerIcon}
+            alt={providerName || 'Wallet provider'}
+            className={styles.providerIcon}
+          />
+        )}
+        <span>{displayedButtonText}</span>
       </button>
 
       {isDropdownOpen && (
