@@ -1,18 +1,19 @@
+import { erc20ABI } from '../erc20ABI';
 import {
   HARD_SWAP_FACTORY_CONTRACT_ADDRESS,
   HARD_SWAP_FACTORY_ABI,
+  HARD_SWAP_POOL_ABI,
 } from './hardSwapFactory';
+import { QUOTER_V2_ABI, QUOTER_V2_CONTACT_ADDRESS } from './quoterV2';
+import { ethers } from 'ethers';
 
-const poolCache = [];
+const provider = new ethers.JsonRpcProvider('https://evm.kava-rpc.com');
 
 export const getPool = async (
   tokenAContract: string,
   tokenBContract: string,
   fee: number,
 ) => {
-  const ethers = await import('ethers');
-  const provider = new ethers.JsonRpcProvider('https://evm.kava-rpc.com');
-
   const factory = new ethers.Contract(
     HARD_SWAP_FACTORY_CONTRACT_ADDRESS,
     HARD_SWAP_FACTORY_ABI,
@@ -22,11 +23,79 @@ export const getPool = async (
   return factory.getPool(tokenAContract, tokenBContract, fee);
 };
 
+export async function getPoolTVL(poolAddress: string): Promise<number> {
+  const pool = new ethers.Contract(poolAddress, HARD_SWAP_POOL_ABI, provider);
 
+  const [token0Addr, token1Addr] = await Promise.all([
+    pool.token0(),
+    pool.token1(),
+  ]);
+
+  const token0 = new ethers.Contract(token0Addr, erc20ABI, provider);
+  const token1 = new ethers.Contract(token1Addr, erc20ABI, provider);
+
+  const [dec0, dec1] = await Promise.all([
+    token0.decimals(),
+    token1.decimals(),
+  ]);
+
+  const [bal0, bal1] = await Promise.all([
+    token0.balanceOf(poolAddress),
+    token1.balanceOf(poolAddress),
+  ]);
+
+  const token0Amount = Number(ethers.formatUnits(bal0, dec0));
+  const token1Amount = Number(ethers.formatUnits(bal1, dec1));
+
+  console.log(token0Addr, token1Addr);
+
+  const [token0PriceUSD, token1PriceUSD] = await Promise.all([
+    getTokenUSDPrice(token0Addr, dec0),
+    getTokenUSDPrice(token1Addr, dec1),
+  ]);
+
+  const tvl = token0Amount * token0PriceUSD + token1Amount * token1PriceUSD;
+  console.log(`\n✅ TVL for pool ${poolAddress}`);
+  console.log(`Token0: ${token0Amount} @ $${token0PriceUSD}`);
+  console.log(`Token1: ${token1Amount} @ $${token1PriceUSD}`);
+  console.log(`💰 TVL: $${tvl.toFixed(2)}\n`);
+
+  return tvl;
+}
+
+export async function getTokenUSDPrice(
+  tokenAddress: string,
+  decimals: number,
+): Promise<number> {
+  const USDT_STABLE_COIN_CONTRACT =
+    '0x919C1c267BC06a7039e03fcc2eF738525769109c';
+  if (tokenAddress === USDT_STABLE_COIN_CONTRACT) return 1;
+  const iface = new ethers.Interface(QUOTER_V2_ABI);
+
+  const data = iface.encodeFunctionData('quoteExactInputSingle', [
+    {
+      tokenIn: tokenAddress,
+      tokenOut: USDT_STABLE_COIN_CONTRACT,
+      amountIn: ethers.parseUnits('1', decimals),
+      fee: 0n,
+      sqrtPriceLimitX96: 0n,
+    },
+  ]);
+
+  const result = await provider.call({
+    to: QUOTER_V2_CONTACT_ADDRESS,
+    data: data,
+  });
+
+  const [amountOut] = iface.decodeFunctionResult(
+    'quoteExactInputSingle',
+    result,
+  );
+
+  return Number(ethers.formatUnits(amountOut, 6));
+}
 
 // export const discoverPools = async () => {
-//   const ethers = await import('ethers');
-//   const provider = new ethers.JsonRpcProvider('https://evm.kava-rpc.com');
 
 //   const factory = new ethers.Contract(
 //     HARD_SWAP_FACTORY_CONTRACT_ADDRESS,
