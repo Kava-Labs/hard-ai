@@ -24,12 +24,19 @@ export type SignOpts = {
   payload: unknown;
 };
 
+// Define proper provider interface
+export interface EthereumProvider {
+  request(args: { method: string; params?: Array<unknown> }): Promise<unknown>;
+  on?(eventName: string, listener: (...args: unknown[]) => void): void;
+  off?(eventName: string, listener: (...args: unknown[]) => void): void;
+}
+
 export type WalletConnection = {
   walletAddress: string;
   walletChainId: string;
   walletType: WalletTypes;
   isWalletConnected: boolean;
-  provider?: any; // The actual provider instance
+  provider?: EthereumProvider;
   rdns?: string; // Reverse DNS identifier for the provider
 };
 
@@ -43,13 +50,20 @@ export interface EIP6963ProviderInfo {
 
 export interface EIP6963ProviderDetail {
   info: EIP6963ProviderInfo;
-  provider: any;
+  provider: EthereumProvider;
 }
 
 export interface EIP6963AnnounceProviderEvent extends CustomEvent {
   type: 'eip6963:announceProvider';
   detail: EIP6963ProviderDetail;
 }
+
+// Extend the Window interface to include ethereum property
+// declare global {
+//   interface Window {
+//     ethereum: EthereumProvider;
+//   }
+// }
 
 export class WalletStore {
   private currentValue: WalletConnection = {
@@ -190,9 +204,14 @@ export class WalletStore {
         method: 'wallet_switchEthereumChain',
         params: [{ chainId: hexChainId }],
       });
-    } catch (switchError: any) {
+    } catch (switchError: unknown) {
       // This error code indicates that the chain has not been added to the wallet
-      if (switchError.code === 4902) {
+      if (
+        typeof switchError === 'object' &&
+        switchError !== null &&
+        'code' in switchError &&
+        switchError.code === 4902
+      ) {
         await connection.provider.request({
           method: 'wallet_addEthereumChain',
           params: [
@@ -236,7 +255,9 @@ export class WalletStore {
 
     switch (opts.signatureType) {
       case SignatureTypes.EVM: {
-        return connection.provider.request(opts.payload);
+        return connection.provider.request(
+          opts.payload as { method: string; params?: Array<unknown> },
+        );
       }
       case SignatureTypes.EIP712: {
         const { eip712SignAndBroadcast } = await import(
@@ -272,14 +293,18 @@ export class WalletStore {
     }
 
     try {
-      const accounts = await providerDetail.provider.request({
+      const accountsResponse = await providerDetail.provider.request({
         method: 'eth_requestAccounts',
       });
 
+      const accounts = accountsResponse as string[];
+
       if (Array.isArray(accounts) && accounts.length) {
-        const chainId = await providerDetail.provider.request({
+        const chainIdResponse = await providerDetail.provider.request({
           method: 'eth_chainId',
         });
+
+        const chainId = chainIdResponse as string;
 
         this.currentValue = {
           walletAddress: accounts[0],
@@ -307,14 +332,18 @@ export class WalletStore {
     }
 
     try {
-      const accounts: string[] = await window.ethereum.request({
+      const accountsResponse = await window.ethereum.request({
         method: 'eth_requestAccounts',
       });
 
+      const accounts = accountsResponse as string[];
+
       if (Array.isArray(accounts) && accounts.length) {
-        const chainId = await window.ethereum.request({
+        const chainIdResponse = await window.ethereum.request({
           method: 'eth_chainId',
         });
+
+        const chainId = chainIdResponse as string;
 
         this.currentValue = {
           walletAddress: accounts[0],
@@ -343,14 +372,18 @@ export class WalletStore {
 
     try {
       // Get latest accounts
-      const accounts = await connection.provider.request({
+      const accountsResponse = await connection.provider.request({
         method: 'eth_accounts',
       });
 
+      const accounts = accountsResponse as string[];
+
       // Get latest chain ID
-      const chainId = await connection.provider.request({
+      const chainIdResponse = await connection.provider.request({
         method: 'eth_chainId',
       });
+
+      const chainId = chainIdResponse as string;
 
       if (Array.isArray(accounts) && accounts.length) {
         // Update only if something changed
