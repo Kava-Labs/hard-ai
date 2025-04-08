@@ -3,6 +3,8 @@ import { useChat } from './useChat';
 import { EIP6963ProviderDetail } from './stores/walletStore';
 import ConnectWalletButton from './ConnectWalletButton';
 import styles from './WalletConnection.module.css';
+import { ButtonIcon } from 'lib-kava-ai';
+import { X } from 'lucide-react';
 
 const WalletConnection: React.FC = () => {
   const {
@@ -16,8 +18,6 @@ const WalletConnection: React.FC = () => {
   } = useChat();
 
   const [showProviderModal, setShowProviderModal] = useState(false);
-  const [isConnecting, setIsConnecting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [connectedProvider, setConnectedProvider] = useState<{
     icon?: string;
     name?: string;
@@ -48,9 +48,6 @@ const WalletConnection: React.FC = () => {
   ]);
 
   const handleConnectClick = async () => {
-    setError(null);
-    setIsConnecting(true);
-
     try {
       // Refresh providers before attempting connection
       refreshProviders();
@@ -62,17 +59,12 @@ const WalletConnection: React.FC = () => {
         setShowProviderModal(true);
       }
     } catch (err) {
-      setError((err as Error).message || 'Failed to connect wallet');
-    } finally {
-      setIsConnecting(false);
+      console.error((err as Error).message || 'Failed to connect wallet');
     }
   };
 
   const handleProviderSelect = async (provider: EIP6963ProviderDetail) => {
     setShowProviderModal(false);
-    setIsConnecting(true);
-    setError(null);
-
     try {
       await connectEIP6963Provider(provider.info.uuid, '2222');
       // Update the connected provider information
@@ -81,11 +73,9 @@ const WalletConnection: React.FC = () => {
         name: provider.info.name,
       });
     } catch (err) {
-      setError(
+      console.error(
         `Failed to connect to ${provider.info.name}: ${(err as Error).message}`,
       );
-    } finally {
-      setIsConnecting(false);
     }
   };
 
@@ -110,39 +100,38 @@ const WalletConnection: React.FC = () => {
           <div className={styles.providerModal}>
             <div className={styles.modalHeader}>
               <h3>Select a Wallet</h3>
-              <button
-                className={styles.closeButton}
+              <ButtonIcon
+                icon={X}
+                aria-label={'Close wallet connect'}
                 onClick={() => setShowProviderModal(false)}
-              >
-                ×
-              </button>
+              />
+              {/*<button*/}
+              {/*  className={styles.closeButton}*/}
+              {/*  onClick={() => setShowProviderModal(false)}*/}
+              {/*>*/}
+              {/*  ×*/}
+              {/*</button>*/}
             </div>
 
             <div className={styles.providersList}>
-              {availableProviders.length === 0 ? (
-                <div className={styles.noProviders}>
-                  No EIP-6963 compatible wallets found.
+              {availableProviders.map((provider) => (
+                <div
+                  key={provider.info.uuid}
+                  className={styles.providerItem}
+                  onClick={() => handleProviderSelect(provider)}
+                >
+                  {provider.info.icon && (
+                    <img
+                      src={provider.info.icon}
+                      alt={`${provider.info.name} icon`}
+                      className={styles.providerIcon}
+                    />
+                  )}
+                  <span className={styles.providerName}>
+                    {provider.info.name}
+                  </span>
                 </div>
-              ) : (
-                availableProviders.map((provider) => (
-                  <div
-                    key={provider.info.uuid}
-                    className={styles.providerItem}
-                    onClick={() => handleProviderSelect(provider)}
-                  >
-                    {provider.info.icon && (
-                      <img
-                        src={provider.info.icon}
-                        alt={`${provider.info.name} icon`}
-                        className={styles.providerIcon}
-                      />
-                    )}
-                    <span className={styles.providerName}>
-                      {provider.info.name}
-                    </span>
-                  </div>
-                ))
-              )}
+              ))}
             </div>
           </div>
         </div>
