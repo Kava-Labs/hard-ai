@@ -1,10 +1,11 @@
 import styles from './App.module.css';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useChat } from './useChat';
 import { ChatInterface } from './ChatInterface';
 import { useIsMobileLayout, SearchHistoryModal, SideBar } from 'lib-kava-ai';
 import hardAILogo from './assets/hardAILogo.svg';
-import WalletConnection from './WalletConnection';
+import WalletModal from './WalletModal';
+import { EIP6963ProviderDetail } from './stores/walletStore';
 
 const sideBarLogo = <img src={hardAILogo} alt="Hard AI logo" height={18} />;
 
@@ -13,6 +14,10 @@ export const App = () => {
   const [isDesktopSideBarOpen, setIsDesktopSideBarOpen] = useState(true);
   const [isSearchHistoryOpen, setIsSearchHistoryOpen] = useState(false);
   const [isWalletConnectOpen, setIsWalletConnectOpen] = useState(false);
+  const [connectedProvider, setConnectedProvider] = useState<{
+    icon?: string;
+    name?: string;
+  }>({});
 
   const onCloseSearchHistory = () => {
     setIsSearchHistoryOpen(false);
@@ -50,11 +55,67 @@ export const App = () => {
     fetchSearchHistory,
     toolCallRegistry,
     walletAddress,
+    walletConnection,
     disconnectWallet,
+    connectWallet,
+    connectEIP6963Provider,
+    availableProviders,
+    refreshProviders,
   } = useChat();
 
+  // Find the connected provider when wallet is connected
+  useEffect(() => {
+    if (walletConnection.isWalletConnected && walletConnection.rdns) {
+      // Find the provider that matches the connected wallet's RDNS
+      const provider = availableProviders.find(
+        (p) => p.info.rdns === walletConnection.rdns,
+      );
+
+      if (provider) {
+        setConnectedProvider({
+          icon: provider.info.icon,
+          name: provider.info.name,
+        });
+      }
+    } else if (!walletConnection.isWalletConnected) {
+      // Clear the connected provider when wallet is disconnected
+      setConnectedProvider({});
+    }
+  }, [
+    walletConnection.isWalletConnected,
+    walletConnection.rdns,
+    availableProviders,
+  ]);
+
   const openWalletConnect = () => {
+    refreshProviders();
+    connectWallet().catch((err) => {
+      console.error((err as Error).message || 'Failed to connect wallet');
+    });
     setIsWalletConnectOpen(true);
+  };
+
+  const closeWalletConnect = () => {
+    setIsWalletConnectOpen(false);
+  };
+
+  const handleProviderSelect = async (provider: EIP6963ProviderDetail) => {
+    closeWalletConnect();
+    try {
+      await connectEIP6963Provider(
+        provider.info.uuid,
+        `0x${Number(2222).toString(16)}`,
+      );
+    } catch (err) {
+      console.error(
+        `Failed to connect to ${provider.info.name}: ${(err as Error).message}`,
+      );
+    }
+  };
+
+  const handleDisconnect = () => {
+    disconnectWallet();
+    setConnectedProvider({});
   };
 
   return (
@@ -81,8 +142,11 @@ export const App = () => {
         isSideBarOpen={isSideBarOpen}
         styles={styles}
         walletAddress={walletAddress}
+        isWalletConnected={walletConnection.isWalletConnected}
+        providerIcon={connectedProvider.icon}
+        providerName={connectedProvider.name}
         connectWallet={openWalletConnect}
-        disconnectWallet={disconnectWallet}
+        disconnectWallet={handleDisconnect}
       />
       {isSearchHistoryOpen && searchableHistory && (
         <SearchHistoryModal
@@ -91,7 +155,14 @@ export const App = () => {
           onCloseSearchHistory={onCloseSearchHistory}
         />
       )}
-      {isWalletConnectOpen && <WalletConnection />}
+
+      {isWalletConnectOpen && (
+        <WalletModal
+          onClose={closeWalletConnect}
+          availableProviders={availableProviders}
+          onSelectProvider={handleProviderSelect}
+        />
+      )}
     </div>
   );
 };

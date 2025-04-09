@@ -3,9 +3,9 @@ import { ChatInput } from './ChatInput';
 import { NavBar } from 'lib-kava-ai';
 import { ConversationWrapper } from './ConversationWrapper';
 import { ActiveChat, ChatMessage } from './types';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { ToolCallRegistry } from './toolcalls/chain';
-import WalletConnection from './WalletConnection';
+import ConnectWalletButton from './ConnectWalletButton';
 
 const showWalletConnect =
   import.meta.env['VITE_FEAT_WALLET_CONNECT'] === 'true';
@@ -20,6 +20,9 @@ export interface ChatInterfaceProps {
   onMenuClick: () => void;
   styles: Record<string, string>;
   walletAddress: string;
+  isWalletConnected: boolean;
+  providerIcon?: string;
+  providerName?: string;
   connectWallet: () => void;
   disconnectWallet: () => void;
 }
@@ -33,6 +36,11 @@ export const ChatInterface = ({
   isSideBarOpen,
   onMenuClick,
   styles,
+  walletAddress,
+  providerIcon,
+  providerName,
+  connectWallet,
+  disconnectWallet,
 }: ChatInterfaceProps) => {
   const { isConversationStarted, isRequesting } = activeChat;
   const containerRef = useRef<HTMLDivElement>(null);
@@ -88,7 +96,15 @@ export const ChatInterface = ({
               isSideBarOpen={isSideBarOpen}
               onNewChatClick={handleNewChat}
               primaryControlComponent={
-                showWalletConnect && <WalletConnection />
+                showWalletConnect && (
+                  <ConnectWalletButton
+                    walletAddress={walletAddress}
+                    connectWallet={connectWallet}
+                    disconnectWallet={disconnectWallet}
+                    providerIcon={providerIcon}
+                    providerName={providerName}
+                  />
+                )
               }
             />
           </div>
