@@ -23,7 +23,6 @@ export type SignOpts = {
   payload: unknown;
 };
 
-// Enhanced EIP1193 provider interface that includes event handlers
 export interface EIP1193Provider {
   isStatus?: boolean;
   host?: string;
@@ -40,10 +39,9 @@ export interface EIP1193Provider {
     method: string;
     params?: Array<unknown>;
   }) => Promise<unknown>;
-  // Add event handlers with optional chaining for flexibility
   on?: (eventName: string, listener: (...args: unknown[]) => void) => void;
   off?: (eventName: string, listener: (...args: unknown[]) => void) => void;
-  // Some providers use removeListener instead of off
+  //  Some providers use removeListener instead of off
   removeListener?: (
     eventName: string,
     listener: (...args: unknown[]) => void,

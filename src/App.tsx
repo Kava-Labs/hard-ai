@@ -102,7 +102,7 @@ export const App = () => {
         isWalletConnected={walletConnection.isWalletConnected}
         providerIcon={providerInfo?.icon}
         providerName={providerInfo?.name}
-        connectWallet={openWalletConnect}
+        onConnectWalletClick={openWalletConnect}
         disconnectWallet={disconnectWallet}
       />
       {isSearchHistoryOpen && searchableHistory && (

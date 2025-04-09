@@ -4,7 +4,7 @@ import { formatWalletAddress } from './utils/wallet';
 
 interface ConnectWalletButtonProps {
   walletAddress: string;
-  connectWallet: () => void;
+  handleConnectClick: () => void;
   disconnectWallet: () => void;
   providerIcon?: string;
   providerName?: string;
@@ -12,7 +12,7 @@ interface ConnectWalletButtonProps {
 
 const ConnectWalletButton = ({
   walletAddress,
-  connectWallet,
+  handleConnectClick,
   disconnectWallet,
   providerIcon,
   providerName,
@@ -33,9 +33,9 @@ const ConnectWalletButton = ({
     setIsDropdownOpen(false);
   };
 
-  const onConnectClick = async () => {
+  const onConnectClick = () => {
     if (!walletAddress) {
-      connectWallet();
+      handleConnectClick();
     }
   };
 

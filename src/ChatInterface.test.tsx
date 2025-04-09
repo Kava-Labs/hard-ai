@@ -41,8 +41,9 @@ describe('ChatInterface', () => {
       content: '',
     },
     walletAddress: '',
-    connectWallet: vi.fn(),
+    onConnectWalletClick: vi.fn(),
     disconnectWallet: vi.fn(),
+    isWalletConnected: false,
   };
 
   beforeEach(() => {

@@ -113,7 +113,6 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
     walletStore.disconnectWallet();
   }, []);
 
-  // Handler for selecting a provider from the modal
   const handleProviderSelect = useCallback(
     async (provider: EIP6963ProviderDetail) => {
       try {
@@ -131,16 +130,6 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
     },
     [connectEIP6963Provider],
   );
-
-  const switchNetwork = useCallback(async (chainName: string) => {
-    try {
-      await walletStore.switchNetwork(chainName);
-      return true;
-    } catch (error) {
-      console.error('Failed to switch network:', error);
-      return false;
-    }
-  }, []);
 
   const setIsOperationValidated = useCallback(
     (isOperationValidated: boolean) => {
@@ -372,10 +361,8 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
       walletConnection,
       walletAddress,
       detectProviders,
-      connectEIP6963Provider,
       handleProviderSelect,
       disconnectWallet,
-      switchNetwork,
       availableProviders,
       providerInfo,
     };
@@ -393,10 +380,8 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
     walletConnection,
     walletAddress,
     detectProviders,
-    connectEIP6963Provider,
     handleProviderSelect,
     disconnectWallet,
-    switchNetwork,
     availableProviders,
   ]);
 };

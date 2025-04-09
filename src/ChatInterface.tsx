@@ -23,7 +23,7 @@ export interface ChatInterfaceProps {
   isWalletConnected: boolean;
   providerIcon?: string;
   providerName?: string;
-  connectWallet: () => void;
+  onConnectWalletClick: () => void;
   disconnectWallet: () => void;
 }
 
@@ -39,7 +39,7 @@ export const ChatInterface = ({
   walletAddress,
   providerIcon,
   providerName,
-  connectWallet,
+  onConnectWalletClick,
   disconnectWallet,
 }: ChatInterfaceProps) => {
   const { isConversationStarted, isRequesting } = activeChat;
@@ -99,7 +99,7 @@ export const ChatInterface = ({
                 showWalletConnect && (
                   <ConnectWalletButton
                     walletAddress={walletAddress}
-                    connectWallet={connectWallet}
+                    handleConnectClick={onConnectWalletClick}
                     disconnectWallet={disconnectWallet}
                     providerIcon={providerIcon}
                     providerName={providerName}
