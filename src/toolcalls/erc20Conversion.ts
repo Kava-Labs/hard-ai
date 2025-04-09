@@ -11,6 +11,7 @@ import {
 
 import {
   SignatureTypes,
+  WalletConnection,
   WalletStore,
   WalletTypes,
 } from '../stores/walletStore';
@@ -34,7 +35,6 @@ export class ERC20ConversionMessage
   chainType = ChainType.COSMOS;
   operationType = OperationType.TRANSACTION;
   walletMustMatchChainID = true;
-
   needsWallet = [WalletTypes.EIP6963];
 
   /**
@@ -77,16 +77,16 @@ export class ERC20ConversionMessage
 
   async validate(
     params: ERC20ConvertParams,
-    walletStore: WalletStore,
+    walletConnection: WalletConnection,
   ): Promise<boolean> {
     const { ethers, Contract } = await import('ethers');
 
-    if (!walletStore.getSnapshot().isWalletConnected) {
+    if (!walletConnection.isWalletConnected) {
       throw new Error('please connect to a compatible wallet');
     }
 
     if (Array.isArray(this.needsWallet)) {
-      if (!this.needsWallet.includes(walletStore.getSnapshot().walletType)) {
+      if (!this.needsWallet.includes(walletConnection.walletType)) {
         throw new Error('please connect to a compatible wallet');
       }
     }
@@ -145,7 +145,7 @@ export class ERC20ConversionMessage
 
     if (params.direction === 'ERC20ToCoin') {
       const rawBalance = await contract.balanceOf(
-        walletStore.getSnapshot().walletAddress,
+        walletConnection.walletAddress,
       );
       const formattedBalance = ethers.formatUnits(rawBalance, decimals);
 
@@ -159,9 +159,7 @@ export class ERC20ConversionMessage
       const bech32Address = bech32.encode(
         chainInfo.bech32Prefix,
         bech32.toWords(
-          ethers.getBytes(
-            ethers.toQuantity(walletStore.getSnapshot().walletAddress),
-          ),
+          ethers.getBytes(ethers.toQuantity(walletConnection.walletAddress)),
         ),
       );
 

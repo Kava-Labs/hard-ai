@@ -1,5 +1,9 @@
 import { ToolCallStream } from '../../stores/toolCallStreamStore';
-import { WalletTypes, WalletConnection } from '../../stores/walletStore';
+import {
+  WalletTypes,
+  WalletConnection,
+  WalletStore,
+} from '../../stores/walletStore';
 import { ChainType } from './chainsRegistry';
 
 export interface MessageParam {
@@ -58,11 +62,7 @@ export interface ChainToolCallOperation<T> {
  */
 export interface ChainToolCallMessage<T> extends ChainToolCallOperation<T> {
   /** Builds the transaction object from the provided parameters */
-  buildTransaction(
-    params: T,
-    // walletStore: WalletStore,
-    walletConnection: WalletConnection,
-  ): Promise<string>;
+  buildTransaction(params: T, walletStore: WalletStore): Promise<string>;
 }
 
 /**

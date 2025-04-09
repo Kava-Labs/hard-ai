@@ -106,16 +106,9 @@ export const useExecuteToolCall = (
         }
       }
 
-      // Get final wallet state after all operations
-      const finalWalletConnection = walletStore.getSnapshot();
-      console.log(
-        'Final wallet state before validation:',
-        finalWalletConnection,
-      );
-
       const validatedParams = await operation.validate(
         params,
-        finalWalletConnection,
+        updatedWalletConnection,
       );
 
       if (!validatedParams) {
@@ -126,13 +119,12 @@ export const useExecuteToolCall = (
       if ('buildTransaction' in operation) {
         return (operation as ChainToolCallMessage<unknown>).buildTransaction(
           params,
-          finalWalletConnection, // Use final wallet connection here
+          walletStore,
         );
       } else if ('executeQuery' in operation) {
-        console.log({ finalWalletConnection });
         return (operation as ChainToolCallQuery<unknown>).executeQuery(
           params,
-          finalWalletConnection, // Use final wallet connection here
+          updatedWalletConnection,
         );
       }
 
@@ -140,111 +132,6 @@ export const useExecuteToolCall = (
     },
     [setIsOperationValidated, registry, walletStore], // Remove walletConnection from dependencies
   );
-
-  // const executeOperation = useCallback(
-  //   async (operationName: string, params: unknown) => {
-  //     const currentWalletConnection = walletConnection;
-  //     console.log('Current wallet connection:', currentWalletConnection);
-  //     setIsOperationValidated(false);
-  //
-  //     const operation = registry.get(operationName);
-  //     if (!operation) {
-  //       throw new Error(`Unknown operation type: ${operationName}`);
-  //     }
-  //
-  //     let chainId = `0x${Number(2222).toString(16)}`; // default
-  //     let chainName = ChainNames.KAVA_EVM; // default
-  //
-  //     if (
-  //       typeof params === 'object' &&
-  //       params !== null &&
-  //       chainNameToolCallParam.name in params
-  //     ) {
-  //       // @ts-expect-error we already checked this
-  //       chainName = params[chainNameToolCallParam.name];
-  //       const chain = chainRegistry[operation.chainType][chainName];
-  //       chainId =
-  //         operation.chainType === ChainType.EVM
-  //           ? `0x${Number(chain.chainID).toString(16)}`
-  //           : String(chain.chainID);
-  //     }
-  //
-  //     // if operation needs wallet connect
-  //     // and the current wallet connection isn't one that's included in wantsWallet
-  //     // we then try to establish that connection
-  //     if (
-  //       operation.needsWallet &&
-  //       Array.isArray(operation.needsWallet) &&
-  //       !operation.needsWallet.includes(walletConnection.walletType)
-  //     ) {
-  //       for (const walletType of operation.needsWallet) {
-  //         console.log(walletType);
-  //         await walletStore.connectWallet({
-  //           walletType,
-  //           chainId,
-  //         });
-  //
-  //         break;
-  //       }
-  //     }
-  //
-  //     // if the chain id in the wallet doesn't match the chain id we need to be on
-  //     // start the network switching process
-  //     if (
-  //       operation.walletMustMatchChainID &&
-  //       walletConnection.walletType === WalletTypes.EIP6963 &&
-  //       walletConnection.walletChainId !== chainId
-  //     ) {
-  //       switch (operation.chainType) {
-  //         case ChainType.COSMOS: {
-  //           // for cosmos chains using metamask
-  //           // get the evmChainName and use that to find the chainID we are supposed to be on
-  //           // if those don't match we can then switch to the correct evm network
-  //           const { evmChainName } = chainRegistry[operation.chainType][
-  //             chainName
-  //           ] as CosmosChainConfig;
-  //           if (evmChainName) {
-  //             if (
-  //               `0x${chainRegistry[ChainType.EVM][evmChainName].chainID.toString(16)}` !==
-  //               walletConnection.walletChainId
-  //             ) {
-  //               await walletStore.switchNetwork(evmChainName);
-  //             }
-  //           }
-  //           break;
-  //         }
-  //         default: {
-  //           await walletStore.switchNetwork(chainName);
-  //         }
-  //       }
-  //     }
-  //
-  //     const validatedParams = await operation.validate(
-  //       params,
-  //       walletConnection,
-  //     );
-  //
-  //     if (!validatedParams) {
-  //       throw new Error('Invalid parameters for operation');
-  //     }
-  //     setIsOperationValidated(true);
-  //     if ('buildTransaction' in operation) {
-  //       return (operation as ChainToolCallMessage<unknown>).buildTransaction(
-  //         params,
-  //         walletStore,
-  //         walletConnection,
-  //       );
-  //     } else if ('executeQuery' in operation) {
-  //       return (operation as ChainToolCallQuery<unknown>).executeQuery(
-  //         params,
-  //         walletConnection,
-  //       );
-  //     }
-  //
-  //     throw new Error('Invalid operation type');
-  //   },
-  //   [setIsOperationValidated, registry, walletConnection, walletStore],
-  // );
 
   return {
     executeOperation,
