@@ -20,8 +20,22 @@ export enum SignatureTypes {
 export type SignOpts = {
   chainId: string;
   signatureType: SignatureTypes;
-  payload: unknown;
+  payload: EVMRequestPayload | EIP712SignerParams;
 };
+
+interface EVMTransactionRequest {
+  from: string;
+  to: string;
+  gas?: string;
+  gasPrice?: string;
+  value?: string;
+  data?: string;
+}
+
+interface EVMRequestPayload {
+  method: string;
+  params?: Array<EVMTransactionRequest>;
+}
 
 export interface EIP1193Provider {
   isStatus?: boolean;
@@ -245,16 +259,14 @@ export class WalletStore {
 
     switch (opts.signatureType) {
       case SignatureTypes.EVM: {
-        return connection.provider.request(
-          opts.payload as { method: string; params?: Array<unknown> },
-        );
+        console.log(opts.payload);
+        return connection.provider.request(opts.payload as EVMRequestPayload);
       }
       case SignatureTypes.EIP712: {
         const { eip712SignAndBroadcast } = await import(
           '../../toolcalls/chain/msgs/eip712'
         );
 
-        // Pass the provider to the EIP712 signing function
         return eip712SignAndBroadcast({
           ...(opts.payload as EIP712SignerParams),
         });
