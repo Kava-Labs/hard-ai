@@ -88,22 +88,6 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
     return () => clearInterval(interval);
   }, [refreshProviders]);
 
-  // Connect to MetaMask (legacy method)
-  const connectMetamask = useCallback(
-    async (chainId: string = '2222') => {
-      try {
-        await walletStore.connectWallet({
-          chainId,
-          walletType: WalletTypes.METAMASK,
-        });
-      } catch (error) {
-        console.error('Failed to connect to MetaMask:', error);
-        throw error;
-      }
-    },
-    [walletStore],
-  );
-
   // Connect to a specific EIP-6963 provider
   const connectEIP6963Provider = useCallback(
     async (providerId: string, chainId?: string) => {
@@ -127,11 +111,7 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
     // Refresh providers list first
     refreshProviders();
     const providers = walletStore.getProviders();
-
-    if (providers.length === 0) {
-      // Fallback to MetaMask if no EIP-6963 providers
-      return connectMetamask(chainId);
-    } else if (providers.length === 1) {
+    if (providers.length === 1) {
       // Automatically connect to the only provider
       return connectEIP6963Provider(providers[0].info.uuid, chainId);
     } else {
@@ -141,7 +121,7 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
         providers,
       };
     }
-  }, [walletStore, connectMetamask, connectEIP6963Provider, refreshProviders]);
+  }, [walletStore, connectEIP6963Provider, refreshProviders]);
 
   const disconnectWallet = useCallback(() => {
     walletStore.disconnectWallet();
@@ -386,7 +366,6 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
       walletConnection,
       walletAddress,
       connectWallet,
-      connectMetamask,
       connectEIP6963Provider,
       disconnectWallet,
       switchNetwork,
@@ -407,7 +386,6 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
       walletConnection,
       walletAddress,
       connectWallet,
-      connectMetamask,
       connectEIP6963Provider,
       disconnectWallet,
       switchNetwork,

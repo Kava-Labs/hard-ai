@@ -85,65 +85,47 @@ export class WalletStore {
   };
   private listeners: Set<Listener> = new Set();
   private providers: Map<string, EIP6963ProviderDetail> = new Map();
-  private isListeningForProviders: boolean = false;
 
   constructor() {
-    // Initialize EIP-6963 listeners
     this.setupEIP6963Listeners();
-
-    // Set up chain and account change listeners
     this.setupChangeListeners();
   }
 
   private setupEIP6963Listeners() {
-    if (typeof window === 'undefined' || this.isListeningForProviders) return;
+    if (typeof window === 'undefined') return;
 
-    // Listen for new provider announcements
     window.addEventListener('eip6963:announceProvider', (event: Event) => {
       const providerEvent = event as EIP6963AnnounceProviderEvent;
       this.providers.set(providerEvent.detail.info.uuid, providerEvent.detail);
     });
 
-    // Request providers to announce themselves
     window.dispatchEvent(new Event('eip6963:requestProvider'));
-
-    this.isListeningForProviders = true;
   }
 
   private setupChangeListeners() {
-    const onChainChange = () => {
-      this.refreshCurrentConnection();
+    const onChainChange = async () => {
+      await this.refreshCurrentConnection();
     };
 
-    const onAccountChange = () => {
-      this.refreshCurrentConnection();
+    const onAccountChange = async () => {
+      await this.refreshCurrentConnection();
     };
 
     this.subscribe(() => {
       const connection: WalletConnection = this.getSnapshot();
 
-      // Clean up old listeners
       if (connection.provider) {
         try {
-          // Try removeListener first (for MetaMask-like providers)
-          if (connection.provider.removeListener) {
-            connection.provider.removeListener('chainChanged', onChainChange);
-            connection.provider.removeListener(
-              'accountsChanged',
-              onAccountChange,
-            );
-          }
-          // Fall back to off method if available
-          else if (connection.provider.off) {
+          if (connection.provider.off) {
             connection.provider.off('chainChanged', onChainChange);
             connection.provider.off('accountsChanged', onAccountChange);
+            connection.provider.off('disconnect', onAccountChange);
           }
         } catch (e) {
           console.warn('Failed to remove listeners', e);
         }
       }
 
-      // Set up new listeners if we have a provider
       if (
         connection.isWalletConnected &&
         connection.provider &&
@@ -152,6 +134,7 @@ export class WalletStore {
         try {
           connection.provider.on('chainChanged', onChainChange);
           connection.provider.on('accountsChanged', onAccountChange);
+          connection.provider.on('disconnect', onAccountChange);
         } catch (e) {
           console.warn('Failed to add listeners', e);
         }
@@ -160,23 +143,18 @@ export class WalletStore {
   }
 
   public getProviders(): EIP6963ProviderDetail[] {
-    // Request providers again in case any new ones have been added
     window.dispatchEvent(new Event('eip6963:requestProvider'));
 
-    // Convert the Map to an array of provider details
     return Array.from(this.providers.values());
   }
 
   public async connectWallet(opts: {
     chainId?: string;
     walletType: WalletTypes;
-    providerId?: string; // UUID for EIP-6963 providers
+    providerId: string;
   }) {
     switch (opts.walletType) {
       case WalletTypes.EIP6963: {
-        if (!opts.providerId) {
-          throw new Error('Provider UUID required for EIP-6963 connection');
-        }
         await this.connectEIP6963Provider(opts.providerId);
         break;
       }
@@ -297,45 +275,6 @@ export class WalletStore {
     };
   };
 
-  private async connectMetamask() {
-    if (typeof window === 'undefined' || !window.ethereum) {
-      throw new Error(
-        'Failed to detect Metamask, please make sure you have the extension installed',
-      );
-    }
-
-    try {
-      const accountsResponse = await window.ethereum.request({
-        method: 'eth_requestAccounts',
-      });
-
-      const accounts = accountsResponse as string[];
-
-      if (Array.isArray(accounts) && accounts.length) {
-        const chainIdResponse = await window.ethereum.request({
-          method: 'eth_chainId',
-        });
-
-        const chainId = chainIdResponse as string;
-
-        this.currentValue = {
-          walletAddress: accounts[0],
-          walletChainId: chainId,
-          walletType: WalletTypes.METAMASK,
-          isWalletConnected: true,
-          provider: window.ethereum,
-          rdns: 'io.metamask',
-        };
-        this.emitChange();
-      } else {
-        throw new Error('No accounts returned from MetaMask');
-      }
-    } catch (error) {
-      console.error('Failed to connect to MetaMask:', error);
-      throw error;
-    }
-  }
-
   private async connectEIP6963Provider(providerId: string) {
     const providerDetail = this.providers.get(providerId);
 
@@ -383,14 +322,11 @@ export class WalletStore {
     }
 
     try {
-      // Get latest accounts
       const accountsResponse = await connection.provider.request({
         method: 'eth_accounts',
       });
 
       const accounts = accountsResponse as string[];
-
-      // Get latest chain ID
       const chainIdResponse = await connection.provider.request({
         method: 'eth_chainId',
       });
@@ -398,7 +334,7 @@ export class WalletStore {
       const chainId = chainIdResponse as string;
 
       if (Array.isArray(accounts) && accounts.length) {
-        // Update only if something changed
+        //  Update only if something changed
         if (
           connection.walletAddress !== accounts[0] ||
           connection.walletChainId !== chainId
@@ -411,7 +347,7 @@ export class WalletStore {
           this.emitChange();
         }
       } else {
-        // If no accounts, wallet must be disconnected
+        //  If no accounts, disconnect
         this.disconnectWallet();
       }
     } catch (error) {
