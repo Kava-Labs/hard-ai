@@ -33,6 +33,11 @@ const ConnectWalletButton = ({
     setIsDropdownOpen(false);
   };
 
+  const onSwitchWalletClick = () => {
+    handleConnectClick();
+    setIsDropdownOpen(false);
+  };
+
   const onConnectClick = () => {
     if (!walletAddress) {
       handleConnectClick();
@@ -62,6 +67,9 @@ const ConnectWalletButton = ({
         <div className={styles.dropdown}>
           <div className={styles.dropdownItem} onClick={copyAddressToClipboard}>
             Copy Address
+          </div>
+          <div className={styles.dropdownItem} onClick={onSwitchWalletClick}>
+            Switch Wallet
           </div>
           <div className={styles.dropdownItem} onClick={onDisconnectClick}>
             Disconnect

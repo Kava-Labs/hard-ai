@@ -76,10 +76,10 @@
   background-color: var(--colors-bgQuaternary);
 }
 
-.dropdownItem:nth-child(2) {
+.dropdownItem:last-child {
   color: var(--colors-accent);
 }
 
-.dropdownItem:nth-child(2):hover {
+.dropdownItem:last-child:hover {
   background-color: var(--colors-accentBorder);
 }
