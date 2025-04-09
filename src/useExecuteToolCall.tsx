@@ -29,7 +29,7 @@ export const useExecuteToolCall = (
     async (operationName: string, params: unknown) => {
       setIsOperationValidated(false);
 
-      const currentWalletConnection = walletStore.getSnapshot();
+      const walletConnection = walletStore.getSnapshot();
 
       const operation = registry.get(operationName);
       if (!operation) {
@@ -59,10 +59,9 @@ export const useExecuteToolCall = (
       if (
         operation.needsWallet &&
         Array.isArray(operation.needsWallet) &&
-        !operation.needsWallet.includes(currentWalletConnection.walletType)
+        !operation.needsWallet.includes(walletConnection.walletType)
       ) {
         for (const walletType of operation.needsWallet) {
-          console.log(walletType);
           await walletStore.connectWallet({
             walletType,
             chainId,
@@ -72,15 +71,12 @@ export const useExecuteToolCall = (
         }
       }
 
-      // Get fresh wallet state after potential connection
-      const updatedWalletConnection = walletStore.getSnapshot();
-
       // if the chain id in the wallet doesn't match the chain id we need to be on
       // start the network switching process
       if (
         operation.walletMustMatchChainID &&
-        updatedWalletConnection.walletType === WalletTypes.EIP6963 &&
-        updatedWalletConnection.walletChainId !== chainId
+        walletConnection.walletType === WalletTypes.EIP6963 &&
+        walletConnection.walletChainId !== chainId
       ) {
         switch (operation.chainType) {
           case ChainType.COSMOS: {
@@ -93,7 +89,7 @@ export const useExecuteToolCall = (
             if (evmChainName) {
               if (
                 `0x${chainRegistry[ChainType.EVM][evmChainName].chainID.toString(16)}` !==
-                updatedWalletConnection.walletChainId
+                walletConnection.walletChainId
               ) {
                 await walletStore.switchNetwork(evmChainName);
               }
@@ -108,7 +104,7 @@ export const useExecuteToolCall = (
 
       const validatedParams = await operation.validate(
         params,
-        updatedWalletConnection,
+        walletConnection,
       );
 
       if (!validatedParams) {
@@ -124,13 +120,13 @@ export const useExecuteToolCall = (
       } else if ('executeQuery' in operation) {
         return (operation as ChainToolCallQuery<unknown>).executeQuery(
           params,
-          updatedWalletConnection,
+          walletConnection,
         );
       }
 
       throw new Error('Invalid operation type');
     },
-    [setIsOperationValidated, registry, walletStore], // Remove walletConnection from dependencies
+    [setIsOperationValidated, registry, walletStore],
   );
 
   return {

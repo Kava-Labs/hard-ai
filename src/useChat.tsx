@@ -87,7 +87,6 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
     return () => clearInterval(interval);
   }, [refreshProviders]);
 
-  // Connect to a specific EIP-6963 provider
   const connectEIP6963Provider = useCallback(
     async (providerId: string, chainId?: string) => {
       try {
@@ -104,17 +103,17 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
     [],
   );
 
-  // Connect wallet with provider selection
   const connectWallet = useCallback(async () => {
     const chainId = `0x${Number(2222).toString(16)}`;
-    // Refresh providers list first
+
     refreshProviders();
+
     const providers = walletStore.getProviders();
+    //  Automatically connect to the only provider
     if (providers.length === 1) {
-      // Automatically connect to the only provider
       return connectEIP6963Provider(providers[0].info.uuid, chainId);
     } else {
-      // Return providers so UI can show selection
+      //  Return providers so the user can select in the UI
       return {
         multipleProviders: true,
         providers,
