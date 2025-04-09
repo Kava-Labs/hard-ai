@@ -6,12 +6,13 @@ import {
 import { HARD_SWAP_POOL_ABI } from './hardSwapPool';
 import { QUOTER_V2_ABI, QUOTER_V2_CONTACT_ADDRESS } from './quoterV2';
 import { ethers } from 'ethers';
+import { SWAP_ROUTER_ABI, SWAP_ROUTER_CONTRACT_ADDRESS } from './swapRouter';
 
 const provider = new ethers.JsonRpcProvider('https://evm.kava-rpc.com');
 
 export const getPool = async (
-  tokenAContract: string,
-  tokenBContract: string,
+  tokenAContractAddress: string,
+  tokenBContractAddress: string,
   fee: number,
 ) => {
   const factory = new ethers.Contract(
@@ -20,7 +21,7 @@ export const getPool = async (
     provider,
   );
 
-  return factory.getPool(tokenAContract, tokenBContract, fee);
+  return factory.getPool(tokenAContractAddress, tokenBContractAddress, fee);
 };
 
 export async function getPoolTVL(poolAddress: string): Promise<number> {
@@ -64,17 +65,17 @@ export async function getPoolTVL(poolAddress: string): Promise<number> {
 }
 
 export async function getTokenUSDPrice(
-  tokenAddress: string,
+  tokenContractAddress: string,
   decimals: number,
 ): Promise<number> {
   const USDT_STABLE_COIN_CONTRACT =
     '0x919C1c267BC06a7039e03fcc2eF738525769109c';
-  if (tokenAddress === USDT_STABLE_COIN_CONTRACT) return 1;
+  if (tokenContractAddress === USDT_STABLE_COIN_CONTRACT) return 1;
   const iface = new ethers.Interface(QUOTER_V2_ABI);
 
   const data = iface.encodeFunctionData('quoteExactInputSingle', [
     {
-      tokenIn: tokenAddress,
+      tokenIn: tokenContractAddress,
       tokenOut: USDT_STABLE_COIN_CONTRACT,
       amountIn: ethers.parseUnits('1', decimals),
       fee: 0n,
@@ -95,27 +96,47 @@ export async function getTokenUSDPrice(
   return Number(ethers.formatUnits(amountOut, 6));
 }
 
+type QuoteExactInputSingleResults = {
+  amountOut: bigint;
+  formattedAmountOut: string;
+  formattedGasEstimate: string;
+  gasEstimate: bigint;
+  initializedTicksCrossed: bigint;
+  sqrtPriceX96After: bigint;
+};
+
 export async function getQuoteExactInputSingle(
-  tokenIn: string,
-  tokenOut: string,
+  tokenInContractAddress: string,
+  tokenOutContractAddress: string,
   tokenInAmount: string, // human-readable string like "1.0"
-): Promise<{ amountOut: string; gasEstimate: string }> {
-  if (tokenIn.toLowerCase() === tokenOut.toLowerCase()) {
+): Promise<QuoteExactInputSingleResults> {
+  if (
+    tokenInContractAddress.toLowerCase() ===
+    tokenOutContractAddress.toLowerCase()
+  ) {
     throw new Error('tokenIn must be different than tokenOut');
   }
 
   const iface = new ethers.Interface(QUOTER_V2_ABI);
 
-  const token0 = new ethers.Contract(tokenIn, erc20ABI, provider);
-  const token1 = new ethers.Contract(tokenOut, erc20ABI, provider);
+  const token0 = new ethers.Contract(
+    tokenInContractAddress,
+    erc20ABI,
+    provider,
+  );
+  const token1 = new ethers.Contract(
+    tokenOutContractAddress,
+    erc20ABI,
+    provider,
+  );
 
   const dec0 = await token0.decimals();
   const dec1 = await token1.decimals();
 
   const data = iface.encodeFunctionData('quoteExactInputSingle', [
     {
-      tokenIn,
-      tokenOut,
+      tokenIn: tokenInContractAddress,
+      tokenOut: tokenOutContractAddress,
       amountIn: ethers.parseUnits(tokenInAmount, dec0),
       fee: 0n,
       sqrtPriceLimitX96: 0n,
@@ -129,54 +150,98 @@ export async function getQuoteExactInputSingle(
 
   const decoded = iface.decodeFunctionResult('quoteExactInputSingle', result);
   // console.log(decoded);
-  const [amountOut, , , gasEstimate] = decoded;
+  const [amountOut, sqrtPriceX96After, initializedTicksCrossed, gasEstimate] =
+    decoded;
 
   const feeData = await provider.getFeeData();
   return {
-    amountOut: ethers.formatUnits(amountOut, dec1),
-    gasEstimate: ethers.formatUnits(
+    amountOut,
+    gasEstimate,
+    sqrtPriceX96After,
+    initializedTicksCrossed,
+    formattedAmountOut: ethers.formatUnits(amountOut, dec1),
+    formattedGasEstimate: ethers.formatUnits(
       gasEstimate * (feeData.gasPrice ?? 1_000_000_000n),
       18,
     ),
   };
 }
 
-// export const discoverPools = async () => {
+export async function swapExactInputSingle({
+  tokenInContractAddress,
+  tokenOutContractAddress,
+  amountIn, // e.g., "10.0"
+  slippage = 0.005, // 0.5%
+}: {
+  tokenInContractAddress: string;
+  tokenOutContractAddress: string;
+  amountIn: string;
+  slippage?: number;
+}) {
+  const browserProvider = new ethers.BrowserProvider(window.ethereum);
+  const signer = await browserProvider.getSigner();
+  const userAddress = await signer.getAddress();
 
-//   const factory = new ethers.Contract(
-//     HARD_SWAP_FACTORY_CONTRACT_ADDRESS,
-//     HARD_SWAP_FACTORY_ABI,
-//     provider,
-//   );
+  //  Quote output
+  const { amountOut } = await getQuoteExactInputSingle(
+    tokenInContractAddress,
+    tokenOutContractAddress,
+    amountIn,
+  );
 
-//   const filter = factory.filters.PoolCreated();
-//   const latestBlock = 14589418;
-//   const BATCH_SIZE = 1000;
+  const tokenInContract = new ethers.Contract(
+    tokenInContractAddress,
+    erc20ABI,
+    signer,
+  );
 
-//   console.log(`Starting scan from block ${latestBlock}...`);
+  const tokenInDecimals = await tokenInContract.decimals();
+  const amountInParsed = ethers.parseUnits(amountIn, tokenInDecimals);
 
-//   const iface = new ethers.Interface(HARD_SWAP_FACTORY_ABI);
+  const SLIPPAGE_DENOM = 10_000n;
+  const slippageMultiplier = BigInt(Math.floor((1 - slippage) * 10_000)); // e.g. 9950 for 0.5%
 
-//   for (let endBlock = latestBlock; endBlock > 0; endBlock -= BATCH_SIZE) {
-//     const startBlock = Math.max(endBlock - BATCH_SIZE + 1, 0);
+  const amountOutMinimum = (amountOut * slippageMultiplier) / SLIPPAGE_DENOM;
 
-//     try {
-//       const events = await factory.queryFilter(filter, startBlock, endBlock);
-//       console.log(
-//         `Fetched ${events.length} events from blocks ${startBlock} to ${endBlock}`,
-//       );
-//       if (events.length) console.log(events);
-//       if (events.length) {
-//         for (const log of events) {
-//           const parsed = iface.parseLog(log);
-//           console.log(parsed);
-//         }
-//       }
-//     } catch (err) {
-//       console.error(
-//         `Error fetching logs between blocks ${startBlock}-${endBlock}:`,
-//         err,
-//       );
-//     }
-//   }
-// };
+  // Approve if needed
+  const allowance = await tokenInContract.allowance(
+    userAddress,
+    SWAP_ROUTER_CONTRACT_ADDRESS,
+  );
+
+  if (allowance < amountInParsed) {
+    const approveTx = await tokenInContract.approve(
+      SWAP_ROUTER_CONTRACT_ADDRESS,
+      amountInParsed,
+    );
+    console.log(`⏳ Approving ${tokenInContractAddress}...`);
+    await approveTx.wait();
+  }
+
+  // Swap
+  const router = new ethers.Contract(
+    SWAP_ROUTER_CONTRACT_ADDRESS,
+    SWAP_ROUTER_ABI,
+    signer,
+  );
+
+  const swapParams = {
+    tokenIn: tokenInContractAddress,
+    tokenOut: tokenOutContractAddress,
+    fee: 0,
+    recipient: userAddress,
+    deadline: Math.floor(Date.now() / 1000) + 60 * 15,
+    amountIn: amountInParsed,
+    amountOutMinimum,
+    sqrtPriceLimitX96: 0n,
+  };
+
+  const tx = await router.exactInputSingle(swapParams);
+
+  console.log(
+    `⏳ Swapping ${amountIn} ${tokenInContract} for ${tokenOutContractAddress}... TX: ${tx.hash}`,
+  );
+  const receipt = await tx.wait();
+  console.log(`✅ Swap confirmed in block ${receipt.blockNumber}`);
+  return receipt;
+}
