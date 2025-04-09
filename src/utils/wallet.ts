@@ -3,7 +3,7 @@ import { chainRegistry, ChainType } from '../toolcalls/chain';
 
 /**
  * Validates if the wallet is connected and compatible
- * @param walletStore The wallet connection instance
+ * @param walletStore The wallet store instance
  * @param requiredWalletTypes Array of required wallet types
  * @returns boolean - true if wallet is valid, throws error otherwise
  */

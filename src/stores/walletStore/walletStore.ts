@@ -159,7 +159,7 @@ export class WalletStore {
         break;
       }
       case WalletTypes.NONE: {
-        this.disconnectWallet();
+        this.disconnectWallet(); // disconnect when passed WalletTypes.NONE
         break;
       }
       default:

@@ -121,7 +121,7 @@ export const useExecuteToolCall = (
 
       throw new Error('Invalid operation type');
     },
-    [setIsOperationValidated, registry, walletStore],
+    [registry, walletStore, setIsOperationValidated],
   );
 
   return {
