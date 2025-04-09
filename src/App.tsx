@@ -59,8 +59,10 @@ export const App = () => {
   } = useChat();
 
   const openWalletConnect = async () => {
-    await detectProviders();
-    setIsWalletConnectOpen(true);
+    const result = await detectProviders();
+    if (!result.singleProviderConnected) {
+      setIsWalletConnectOpen(true);
+    }
   };
 
   const closeWalletConnect = () => {

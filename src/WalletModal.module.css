@@ -6,7 +6,7 @@
   bottom: 0;
   background-color: rgba(0, 0, 0, 0.5);
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: center;
   z-index: 1000;
   animation: fadeIn 0.2s ease-out;
@@ -33,7 +33,7 @@
 
 .modalHeader h3 {
   margin: 0;
-  font-size: 1.6rem;
+  font-size: 1.8rem;
   font-weight: var(--typography-fontWeightBold);
   color: var(--colors-textPrimary);
 }
@@ -45,44 +45,82 @@
   height: calc(100% - 60px);
 }
 
+.walletOption,
 .providerItem {
-  background-color: var(--colors-bgQuaternary);
   display: flex;
-  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  padding: var(--spacing-md) var(--spacing-lg);
+  padding: var(--spacing-md);
+  background-color: var(--colors-bgQuaternary);
   border: 1px solid var(--colors-borderSecondary);
   border-radius: var(--borderRadius-xs);
-  margin-bottom: var(--spacing-sm);
+  margin-bottom: var(--spacing-md);
   cursor: pointer;
   transition: all 0.2s ease;
-  text-align: center;
-  min-height: 9rem;
 }
 
+.walletOption:hover,
 .providerItem:hover {
   background-color: var(--colors-bgTertiary);
-  border-color: var(--colors-borderPrimary);
+  border: 1px solid var(--colors-borderPrimary);
   transform: translateY(-1px);
 }
 
+.walletOption:last-child,
 .providerItem:last-child {
   margin-bottom: 0;
 }
 
+.walletOptionIcon,
 .providerIcon {
-  width: 4rem;
-  height: 4rem;
-  margin-bottom: var(--spacing-sm);
+  width: 3.6rem;
+  height: 3.6rem;
+  flex-shrink: 0;
+  border-radius: var(--borderRadius-sm);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: var(--spacing-md);
+}
+
+.walletOptionIcon img,
+.providerIcon {
+  width: 100%;
+  height: 100%;
   object-fit: contain;
 }
 
+.walletName,
 .providerName {
-  font-size: 16px;
-  font-weight: var(--typography-fontWeightRegular);
+  font-size: 1.6rem;
+  font-weight: var(--typography-fontWeightMedium);
   color: var(--colors-textPrimary);
-  width: 100%;
+  flex: 1;
+}
+
+.getButtonLink {
+  text-decoration: none;
+  margin-left: auto;
+}
+
+.getButton {
+  background-color: var(--colors-accent);
+  color: var(--colors-textPrimary);
+  border: none;
+  border-radius: var(--borderRadius-xs);
+  padding: var(--spacing-sm) var(--spacing-lg);
+  font-size: 1.4rem;
+  text-transform: uppercase;
+  font-weight: var(--typography-fontWeightBold);
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  white-space: nowrap;
+  min-width: 5rem;
+  text-align: center;
+}
+
+.getButton:hover {
+  background-color: var(--colors-accentTransparent);
 }
 
 @keyframes fadeIn {
@@ -107,37 +145,16 @@
 
   .providerModal {
     width: 90%;
-    max-width: 30rem;
+    max-width: 32rem;
     height: auto;
+    max-height: 80vh;
     border-radius: var(--borderRadius-sm);
     animation: slideIn 0.3s ease-out;
   }
 
   .providersList {
     height: auto;
-    max-height: 40rem;
-  }
-
-  .modalHeader h3 {
-    font-size: 1.8rem;
-  }
-
-  .providerItem {
-    padding: var(--spacing-md);
-    flex-direction: row;
-    justify-content: flex-start;
-    text-align: left;
-    min-height: auto;
-  }
-
-  .providerIcon {
-    width: 3.2rem;
-    height: 3.2rem;
-    margin-right: var(--spacing-md);
-    margin-bottom: 0;
-  }
-
-  .providerName {
-    width: auto;
+    max-height: calc(80vh - 60px);
+    overflow-y: auto;
   }
 }
