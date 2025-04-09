@@ -1,9 +1,9 @@
-import { erc20ABI } from '../erc20ABI';
+import { erc20ABI } from '../../erc20ABI';
 import {
   HARD_SWAP_FACTORY_CONTRACT_ADDRESS,
   HARD_SWAP_FACTORY_ABI,
-  HARD_SWAP_POOL_ABI,
 } from './hardSwapFactory';
+import { HARD_SWAP_POOL_ABI } from './hardSwapPool';
 import { QUOTER_V2_ABI, QUOTER_V2_CONTACT_ADDRESS } from './quoterV2';
 import { ethers } from 'ethers';
 
