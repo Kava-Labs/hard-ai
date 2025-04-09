@@ -68,10 +68,8 @@ export const App = () => {
   };
 
   const onProviderSelect = async (provider: EIP6963ProviderDetail) => {
-    const success = await handleProviderSelect(provider);
-    if (success) {
-      closeWalletConnect();
-    }
+    await handleProviderSelect(provider);
+    closeWalletConnect();
   };
 
   return (

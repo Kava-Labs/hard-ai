@@ -120,12 +120,10 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
           provider.info.uuid,
           `0x${Number(2222).toString(16)}`,
         );
-        return true;
       } catch (err) {
         console.error(
           `Failed to connect to ${provider.info.name}: ${(err as Error).message}`,
         );
-        return false;
       }
     },
     [connectEIP6963Provider],
