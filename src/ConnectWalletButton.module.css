@@ -26,15 +26,15 @@
 }
 
 .providerIcon {
-  width: 18px;
-  height: 18px;
+  width: 1.8rem;
+  height: 1.8rem;
   object-fit: contain;
   flex-shrink: 0;
 }
 
 .providerIconSmall {
-  width: 16px;
-  height: 16px;
+  width: 1.6rem;
+  height: 1.6rem;
   object-fit: contain;
   flex-shrink: 0;
 }

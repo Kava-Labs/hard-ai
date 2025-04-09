@@ -278,7 +278,6 @@ export class WalletStore {
   };
 
   private async connectEIP6963Provider(providerId: string) {
-    console.log('Connecting to provider:', providerId);
     const providerDetail = this.providers.get(providerId);
 
     if (!providerDetail) {
@@ -287,13 +286,11 @@ export class WalletStore {
     }
 
     try {
-      console.log('Requesting accounts...');
       const accountsResponse = await providerDetail.provider.request({
         method: 'eth_requestAccounts',
       });
 
       const accounts = accountsResponse as string[];
-      console.log('Accounts received:', accounts);
 
       if (Array.isArray(accounts) && accounts.length) {
         const chainIdResponse = await providerDetail.provider.request({
@@ -301,7 +298,6 @@ export class WalletStore {
         });
 
         const chainId = chainIdResponse as string;
-        console.log('Chain ID received:', chainId);
 
         this.currentValue = {
           walletAddress: accounts[0],
@@ -311,9 +307,7 @@ export class WalletStore {
           provider: providerDetail.provider,
           rdns: providerDetail.info.rdns,
         };
-        console.log('Setting new wallet state:', this.currentValue);
         this.emitChange();
-        console.log('Emitted change to listeners');
       } else {
         throw new Error('No accounts returned from provider');
       }
