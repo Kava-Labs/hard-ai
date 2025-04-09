@@ -123,6 +123,21 @@
   background-color: var(--colors-accentTransparent);
 }
 
+.walletLink {
+  display: block;
+  margin-bottom: var(--spacing-md);
+}
+
+.walletLink:hover {
+  text-decoration: none;
+  display: block;
+  margin-bottom: var(--spacing-md);
+}
+
+.walletLink:last-child {
+  margin-bottom: 0;
+}
+
 @keyframes fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }

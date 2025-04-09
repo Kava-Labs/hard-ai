@@ -51,34 +51,34 @@ const WalletModal: React.FC<WalletModalProps> = ({
             ))
           ) : (
             <div>
-              <div className={styles.walletOption}>
-                <div className={styles.walletOptionIcon}>
-                  <img src={metamaskLogo} alt="MetaMask logo" />
+              <a
+                href="https://metamask.io/download/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className={styles.walletLink}
+              >
+                <div className={styles.walletOption}>
+                  <div className={styles.walletOptionIcon}>
+                    <img src={metamaskLogo} alt="MetaMask logo" />
+                  </div>
+                  <div className={styles.walletName}>MetaMask</div>
+                  <div className={styles.getButton}>GET</div>
                 </div>
-                <div className={styles.walletName}>MetaMask</div>
-                <a
-                  href="https://metamask.io/download/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={styles.getButtonLink}
-                >
-                  <button className={styles.getButton}>GET</button>
-                </a>
-              </div>
-              <div className={styles.walletOption}>
-                <div className={styles.walletOptionIcon}>
-                  <img src={hotWalletLogo} alt="HotWallet logo" />
+              </a>
+              <a
+                href="https://hot-labs.org/extension/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className={styles.walletLink}
+              >
+                <div className={styles.walletOption}>
+                  <div className={styles.walletOptionIcon}>
+                    <img src={hotWalletLogo} alt="HotWallet logo" />
+                  </div>
+                  <div className={styles.walletName}>HOT Wallet</div>
+                  <div className={styles.getButton}>GET</div>
                 </div>
-                <div className={styles.walletName}>HOT Wallet</div>
-                <a
-                  href="https://hot-labs.org/extension/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={styles.getButtonLink}
-                >
-                  <button className={styles.getButton}>GET</button>
-                </a>
-              </div>
+              </a>
             </div>
           )}
         </div>
