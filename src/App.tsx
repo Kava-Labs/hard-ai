@@ -55,7 +55,7 @@ export const App = () => {
     detectProviders,
     handleProviderSelect,
     availableProviders,
-    providerInfo,
+    walletProviderInfo,
   } = useChat();
 
   const openWalletConnect = async () => {
@@ -96,8 +96,7 @@ export const App = () => {
         isSideBarOpen={isSideBarOpen}
         styles={styles}
         walletAddress={walletAddress}
-        providerIcon={providerInfo?.icon}
-        providerName={providerInfo?.name}
+        walletProviderInfo={walletProviderInfo}
         onConnectWalletClick={openWalletConnect}
         disconnectWallet={disconnectWallet}
       />

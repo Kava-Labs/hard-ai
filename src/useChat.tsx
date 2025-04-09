@@ -339,7 +339,7 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
   }, [fetchConversations]);
 
   return useMemo(() => {
-    const providerInfo =
+    const walletProviderInfo =
       walletConnection.isWalletConnected && walletConnection.rdns
         ? availableProviders.find((p) => p.info.rdns === walletConnection.rdns)
             ?.info
@@ -361,7 +361,7 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
       handleProviderSelect,
       disconnectWallet,
       availableProviders,
-      providerInfo,
+      walletProviderInfo,
     };
   }, [
     activeChat,

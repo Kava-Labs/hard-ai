@@ -2,7 +2,7 @@ import { LandingContent } from './LandingContent';
 import { ChatInput } from './ChatInput';
 import { NavBar } from 'lib-kava-ai';
 import { ConversationWrapper } from './ConversationWrapper';
-import { ActiveChat, ChatMessage } from './types';
+import { ActiveChat, ChatMessage, DisplayedWalletProviderInfo } from './types';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { ToolCallRegistry } from './toolcalls/chain';
 import ConnectWalletButton from './ConnectWalletButton';
@@ -20,8 +20,7 @@ export interface ChatInterfaceProps {
   onMenuClick: () => void;
   styles: Record<string, string>;
   walletAddress: string;
-  providerIcon?: string;
-  providerName?: string;
+  walletProviderInfo?: DisplayedWalletProviderInfo;
   onConnectWalletClick: () => void;
   disconnectWallet: () => void;
 }
@@ -36,8 +35,7 @@ export const ChatInterface = ({
   onMenuClick,
   styles,
   walletAddress,
-  providerIcon,
-  providerName,
+  walletProviderInfo,
   onConnectWalletClick,
   disconnectWallet,
 }: ChatInterfaceProps) => {
@@ -100,8 +98,8 @@ export const ChatInterface = ({
                     walletAddress={walletAddress}
                     handleConnectClick={onConnectWalletClick}
                     disconnectWallet={disconnectWallet}
-                    providerIcon={providerIcon}
-                    providerName={providerName}
+                    icon={walletProviderInfo?.icon}
+                    walletName={walletProviderInfo?.name}
                   />
                 )
               }
