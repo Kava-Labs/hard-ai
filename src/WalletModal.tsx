@@ -62,7 +62,7 @@ const WalletModal: React.FC<WalletModalProps> = ({
                     <img src={metamaskLogo} alt="MetaMask logo" />
                   </div>
                   <div className={styles.walletName}>MetaMask</div>
-                  <div className={styles.getButton}>GET</div>
+                  <div className={styles.getButton}>Get</div>
                 </div>
               </a>
               <a
@@ -76,7 +76,7 @@ const WalletModal: React.FC<WalletModalProps> = ({
                     <img src={hotWalletLogo} alt="HotWallet logo" />
                   </div>
                   <div className={styles.walletName}>HOT Wallet</div>
-                  <div className={styles.getButton}>GET</div>
+                  <div className={styles.getButton}>Get</div>
                 </div>
               </a>
             </div>

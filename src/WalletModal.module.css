@@ -93,13 +93,13 @@
 .walletName,
 .providerName {
   font-size: 1.6rem;
-  font-weight: var(--typography-fontWeightMedium);
+  font-weight: var(--typography-fontWeightBold);
   color: var(--colors-textPrimary);
   flex: 1;
 }
 
 .getButtonLink {
-  text-decoration: none;
+  text-transform: uppercase;
   margin-left: auto;
 }
 
