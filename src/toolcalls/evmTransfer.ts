@@ -10,6 +10,7 @@ import {
 } from './chain';
 import {
   SignatureTypes,
+  WalletConnection,
   WalletStore,
   WalletTypes,
 } from '../stores/walletStore/walletStore';
@@ -30,7 +31,7 @@ export class EvmTransferMessage
   description = 'Send erc20 tokens from one address to another';
   operationType = OperationType.TRANSACTION;
   chainType = ChainType.EVM;
-  needsWallet = [WalletTypes.METAMASK];
+  needsWallet = [WalletTypes.EIP6963];
   walletMustMatchChainID = true;
   private hasValidWallet = false;
 
@@ -66,7 +67,7 @@ export class EvmTransferMessage
       amount: string;
       chainName: string;
     },
-    walletStore: WalletStore,
+    walletConnection: WalletConnection,
   ): Promise<boolean> {
     const { denom, amount, chainName } = params;
 
@@ -80,7 +81,7 @@ export class EvmTransferMessage
     const { ethers } = await import('ethers');
 
     const rpcProvider = new ethers.JsonRpcProvider(rpcUrls[0]);
-    const address = walletStore.getSnapshot().walletAddress;
+    const address = walletConnection.walletAddress;
 
     if (denom.toUpperCase() === nativeToken) {
       const rawBalance = await rpcProvider.getBalance(address);
@@ -111,11 +112,11 @@ export class EvmTransferMessage
 
   async validate(
     params: SendToolParams,
-    walletStore: WalletStore,
+    walletConnection: WalletConnection,
   ): Promise<boolean> {
     this.hasValidWallet = false;
 
-    validateWallet(walletStore, this.needsWallet);
+    validateWallet(walletConnection, this.needsWallet);
     validateChain(this.chainType, params.chainName);
 
     //  wallet checks have passed
@@ -147,7 +148,7 @@ export class EvmTransferMessage
       throw new Error(`failed to find contract address for ${denom}`);
     }
 
-    if (!(await this.validateBalance(params, walletStore))) {
+    if (!(await this.validateBalance(params, walletConnection))) {
       throw new Error('Invalid balances for transaction');
     }
 

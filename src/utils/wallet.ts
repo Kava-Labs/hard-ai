@@ -1,4 +1,4 @@
-import { WalletStore, WalletTypes } from '../stores/walletStore';
+import { WalletConnection, WalletTypes } from '../stores/walletStore';
 import { chainRegistry, ChainType } from '../toolcalls/chain';
 
 /**
@@ -8,15 +8,15 @@ import { chainRegistry, ChainType } from '../toolcalls/chain';
  * @returns boolean - true if wallet is valid, throws error otherwise
  */
 export function validateWallet(
-  walletStore: WalletStore,
+  walletConnection: WalletConnection,
   requiredWalletTypes: WalletTypes[] | null,
 ): boolean {
-  if (!walletStore.getSnapshot().isWalletConnected) {
+  if (!walletConnection.isWalletConnected) {
     throw new Error('please connect to a compatible wallet');
   }
 
   if (Array.isArray(requiredWalletTypes)) {
-    if (!requiredWalletTypes.includes(walletStore.getSnapshot().walletType)) {
+    if (!requiredWalletTypes.includes(walletConnection.walletType)) {
       throw new Error('please connect to a compatible wallet');
     }
   }

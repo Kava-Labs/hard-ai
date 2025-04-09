@@ -24,9 +24,9 @@ import { initializeToolCallRegistry } from './toolcalls/chain';
 import { ToolCallStreamStore } from './stores/toolCallStreamStore';
 import { useExecuteToolCall } from './useExecuteToolCall';
 import {
-  WalletStore,
   WalletTypes,
   EIP6963ProviderDetail,
+  walletStore,
 } from './stores/walletStore';
 import { defaultSystemPrompt } from './toolcalls/chain/prompts';
 import { useWalletStore } from './stores/walletStore/useWalletStore';
@@ -64,7 +64,6 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
 
   const [toolCallRegistry] = useState(() => initializeToolCallRegistry());
 
-  const [walletStore] = useState(() => new WalletStore());
   const walletConnection = useWalletStore(walletStore);
   const walletAddress = walletConnection.walletAddress;
 
@@ -76,7 +75,7 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
   // Refresh available providers
   const refreshProviders = useCallback(() => {
     setAvailableProviders(walletStore.getProviders());
-  }, [walletStore]);
+  }, []);
 
   // Get initial providers and set up polling
   useEffect(() => {
@@ -102,7 +101,7 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
         throw error;
       }
     },
-    [walletStore],
+    [],
   );
 
   // Connect wallet with provider selection
@@ -121,25 +120,21 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
         providers,
       };
     }
-  }, [walletStore, connectEIP6963Provider, refreshProviders]);
+  }, [connectEIP6963Provider, refreshProviders]);
 
   const disconnectWallet = useCallback(() => {
     walletStore.disconnectWallet();
-  }, [walletStore]);
+  }, []);
 
-  // Switch network on current wallet
-  const switchNetwork = useCallback(
-    async (chainName: string) => {
-      try {
-        await walletStore.switchNetwork(chainName);
-        return true;
-      } catch (error) {
-        console.error('Failed to switch network:', error);
-        return false;
-      }
-    },
-    [walletStore],
-  );
+  const switchNetwork = useCallback(async (chainName: string) => {
+    try {
+      await walletStore.switchNetwork(chainName);
+      return true;
+    } catch (error) {
+      console.error('Failed to switch network:', error);
+      return false;
+    }
+  }, []);
 
   const setIsOperationValidated = useCallback(
     (isOperationValidated: boolean) => {

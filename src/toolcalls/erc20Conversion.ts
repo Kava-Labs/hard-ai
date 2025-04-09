@@ -35,7 +35,7 @@ export class ERC20ConversionMessage
   operationType = OperationType.TRANSACTION;
   walletMustMatchChainID = true;
 
-  needsWallet = [WalletTypes.METAMASK];
+  needsWallet = [WalletTypes.EIP6963];
 
   /**
    * Parameter definitions for the message.

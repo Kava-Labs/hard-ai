@@ -151,11 +151,13 @@ export class WalletStore {
   public async connectWallet(opts: {
     chainId?: string;
     walletType: WalletTypes;
-    providerId: string;
+    providerId?: string;
   }) {
     switch (opts.walletType) {
       case WalletTypes.EIP6963: {
-        await this.connectEIP6963Provider(opts.providerId);
+        if (opts.providerId) {
+          await this.connectEIP6963Provider(opts.providerId);
+        }
         break;
       }
       case WalletTypes.NONE: {
@@ -276,18 +278,22 @@ export class WalletStore {
   };
 
   private async connectEIP6963Provider(providerId: string) {
+    console.log('Connecting to provider:', providerId);
     const providerDetail = this.providers.get(providerId);
 
     if (!providerDetail) {
+      console.error(`Provider with UUID ${providerId} not found`);
       throw new Error(`Provider with UUID ${providerId} not found`);
     }
 
     try {
+      console.log('Requesting accounts...');
       const accountsResponse = await providerDetail.provider.request({
         method: 'eth_requestAccounts',
       });
 
       const accounts = accountsResponse as string[];
+      console.log('Accounts received:', accounts);
 
       if (Array.isArray(accounts) && accounts.length) {
         const chainIdResponse = await providerDetail.provider.request({
@@ -295,6 +301,7 @@ export class WalletStore {
         });
 
         const chainId = chainIdResponse as string;
+        console.log('Chain ID received:', chainId);
 
         this.currentValue = {
           walletAddress: accounts[0],
@@ -304,7 +311,9 @@ export class WalletStore {
           provider: providerDetail.provider,
           rdns: providerDetail.info.rdns,
         };
+        console.log('Setting new wallet state:', this.currentValue);
         this.emitChange();
+        console.log('Emitted change to listeners');
       } else {
         throw new Error('No accounts returned from provider');
       }
@@ -313,7 +322,6 @@ export class WalletStore {
       throw error;
     }
   }
-
   private async refreshCurrentConnection() {
     const connection = this.getSnapshot();
 
@@ -362,3 +370,5 @@ export class WalletStore {
     }
   }
 }
+
+export const walletStore = new WalletStore();
