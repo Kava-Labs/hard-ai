@@ -4,7 +4,7 @@ import { useChat } from './useChat';
 import { ChatInterface } from './ChatInterface';
 import { useIsMobileLayout, SearchHistoryModal, SideBar } from 'lib-kava-ai';
 import hardAILogo from './assets/hardAILogo.svg';
-// import { getQuoteExactInputSingle } from './toolcalls/chain';
+import { getQuoteExactInputSingle } from './toolcalls/chain';
 // import { getPoolTVL } from './toolcalls/chain';
 
 const sideBarLogo = <img src={hardAILogo} alt="Hard AI logo" height={18} />;
@@ -13,13 +13,13 @@ const sideBarLogo = <img src={hardAILogo} alt="Hard AI logo" height={18} />;
 // console.log(await getPoolTVL('0x26216b7b7dE80399b601b8217DA272b82d4f34cb'));
 
 // quote for swapping 1 USDT to Kava
-// console.log(
-//   await getQuoteExactInputSingle(
-//     '0x919C1c267BC06a7039e03fcc2eF738525769109c',
-//     '0xc86c7C0eFbd6A49B35E8714C5f59D99De09A225b',
-//     '1.00',
-//   ),
-// );
+console.log(
+  await getQuoteExactInputSingle(
+    '0x919C1c267BC06a7039e03fcc2eF738525769109c',
+    '0xc86c7C0eFbd6A49B35E8714C5f59D99De09A225b',
+    '1.00',
+  ),
+);
 
 export const App = () => {
   const [isMobileSideBarOpen, setIsMobileSideBarOpen] = useState(false);

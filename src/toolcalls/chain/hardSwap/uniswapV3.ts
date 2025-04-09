@@ -131,9 +131,13 @@ export async function getQuoteExactInputSingle(
   // console.log(decoded);
   const [amountOut, , , gasEstimate] = decoded;
 
+  const feeData = await provider.getFeeData();
   return {
     amountOut: ethers.formatUnits(amountOut, dec1),
-    gasEstimate: ethers.formatUnits(gasEstimate, 18),
+    gasEstimate: ethers.formatUnits(
+      gasEstimate * (feeData.gasPrice ?? 1_000_000_000n),
+      18,
+    ),
   };
 }
 
