@@ -20,7 +20,6 @@ export interface ChatInterfaceProps {
   onMenuClick: () => void;
   styles: Record<string, string>;
   walletAddress: string;
-  isWalletConnected: boolean;
   providerIcon?: string;
   providerName?: string;
   onConnectWalletClick: () => void;

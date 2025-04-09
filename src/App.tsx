@@ -51,7 +51,6 @@ export const App = () => {
     fetchSearchHistory,
     toolCallRegistry,
     walletAddress,
-    walletConnection,
     disconnectWallet,
     detectProviders,
     handleProviderSelect,
@@ -99,7 +98,6 @@ export const App = () => {
         isSideBarOpen={isSideBarOpen}
         styles={styles}
         walletAddress={walletAddress}
-        isWalletConnected={walletConnection.isWalletConnected}
         providerIcon={providerInfo?.icon}
         providerName={providerInfo?.name}
         onConnectWalletClick={openWalletConnect}
