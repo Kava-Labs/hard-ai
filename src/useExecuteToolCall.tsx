@@ -29,8 +29,6 @@ export const useExecuteToolCall = (
     async (operationName: string, params: unknown) => {
       setIsOperationValidated(false);
 
-      const walletConnection = walletStore.getSnapshot();
-
       const operation = registry.get(operationName);
       if (!operation) {
         throw new Error(`Unknown operation type: ${operationName}`);
@@ -59,7 +57,7 @@ export const useExecuteToolCall = (
       if (
         operation.needsWallet &&
         Array.isArray(operation.needsWallet) &&
-        !operation.needsWallet.includes(walletConnection.walletType)
+        !operation.needsWallet.includes(walletStore.getSnapshot().walletType)
       ) {
         for (const walletType of operation.needsWallet) {
           await walletStore.connectWallet({
@@ -75,8 +73,8 @@ export const useExecuteToolCall = (
       // start the network switching process
       if (
         operation.walletMustMatchChainID &&
-        walletConnection.walletType === WalletTypes.EIP6963 &&
-        walletConnection.walletChainId !== chainId
+        walletStore.getSnapshot().walletType === WalletTypes.EIP6963 &&
+        walletStore.getSnapshot().walletChainId !== chainId
       ) {
         switch (operation.chainType) {
           case ChainType.COSMOS: {
@@ -89,7 +87,7 @@ export const useExecuteToolCall = (
             if (evmChainName) {
               if (
                 `0x${chainRegistry[ChainType.EVM][evmChainName].chainID.toString(16)}` !==
-                walletConnection.walletChainId
+                walletStore.getSnapshot().walletChainId
               ) {
                 await walletStore.switchNetwork(evmChainName);
               }
