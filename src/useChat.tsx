@@ -368,6 +368,8 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
       walletProviderInfo,
     };
   }, [
+    walletConnection,
+    availableProviders,
     activeChat,
     conversationHistories,
     handleNewChat,
@@ -382,6 +384,5 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
     detectProviders,
     handleProviderSelect,
     disconnectWallet,
-    availableProviders,
   ]);
 };
