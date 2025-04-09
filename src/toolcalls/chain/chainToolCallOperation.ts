@@ -1,9 +1,5 @@
 import { ToolCallStream } from '../../stores/toolCallStreamStore';
-import {
-  WalletTypes,
-  WalletConnection,
-  WalletStore,
-} from '../../stores/walletStore';
+import { WalletTypes, WalletStore } from '../../stores/walletStore';
 import { ChainType } from './chainsRegistry';
 
 export interface MessageParam {
@@ -47,10 +43,7 @@ export interface ChainToolCallOperation<T> {
   walletMustMatchChainID?: boolean;
 
   /** Validates the provided parameters match requirements */
-  validate(
-    params: T,
-    walletConnection: WalletConnection,
-  ): boolean | Promise<boolean>;
+  validate(params: T, walletStore: WalletStore): boolean | Promise<boolean>;
 
   /** Optional React component that displays as the model is streaming the tool call arguments */
   inProgressComponent?: () => React.FunctionComponent<InProgressComponentProps>;
@@ -71,7 +64,7 @@ export interface ChainToolCallMessage<T> extends ChainToolCallOperation<T> {
  */
 export interface ChainToolCallQuery<T> extends ChainToolCallOperation<T> {
   /** Executes the query with the provided parameters */
-  executeQuery(params: T, walletConnection: WalletConnection): Promise<string>;
+  executeQuery(params: T, walletStore: WalletStore): Promise<string>;
 }
 
 export type OperationResult = {

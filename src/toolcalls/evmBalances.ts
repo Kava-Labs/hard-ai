@@ -1,6 +1,6 @@
 import { ChainToolCallQuery, ChainType, OperationType } from './chain';
 import { erc20ABI } from './erc20ABI';
-import { WalletConnection, WalletTypes } from '../stores/walletStore';
+import { WalletStore, WalletTypes } from '../stores/walletStore';
 import { chainNameToolCallParam, chainRegistry, EVMChainConfig } from './chain';
 import { validateChain, validateWallet } from '../utils/wallet';
 
@@ -19,11 +19,8 @@ export class EvmBalancesQuery
   walletMustMatchChainID = false;
   needsWallet = [WalletTypes.EIP6963];
 
-  validate(
-    params: EvmBalanceQueryParams,
-    walletConnection: WalletConnection,
-  ): boolean {
-    validateWallet(walletConnection, this.needsWallet);
+  validate(params: EvmBalanceQueryParams, walletStore: WalletStore): boolean {
+    validateWallet(walletStore, this.needsWallet);
     validateChain(this.chainType, params.chainName);
 
     return true;
@@ -31,14 +28,14 @@ export class EvmBalancesQuery
 
   async executeQuery(
     params: EvmBalanceQueryParams,
-    walletConnection: WalletConnection,
+    walletStore: WalletStore,
   ): Promise<string> {
     const { ethers } = await import('ethers');
     const { rpcUrls, erc20Contracts, nativeToken, nativeTokenDecimals } =
       chainRegistry[this.chainType][params.chainName] as EVMChainConfig;
     const rpcProvider = new ethers.JsonRpcProvider(rpcUrls[0]);
 
-    const address = walletConnection.walletAddress;
+    const address = walletStore.getSnapshot().walletAddress;
     const balanceCalls: (() => Promise<string>)[] = [];
 
     // native fetching is a bit different

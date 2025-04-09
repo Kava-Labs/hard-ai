@@ -10,7 +10,6 @@ import {
 } from './chain';
 import {
   SignatureTypes,
-  WalletConnection,
   WalletStore,
   WalletTypes,
 } from '../stores/walletStore/walletStore';
@@ -67,7 +66,7 @@ export class EvmTransferMessage
       amount: string;
       chainName: string;
     },
-    walletConnection: WalletConnection,
+    walletStore: WalletStore,
   ): Promise<boolean> {
     const { denom, amount, chainName } = params;
 
@@ -81,7 +80,7 @@ export class EvmTransferMessage
     const { ethers } = await import('ethers');
 
     const rpcProvider = new ethers.JsonRpcProvider(rpcUrls[0]);
-    const address = walletConnection.walletAddress;
+    const address = walletStore.getSnapshot().walletAddress;
 
     if (denom.toUpperCase() === nativeToken) {
       const rawBalance = await rpcProvider.getBalance(address);
@@ -112,11 +111,11 @@ export class EvmTransferMessage
 
   async validate(
     params: SendToolParams,
-    walletConnection: WalletConnection,
+    walletStore: WalletStore,
   ): Promise<boolean> {
     this.hasValidWallet = false;
 
-    validateWallet(walletConnection, this.needsWallet);
+    validateWallet(walletStore, this.needsWallet);
     validateChain(this.chainType, params.chainName);
 
     //  wallet checks have passed
@@ -148,7 +147,7 @@ export class EvmTransferMessage
       throw new Error(`failed to find contract address for ${denom}`);
     }
 
-    if (!(await this.validateBalance(params, walletConnection))) {
+    if (!(await this.validateBalance(params, walletStore))) {
       throw new Error('Invalid balances for transaction');
     }
 

@@ -43,7 +43,6 @@ describe('ChatInterface', () => {
     walletAddress: '',
     onConnectWalletClick: vi.fn(),
     disconnectWallet: vi.fn(),
-    isWalletConnected: false,
   };
 
   beforeEach(() => {

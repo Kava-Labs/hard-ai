@@ -102,10 +102,7 @@ export const useExecuteToolCall = (
         }
       }
 
-      const validatedParams = await operation.validate(
-        params,
-        walletConnection,
-      );
+      const validatedParams = await operation.validate(params, walletStore);
 
       if (!validatedParams) {
         throw new Error('Invalid parameters for operation');
@@ -120,7 +117,7 @@ export const useExecuteToolCall = (
       } else if ('executeQuery' in operation) {
         return (operation as ChainToolCallQuery<unknown>).executeQuery(
           params,
-          walletConnection,
+          walletStore,
         );
       }
 
