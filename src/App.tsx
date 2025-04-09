@@ -1,5 +1,5 @@
 import styles from './App.module.css';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useChat } from './useChat';
 import { ChatInterface } from './ChatInterface';
 import { useIsMobileLayout, SearchHistoryModal, SideBar } from 'lib-kava-ai';
@@ -14,10 +14,6 @@ export const App = () => {
   const [isDesktopSideBarOpen, setIsDesktopSideBarOpen] = useState(true);
   const [isSearchHistoryOpen, setIsSearchHistoryOpen] = useState(false);
   const [isWalletConnectOpen, setIsWalletConnectOpen] = useState(false);
-  const [connectedProvider, setConnectedProvider] = useState<{
-    icon?: string;
-    name?: string;
-  }>({});
 
   const onCloseSearchHistory = () => {
     setIsSearchHistoryOpen(false);
@@ -57,41 +53,14 @@ export const App = () => {
     walletAddress,
     walletConnection,
     disconnectWallet,
-    connectWallet,
-    connectEIP6963Provider,
+    detectProviders,
+    handleProviderSelect,
     availableProviders,
-    refreshProviders,
+    providerInfo,
   } = useChat();
 
-  // Find the connected provider when wallet is connected
-  useEffect(() => {
-    if (walletConnection.isWalletConnected && walletConnection.rdns) {
-      // Find the provider that matches the connected wallet's RDNS
-      const provider = availableProviders.find(
-        (p) => p.info.rdns === walletConnection.rdns,
-      );
-
-      if (provider) {
-        setConnectedProvider({
-          icon: provider.info.icon,
-          name: provider.info.name,
-        });
-      }
-    } else if (!walletConnection.isWalletConnected) {
-      // Clear the connected provider when wallet is disconnected
-      setConnectedProvider({});
-    }
-  }, [
-    walletConnection.isWalletConnected,
-    walletConnection.rdns,
-    availableProviders,
-  ]);
-
-  const openWalletConnect = () => {
-    refreshProviders();
-    connectWallet().catch((err) => {
-      console.error((err as Error).message || 'Failed to connect wallet');
-    });
+  const openWalletConnect = async () => {
+    await detectProviders();
     setIsWalletConnectOpen(true);
   };
 
@@ -99,23 +68,11 @@ export const App = () => {
     setIsWalletConnectOpen(false);
   };
 
-  const handleProviderSelect = async (provider: EIP6963ProviderDetail) => {
-    closeWalletConnect();
-    try {
-      await connectEIP6963Provider(
-        provider.info.uuid,
-        `0x${Number(2222).toString(16)}`,
-      );
-    } catch (err) {
-      console.error(
-        `Failed to connect to ${provider.info.name}: ${(err as Error).message}`,
-      );
+  const onProviderSelect = async (provider: EIP6963ProviderDetail) => {
+    const success = await handleProviderSelect(provider);
+    if (success) {
+      closeWalletConnect();
     }
-  };
-
-  const handleDisconnect = () => {
-    disconnectWallet();
-    setConnectedProvider({});
   };
 
   return (
@@ -143,10 +100,10 @@ export const App = () => {
         styles={styles}
         walletAddress={walletAddress}
         isWalletConnected={walletConnection.isWalletConnected}
-        providerIcon={connectedProvider.icon}
-        providerName={connectedProvider.name}
+        providerIcon={providerInfo?.icon}
+        providerName={providerInfo?.name}
         connectWallet={openWalletConnect}
-        disconnectWallet={handleDisconnect}
+        disconnectWallet={disconnectWallet}
       />
       {isSearchHistoryOpen && searchableHistory && (
         <SearchHistoryModal
@@ -160,7 +117,7 @@ export const App = () => {
         <WalletModal
           onClose={closeWalletConnect}
           availableProviders={availableProviders}
-          onSelectProvider={handleProviderSelect}
+          onSelectProvider={onProviderSelect}
         />
       )}
     </div>

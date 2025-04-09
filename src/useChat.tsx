@@ -67,25 +67,13 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
   const walletConnection = useWalletStore(walletStore);
   const walletAddress = walletConnection.walletAddress;
 
-  // State for available providers
   const [availableProviders, setAvailableProviders] = useState<
     EIP6963ProviderDetail[]
   >([]);
 
-  // Refresh available providers
   const refreshProviders = useCallback(() => {
     setAvailableProviders(walletStore.getProviders());
   }, []);
-
-  // Get initial providers and set up polling
-  useEffect(() => {
-    refreshProviders();
-
-    // Poll for new providers every few seconds
-    const interval = setInterval(refreshProviders, 3000);
-
-    return () => clearInterval(interval);
-  }, [refreshProviders]);
 
   const connectEIP6963Provider = useCallback(
     async (providerId: string, chainId?: string) => {
@@ -103,10 +91,10 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
     [],
   );
 
-  const connectWallet = useCallback(async () => {
-    const chainId = `0x${Number(2222).toString(16)}`;
-
+  const detectProviders = useCallback(async () => {
     refreshProviders();
+
+    const chainId = `0x${Number(2222).toString(16)}`;
 
     const providers = walletStore.getProviders();
     //  Automatically connect to the only provider
@@ -124,6 +112,25 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
   const disconnectWallet = useCallback(() => {
     walletStore.disconnectWallet();
   }, []);
+
+  // Handler for selecting a provider from the modal
+  const handleProviderSelect = useCallback(
+    async (provider: EIP6963ProviderDetail) => {
+      try {
+        await connectEIP6963Provider(
+          provider.info.uuid,
+          `0x${Number(2222).toString(16)}`,
+        );
+        return true;
+      } catch (err) {
+        console.error(
+          `Failed to connect to ${provider.info.name}: ${(err as Error).message}`,
+        );
+        return false;
+      }
+    },
+    [connectEIP6963Provider],
+  );
 
   const switchNetwork = useCallback(async (chainName: string) => {
     try {
@@ -344,8 +351,13 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
     });
   }, [fetchConversations]);
 
-  return useMemo(
-    () => ({
+  return useMemo(() => {
+    const providerInfo =
+      walletConnection.isWalletConnected && walletConnection.rdns
+        ? availableProviders.find((p) => p.info.rdns === walletConnection.rdns)
+            ?.info
+        : undefined;
+    return {
       activeChat,
       conversationHistories,
       handleNewChat,
@@ -359,32 +371,32 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
       toolCallRegistry,
       walletConnection,
       walletAddress,
-      connectWallet,
+      detectProviders,
       connectEIP6963Provider,
+      handleProviderSelect,
       disconnectWallet,
       switchNetwork,
       availableProviders,
-      refreshProviders,
-    }),
-    [
-      activeChat,
-      conversationHistories,
-      handleNewChat,
-      handleChatCompletion,
-      handleCancel,
-      onSelectConversation,
-      onDeleteConversation,
-      onUpdateConversationTitle,
-      searchableHistory,
-      toolCallRegistry,
-      walletConnection,
-      walletAddress,
-      connectWallet,
-      connectEIP6963Provider,
-      disconnectWallet,
-      switchNetwork,
-      availableProviders,
-      refreshProviders,
-    ],
-  );
+      providerInfo,
+    };
+  }, [
+    activeChat,
+    conversationHistories,
+    handleNewChat,
+    handleChatCompletion,
+    handleCancel,
+    onSelectConversation,
+    onDeleteConversation,
+    onUpdateConversationTitle,
+    searchableHistory,
+    toolCallRegistry,
+    walletConnection,
+    walletAddress,
+    detectProviders,
+    connectEIP6963Provider,
+    handleProviderSelect,
+    disconnectWallet,
+    switchNetwork,
+    availableProviders,
+  ]);
 };
