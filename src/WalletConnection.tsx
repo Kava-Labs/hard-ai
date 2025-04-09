@@ -67,7 +67,10 @@ const WalletConnection: React.FC = () => {
   const handleProviderSelect = async (provider: EIP6963ProviderDetail) => {
     setShowProviderModal(false);
     try {
-      await connectEIP6963Provider(provider.info.uuid, '2222');
+      await connectEIP6963Provider(
+        provider.info.uuid,
+        `0x${Number(2222).toString(16)}`,
+      );
       // Update the connected provider information
       setConnectedProvider({
         icon: provider.info.icon,

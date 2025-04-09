@@ -123,12 +123,10 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
 
   // Connect wallet with provider selection
   const connectWallet = useCallback(async () => {
-    const chainId = '2222';
+    const chainId = `0x${Number(2222).toString(16)}`;
     // Refresh providers list first
     refreshProviders();
     const providers = walletStore.getProviders();
-
-    console.log({ providers });
 
     if (providers.length === 0) {
       // Fallback to MetaMask if no EIP-6963 providers
