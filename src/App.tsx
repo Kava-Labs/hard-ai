@@ -5,6 +5,7 @@ import { ChatInterface } from './ChatInterface';
 import { useIsMobileLayout, SearchHistoryModal, SideBar } from 'lib-kava-ai';
 import hardAILogo from './assets/hardAILogo.svg';
 import {
+  getLiquidityPositionsForAddress,
   getQuoteExactInputSingle,
   swapExactInputSingle,
 } from './toolcalls/chain';
@@ -21,6 +22,12 @@ const sideBarLogo = <img src={hardAILogo} alt="Hard AI logo" height={18} />;
 //     '0x919C1c267BC06a7039e03fcc2eF738525769109c',
 //     '0xc86c7C0eFbd6A49B35E8714C5f59D99De09A225b',
 //     '1.00',
+//   ),
+// );
+
+// console.log(
+//   await getLiquidityPositionsForAddress(
+//     '0xC07918E451Ab77023a16Fa7515Dd60433A3c771D',
 //   ),
 // );
 

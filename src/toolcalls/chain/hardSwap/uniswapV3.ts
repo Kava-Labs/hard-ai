@@ -7,6 +7,10 @@ import { HARD_SWAP_POOL_ABI } from './hardSwapPool';
 import { QUOTER_V2_ABI, QUOTER_V2_CONTACT_ADDRESS } from './quoterV2';
 import { ethers } from 'ethers';
 import { SWAP_ROUTER_ABI, SWAP_ROUTER_CONTRACT_ADDRESS } from './swapRouter';
+import {
+  HARD_SWAP_POSITION_NFT_V1_ABI,
+  HARD_SWAP_POSITIONS_NFT_V1_CONTRACT_ADDRESS,
+} from './hardSwapPositionsNftV1';
 
 const provider = new ethers.JsonRpcProvider('https://evm.kava-rpc.com');
 
@@ -246,4 +250,128 @@ export async function swapExactInputSingle({
   const receipt = await tx.wait();
   console.log(`✅ Swap confirmed in block ${receipt.blockNumber}`);
   return receipt;
+}
+
+export async function getLiquidityPositionsForAddress(userAddress: string) {
+  let results = [];
+  const manager = new ethers.Contract(
+    HARD_SWAP_POSITIONS_NFT_V1_CONTRACT_ADDRESS,
+    HARD_SWAP_POSITION_NFT_V1_ABI,
+    provider,
+  );
+
+  const balance = await manager.balanceOf(userAddress);
+
+  for (let i = 0n; i < balance; i++) {
+    const tokenId = await manager.tokenOfOwnerByIndex(userAddress, i);
+    const positionInfo = await getPositionValueInUSD(tokenId, provider);
+
+    results.push({
+      ...positionInfo,
+      tokenId,
+    });
+  }
+
+  return results;
+}
+
+export async function getPositionValueInUSD(
+  tokenId: bigint,
+  provider: ethers.Provider,
+) {
+  const positionManager = new ethers.Contract(
+    HARD_SWAP_POSITIONS_NFT_V1_CONTRACT_ADDRESS,
+    HARD_SWAP_POSITION_NFT_V1_ABI,
+    provider,
+  );
+  const { token0, token1, fee, tickLower, tickUpper, liquidity } =
+    await positionManager.positions(tokenId);
+
+  const factory = new ethers.Contract(
+    HARD_SWAP_FACTORY_CONTRACT_ADDRESS,
+    HARD_SWAP_FACTORY_ABI,
+    provider,
+  );
+  const poolAddress = await factory.getPool(token0, token1, fee);
+
+  const pool = new ethers.Contract(poolAddress, HARD_SWAP_POOL_ABI, provider);
+  const { sqrtPriceX96, tick } = await pool.slot0();
+
+  const sqrtRatioX96 = BigInt(sqrtPriceX96);
+  const sqrtRatioAX96 = tickToSqrtPriceX96(Number(tickLower));
+  const sqrtRatioBX96 = tickToSqrtPriceX96(Number(tickUpper));
+
+  let amount0 = 0n;
+  let amount1 = 0n;
+
+  if (tick < tickLower) {
+    amount0 = getAmount0(liquidity, sqrtRatioAX96, sqrtRatioBX96);
+  } else if (tick < tickUpper) {
+    amount0 = getAmount0(liquidity, sqrtRatioX96, sqrtRatioBX96);
+    amount1 = getAmount1(liquidity, sqrtRatioAX96, sqrtRatioX96);
+  } else {
+    amount1 = getAmount1(liquidity, sqrtRatioAX96, sqrtRatioBX96);
+  }
+
+  // Get token decimals
+  const token0Contract = new ethers.Contract(token0, erc20ABI, provider);
+  const token1Contract = new ethers.Contract(token1, erc20ABI, provider);
+  const [dec0, dec1] = await Promise.all([
+    token0Contract.decimals(),
+    token1Contract.decimals(),
+  ]);
+
+  const amount0Float = Number(ethers.formatUnits(amount0, dec0));
+  const amount1Float = Number(ethers.formatUnits(amount1, dec1));
+
+  const [price0, price1] = await Promise.all([
+    getTokenUSDPrice(token0, dec0),
+    getTokenUSDPrice(token1, dec1),
+  ]);
+
+  const valueUSD = amount0Float * price0 + amount1Float * price1;
+
+  return {
+    token0,
+    token1,
+    amount0: amount0Float,
+    amount1: amount1Float,
+    valueUSD,
+  };
+}
+
+function tickToSqrtPriceX96(tick: number): bigint {
+  const sqrtRatio = Math.pow(1.0001, tick / 2);
+  const sqrtX96 = BigInt(Math.floor(sqrtRatio * 2 ** 96));
+  return sqrtX96;
+}
+
+function mulDiv(a: bigint, b: bigint, denominator: bigint): bigint {
+  return (a * b) / denominator;
+}
+
+function getAmount0(
+  liquidity: bigint,
+  sqrtRatioAX96: bigint,
+  sqrtRatioBX96: bigint,
+): bigint {
+  if (sqrtRatioAX96 > sqrtRatioBX96)
+    [sqrtRatioAX96, sqrtRatioBX96] = [sqrtRatioBX96, sqrtRatioAX96];
+  const numerator = liquidity << 96n;
+  const intermediate = mulDiv(
+    sqrtRatioBX96 - sqrtRatioAX96,
+    numerator,
+    sqrtRatioBX96,
+  );
+  return mulDiv(intermediate, 1n, sqrtRatioAX96);
+}
+
+function getAmount1(
+  liquidity: bigint,
+  sqrtRatioAX96: bigint,
+  sqrtRatioBX96: bigint,
+): bigint {
+  if (sqrtRatioAX96 > sqrtRatioBX96)
+    [sqrtRatioAX96, sqrtRatioBX96] = [sqrtRatioBX96, sqrtRatioAX96];
+  return mulDiv(liquidity, sqrtRatioBX96 - sqrtRatioAX96, 1n << 96n);
 }
