@@ -52,3 +52,9 @@ export type SearchableChatHistories = Record<string, SearchableChatHistory>;
 export type DisplayedWalletProviderInfo = Partial<
   Pick<EIP6963ProviderInfo, 'name' | 'icon'>
 >;
+
+export interface PromotedWallet {
+  name: string;
+  logo: string;
+  downloadUrl: string;
+}

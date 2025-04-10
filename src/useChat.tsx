@@ -93,25 +93,7 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
 
   const detectProviders = useCallback(async () => {
     refreshProviders();
-
-    const chainId = `0x${Number(2222).toString(16)}`;
-
-    const providers = walletStore.getProviders();
-
-    //  Automatically connect to the only provider
-    //  This speeds up the process for user's with only one wallet
-    //  They can bypass the wallet selection modal
-    if (providers.length === 1) {
-      await connectEIP6963Provider(providers[0].info.uuid, chainId);
-      return { singleProviderConnected: true };
-    } else {
-      //  Return providers so the user can select in the UI
-      return {
-        multipleProviders: true,
-        providers,
-      };
-    }
-  }, [connectEIP6963Provider, refreshProviders]);
+  }, [refreshProviders]);
 
   const disconnectWallet = useCallback(() => {
     walletStore.disconnectWallet();

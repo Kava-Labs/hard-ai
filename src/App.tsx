@@ -6,6 +6,7 @@ import { useIsMobileLayout, SearchHistoryModal, SideBar } from 'lib-kava-ai';
 import hardAILogo from './assets/hardAILogo.svg';
 import WalletModal from './WalletModal';
 import { EIP6963ProviderDetail } from './stores/walletStore';
+import { PROMOTED_WALLETS } from './utils/wallet';
 
 const sideBarLogo = <img src={hardAILogo} alt="Hard AI logo" height={18} />;
 
@@ -59,10 +60,8 @@ export const App = () => {
   } = useChat();
 
   const openWalletConnect = async () => {
-    const result = await detectProviders();
-    if (!result.singleProviderConnected) {
-      setIsWalletConnectOpen(true);
-    }
+    await detectProviders();
+    setIsWalletConnectOpen(true);
   };
 
   const closeWalletConnect = () => {
@@ -116,6 +115,7 @@ export const App = () => {
           onClose={closeWalletConnect}
           availableProviders={availableProviders}
           onSelectProvider={onProviderSelect}
+          promotedWallets={PROMOTED_WALLETS}
         />
       )}
     </div>

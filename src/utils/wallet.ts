@@ -1,5 +1,8 @@
 import { WalletStore, WalletTypes } from '../stores/walletStore';
 import { chainRegistry, ChainType } from '../toolcalls/chain';
+import metamaskLogo from '../assets/MetaMask-icon-fox.svg';
+import hotWalletLogo from '../assets/HOT Wallet Short.svg';
+import { PromotedWallet } from '../App';
 
 /**
  * Validates if the wallet is connected and compatible
@@ -45,3 +48,16 @@ export const formatWalletAddress = (address: string) => {
   if (!address) return '';
   return `${address.substring(0, 6)}...${address.substring(address.length - 4)}`;
 };
+
+export const PROMOTED_WALLETS: PromotedWallet[] = [
+  {
+    name: 'MetaMask',
+    logo: metamaskLogo,
+    downloadUrl: 'https://metamask.io/download/',
+  },
+  {
+    name: 'HOT Wallet',
+    logo: hotWalletLogo,
+    downloadUrl: 'https://hot-labs.org/extension/',
+  },
+];

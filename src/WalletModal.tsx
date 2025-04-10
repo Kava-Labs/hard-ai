@@ -3,22 +3,32 @@ import { EIP6963ProviderDetail } from './stores/walletStore';
 import styles from './WalletModal.module.css';
 import { ButtonIcon } from 'lib-kava-ai';
 import { X } from 'lucide-react';
-import metamaskLogo from './assets/MetaMask-icon-fox.svg';
-import hotWalletLogo from './assets/HOT Wallet Short.svg';
+import { PromotedWallet } from './types';
 
 interface WalletModalProps {
   onClose: () => void;
   availableProviders: EIP6963ProviderDetail[];
   onSelectProvider: (provider: EIP6963ProviderDetail) => void;
+  promotedWallets: PromotedWallet[];
 }
 
 const WalletModal: React.FC<WalletModalProps> = ({
   onClose,
   availableProviders,
   onSelectProvider,
+  promotedWallets,
 }) => {
   const hasProviders = availableProviders.length > 0;
   const modalRef = useRef<HTMLDivElement>(null);
+
+  //  If a user doesn't have one of the promoted wallets install, display it as a link
+  //  so they can download if they want
+  const missingPromotedWallets = promotedWallets.filter(
+    (promotedWallet) =>
+      !availableProviders.some((provider) =>
+        provider.info.name.includes(promotedWallet.name),
+      ),
+  );
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -50,56 +60,39 @@ const WalletModal: React.FC<WalletModalProps> = ({
         </div>
 
         <div className={styles.providersList}>
-          {hasProviders ? (
+          {hasProviders &&
             availableProviders.map((provider) => (
               <div
                 key={provider.info.uuid}
                 className={styles.walletOption}
                 onClick={() => onSelectProvider(provider)}
               >
-                {provider.info.icon && (
-                  <div className={styles.walletOptionIcon}>
-                    <img
-                      src={provider.info.icon}
-                      alt={`${provider.info.name} icon`}
-                    />
-                  </div>
-                )}
+                <div className={styles.walletOptionIcon}>
+                  <img
+                    src={provider.info.icon}
+                    alt={`${provider.info.name} icon`}
+                  />
+                </div>
                 <div className={styles.walletName}>{provider.info.name}</div>
               </div>
-            ))
-          ) : (
-            <div>
-              <a
-                href="https://metamask.io/download/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className={styles.walletLink}
-              >
-                <div className={styles.walletOption}>
-                  <div className={styles.walletOptionIcon}>
-                    <img src={metamaskLogo} alt="MetaMask logo" />
-                  </div>
-                  <div className={styles.walletName}>MetaMask</div>
-                  <div className={styles.getButton}>Get</div>
+            ))}
+          {missingPromotedWallets.map((wallet) => (
+            <a
+              key={wallet.name}
+              href={wallet.downloadUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={styles.walletLink}
+            >
+              <div className={styles.walletOption}>
+                <div className={styles.walletOptionIcon}>
+                  <img src={wallet.logo} alt={`${wallet.name} logo`} />
                 </div>
-              </a>
-              <a
-                href="https://hot-labs.org/extension/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className={styles.walletLink}
-              >
-                <div className={styles.walletOption}>
-                  <div className={styles.walletOptionIcon}>
-                    <img src={hotWalletLogo} alt="HotWallet logo" />
-                  </div>
-                  <div className={styles.walletName}>HOT Wallet</div>
-                  <div className={styles.getButton}>Get</div>
-                </div>
-              </a>
-            </div>
-          )}
+                <div className={styles.walletName}>{wallet.name}</div>
+                <div className={styles.getButton}>Get</div>
+              </div>
+            </a>
+          ))}
         </div>
       </div>
     </div>
