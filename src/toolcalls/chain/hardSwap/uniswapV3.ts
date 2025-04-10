@@ -236,6 +236,8 @@ export async function swapExactInputSingle({
     sqrtPriceLimitX96: 0n,
   };
 
+  // for kava set the value to amountInParsed and the wrapping will happen automatically
+  // const tx = await router.exactInputSingle(swapParams, {value: amountInParsed});
   const tx = await router.exactInputSingle(swapParams);
 
   console.log(
