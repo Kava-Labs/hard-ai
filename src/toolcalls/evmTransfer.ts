@@ -214,7 +214,9 @@ export class EvmTransferMessage
           method: 'eth_sendTransaction',
           params: [
             {
-              ...txParams,
+              to: txParams.to,
+              value: txParams.value,
+              data: txParams.data,
               from: sendingAddress,
               gasPrice: '0x4a817c800',
               gas: '0x16120',
