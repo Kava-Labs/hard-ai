@@ -14,6 +14,7 @@ import {
 
 import { Token } from '@uniswap/sdk-core';
 import { Pool, Position } from '@uniswap/v3-sdk';
+import { fetchHardSwapPools } from '../../../api/fetchHardSwapPools';
 
 const provider = new ethers.JsonRpcProvider('https://evm.kava-rpc.com');
 const FEE_TIERS = [0, 100, 200, 300, 400, 500, 3000, 10000];
@@ -59,8 +60,8 @@ export async function getPoolTVL(poolAddress: string): Promise<number> {
   console.log(token0Addr, token1Addr);
 
   const [token0PriceUSD, token1PriceUSD] = await Promise.all([
-    getTokenUSDPrice(token0Addr, dec0),
-    getTokenUSDPrice(token1Addr, dec1),
+    getTokenUSDPrice(token0Addr),
+    getTokenUSDPrice(token1Addr),
   ]);
 
   const tvl = token0Amount * token0PriceUSD + token1Amount * token1PriceUSD;
@@ -74,34 +75,37 @@ export async function getPoolTVL(poolAddress: string): Promise<number> {
 
 export async function getTokenUSDPrice(
   tokenContractAddress: string,
-  decimals: number,
 ): Promise<number> {
-  const USDT_STABLE_COIN_CONTRACT =
-    '0x919C1c267BC06a7039e03fcc2eF738525769109c';
-  if (tokenContractAddress === USDT_STABLE_COIN_CONTRACT) return 1;
-  const iface = new ethers.Interface(QUOTER_V2_ABI);
+  // https:api.coingecko.com/api/v3/simple/price?ids=wagmi-2&vs_currencies=usd
 
-  const data = iface.encodeFunctionData('quoteExactInputSingle', [
-    {
-      tokenIn: tokenContractAddress,
-      tokenOut: USDT_STABLE_COIN_CONTRACT,
-      amountIn: ethers.parseUnits('1.00', decimals),
-      fee: 0n,
-      sqrtPriceLimitX96: 0n,
-    },
-  ]);
+  const pools = await fetchHardSwapPools();
+  let coinGeckoSymbol: string = '';
+  for (const pool of pools) {
+    if (pool.token0 === tokenContractAddress) {
+      coinGeckoSymbol = pool.coinGeckoId0;
+    }
+    if (pool.token1 === tokenContractAddress) {
+      coinGeckoSymbol = pool.coinGeckoId1;
+    }
+  }
 
-  const result = await provider.call({
-    to: QUOTER_V2_CONTACT_ADDRESS,
-    data: data,
-  });
+  if (!coinGeckoSymbol) {
+    throw new Error(
+      `failed to find pool for contract address: ${tokenContractAddress}`,
+    );
+  }
 
-  const [amountOut] = iface.decodeFunctionResult(
-    'quoteExactInputSingle',
-    result,
+  const res = await fetch(
+    `https:api.coingecko.com/api/v3/simple/price?ids=${coinGeckoSymbol}&vs_currencies=usd`,
   );
 
-  return Number(ethers.formatUnits(amountOut, 6));
+  const priceData = await res.json();
+  console.log(priceData, coinGeckoSymbol);
+  if (priceData[coinGeckoSymbol]) {
+    return Number(priceData[coinGeckoSymbol]['usd']);
+  } else {
+    throw new Error(`${coinGeckoSymbol} no longer exists`);
+  }
 }
 
 type QuoteExactInputSingleResults = {
@@ -353,8 +357,8 @@ export async function getPositionValueInUSD(tokenId: bigint) {
   const amount1 = parseFloat(pos.amount1.toFixed(Number(dec1)));
 
   const [price0, price1] = await Promise.all([
-    getTokenUSDPrice(token0, Number(dec0)),
-    getTokenUSDPrice(token1, Number(dec1)),
+    getTokenUSDPrice(token0),
+    getTokenUSDPrice(token1),
   ]);
 
   const tvlUsd = amount0 * price0 + amount1 * price1;

@@ -27,7 +27,7 @@ const sideBarLogo = <img src={hardAILogo} alt="Hard AI logo" height={18} />;
 //   ),
 // );
 
-// console.log(await getTokenUSDPrice('0x25e9171C98Fc1924Fa9415CF50750274F0664764', 6))
+// console.log(await getTokenUSDPrice('0x25e9171C98Fc1924Fa9415CF50750274F0664764'))
 
 console.log(
   await getLiquidityPositionsForAddress(
