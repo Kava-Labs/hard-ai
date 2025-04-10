@@ -16,8 +16,7 @@ import {
 const sideBarLogo = <img src={hardAILogo} alt="Hard AI logo" height={18} />;
 
 // usdt kava pool, should be around 4 million
-console.log(await getPoolTVL('0x4F7b88eC00529374Fb20A9E8f9263d6FA8A4C1C4'));
-
+// console.log(await getPoolTVL('0x4F7b88eC00529374Fb20A9E8f9263d6FA8A4C1C4'));
 
 // quote for swapping 1 USDT to Kava
 // console.log(
@@ -28,8 +27,7 @@ console.log(await getPoolTVL('0x4F7b88eC00529374Fb20A9E8f9263d6FA8A4C1C4'));
 //   ),
 // );
 
-
-console.log(await getTokenUSDPrice('0x25e9171C98Fc1924Fa9415CF50750274F0664764', 6))
+// console.log(await getTokenUSDPrice('0x25e9171C98Fc1924Fa9415CF50750274F0664764', 6))
 
 console.log(
   await getLiquidityPositionsForAddress(
