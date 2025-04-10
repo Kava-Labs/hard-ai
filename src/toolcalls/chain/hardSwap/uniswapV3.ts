@@ -12,7 +12,11 @@ import {
   HARD_SWAP_POSITIONS_NFT_V1_CONTRACT_ADDRESS,
 } from './hardSwapPositionsNftV1';
 
+import { Token } from '@uniswap/sdk-core';
+import { Pool, Position } from '@uniswap/v3-sdk';
+
 const provider = new ethers.JsonRpcProvider('https://evm.kava-rpc.com');
+const FEE_TIERS = [0, 100, 200, 300, 400, 500, 3000, 10000];
 
 export const getPool = async (
   tokenAContractAddress: string,
@@ -81,7 +85,7 @@ export async function getTokenUSDPrice(
     {
       tokenIn: tokenContractAddress,
       tokenOut: USDT_STABLE_COIN_CONTRACT,
-      amountIn: ethers.parseUnits('1', decimals),
+      amountIn: ethers.parseUnits('1.00', decimals),
       fee: 0n,
       sqrtPriceLimitX96: 0n,
     },
@@ -264,7 +268,7 @@ export async function getLiquidityPositionsForAddress(userAddress: string) {
 
   for (let i = 0n; i < balance; i++) {
     const tokenId = await manager.tokenOfOwnerByIndex(userAddress, i);
-    const positionInfo = await getPositionValueInUSD(tokenId, provider);
+    const positionInfo = await getPositionValueInUSD(tokenId);
 
     results.push({
       ...positionInfo,
@@ -275,17 +279,22 @@ export async function getLiquidityPositionsForAddress(userAddress: string) {
   return results;
 }
 
-export async function getPositionValueInUSD(
-  tokenId: bigint,
-  provider: ethers.Provider,
-) {
+export async function getPositionValueInUSD(tokenId: bigint) {
   const positionManager = new ethers.Contract(
     HARD_SWAP_POSITIONS_NFT_V1_CONTRACT_ADDRESS,
     HARD_SWAP_POSITION_NFT_V1_ABI,
     provider,
   );
-  const { token0, token1, fee, tickLower, tickUpper, liquidity } =
-    await positionManager.positions(tokenId);
+  const position = await positionManager.positions(tokenId);
+
+  const { token0, token1, fee, tickLower, tickUpper, liquidity } = position;
+
+  const token0Contract = new ethers.Contract(token0, erc20ABI, provider);
+  const token1Contract = new ethers.Contract(token1, erc20ABI, provider);
+  const [dec0, dec1] = await Promise.all([
+    token0Contract.decimals(),
+    token1Contract.decimals(),
+  ]);
 
   const factory = new ethers.Contract(
     HARD_SWAP_FACTORY_CONTRACT_ADDRESS,
@@ -294,84 +303,69 @@ export async function getPositionValueInUSD(
   );
   const poolAddress = await factory.getPool(token0, token1, fee);
 
-  const pool = new ethers.Contract(poolAddress, HARD_SWAP_POOL_ABI, provider);
-  const { sqrtPriceX96, tick } = await pool.slot0();
+  const poolContract = new ethers.Contract(
+    poolAddress,
+    HARD_SWAP_POOL_ABI,
+    provider,
+  );
+  const [slot0, poolLiquidity] = await Promise.all([
+    poolContract.slot0(),
+    poolContract.liquidity(),
+  ]);
 
-  const sqrtRatioX96 = BigInt(sqrtPriceX96);
-  const sqrtRatioAX96 = tickToSqrtPriceX96(Number(tickLower));
-  const sqrtRatioBX96 = tickToSqrtPriceX96(Number(tickUpper));
+  const sqrtPriceX96 = slot0.sqrtPriceX96;
+  const tickCurrent = slot0.tick;
 
-  let amount0 = 0n;
-  let amount1 = 0n;
+  // Create Uniswap SDK token instances
+  const tokenA = new Token(2222, token0, Number(dec0));
+  const tokenB = new Token(2222, token1, Number(dec1));
 
-  if (tick < tickLower) {
-    amount0 = getAmount0(liquidity, sqrtRatioAX96, sqrtRatioBX96);
-  } else if (tick < tickUpper) {
-    amount0 = getAmount0(liquidity, sqrtRatioX96, sqrtRatioBX96);
-    amount1 = getAmount1(liquidity, sqrtRatioAX96, sqrtRatioX96);
-  } else {
-    amount1 = getAmount1(liquidity, sqrtRatioAX96, sqrtRatioBX96);
+  let pos: Position | null = null;
+
+  for (const feeTier of FEE_TIERS) {
+    try {
+      const pool = new Pool(
+        tokenA.wrapped,
+        tokenB.wrapped,
+        feeTier,
+        sqrtPriceX96.toString(),
+        poolLiquidity.toString(),
+        Number(tickCurrent),
+      );
+
+      pos = new Position({
+        pool,
+        liquidity: liquidity.toString(),
+        tickLower: Number(tickLower),
+        tickUpper: Number(tickUpper),
+      });
+      break;
+    } catch (err) {
+      continue;
+    }
   }
 
-  // Get token decimals
-  const token0Contract = new ethers.Contract(token0, erc20ABI, provider);
-  const token1Contract = new ethers.Contract(token1, erc20ABI, provider);
-  const [dec0, dec1] = await Promise.all([
-    token0Contract.decimals(),
-    token1Contract.decimals(),
-  ]);
+  if (!pos) {
+    throw new Error(`failed to find valid Positions for `);
+  }
 
-  const amount0Float = Number(ethers.formatUnits(amount0, dec0));
-  const amount1Float = Number(ethers.formatUnits(amount1, dec1));
+  const amount0 = parseFloat(pos.amount0.toFixed(Number(dec0)));
+  const amount1 = parseFloat(pos.amount1.toFixed(Number(dec1)));
 
   const [price0, price1] = await Promise.all([
-    getTokenUSDPrice(token0, dec0),
-    getTokenUSDPrice(token1, dec1),
+    getTokenUSDPrice(token0, Number(dec0)),
+    getTokenUSDPrice(token1, Number(dec1)),
   ]);
 
-  const valueUSD = amount0Float * price0 + amount1Float * price1;
+  const tvlUsd = amount0 * price0 + amount1 * price1;
 
   return {
     token0,
     token1,
-    amount0: amount0Float,
-    amount1: amount1Float,
-    valueUSD,
+    amount0,
+    amount1,
+    price0,
+    price1,
+    valueUSD: tvlUsd,
   };
-}
-
-function tickToSqrtPriceX96(tick: number): bigint {
-  const sqrtRatio = Math.pow(1.0001, tick / 2);
-  const sqrtX96 = BigInt(Math.floor(sqrtRatio * 2 ** 96));
-  return sqrtX96;
-}
-
-function mulDiv(a: bigint, b: bigint, denominator: bigint): bigint {
-  return (a * b) / denominator;
-}
-
-function getAmount0(
-  liquidity: bigint,
-  sqrtRatioAX96: bigint,
-  sqrtRatioBX96: bigint,
-): bigint {
-  if (sqrtRatioAX96 > sqrtRatioBX96)
-    [sqrtRatioAX96, sqrtRatioBX96] = [sqrtRatioBX96, sqrtRatioAX96];
-  const numerator = liquidity << 96n;
-  const intermediate = mulDiv(
-    sqrtRatioBX96 - sqrtRatioAX96,
-    numerator,
-    sqrtRatioBX96,
-  );
-  return mulDiv(intermediate, 1n, sqrtRatioAX96);
-}
-
-function getAmount1(
-  liquidity: bigint,
-  sqrtRatioAX96: bigint,
-  sqrtRatioBX96: bigint,
-): bigint {
-  if (sqrtRatioAX96 > sqrtRatioBX96)
-    [sqrtRatioAX96, sqrtRatioBX96] = [sqrtRatioBX96, sqrtRatioAX96];
-  return mulDiv(liquidity, sqrtRatioBX96 - sqrtRatioAX96, 1n << 96n);
 }

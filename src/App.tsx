@@ -6,7 +6,9 @@ import { useIsMobileLayout, SearchHistoryModal, SideBar } from 'lib-kava-ai';
 import hardAILogo from './assets/hardAILogo.svg';
 import {
   getLiquidityPositionsForAddress,
+  getPoolTVL,
   getQuoteExactInputSingle,
+  getTokenUSDPrice,
   swapExactInputSingle,
 } from './toolcalls/chain';
 // import { getPoolTVL } from './toolcalls/chain';
@@ -14,7 +16,8 @@ import {
 const sideBarLogo = <img src={hardAILogo} alt="Hard AI logo" height={18} />;
 
 // usdt kava pool, should be around 4 million
-// console.log(await getPoolTVL('0x26216b7b7dE80399b601b8217DA272b82d4f34cb'));
+console.log(await getPoolTVL('0x4F7b88eC00529374Fb20A9E8f9263d6FA8A4C1C4'));
+
 
 // quote for swapping 1 USDT to Kava
 // console.log(
@@ -25,11 +28,14 @@ const sideBarLogo = <img src={hardAILogo} alt="Hard AI logo" height={18} />;
 //   ),
 // );
 
-// console.log(
-//   await getLiquidityPositionsForAddress(
-//     '0xC07918E451Ab77023a16Fa7515Dd60433A3c771D',
-//   ),
-// );
+
+console.log(await getTokenUSDPrice('0x25e9171C98Fc1924Fa9415CF50750274F0664764', 6))
+
+console.log(
+  await getLiquidityPositionsForAddress(
+    '0xC07918E451Ab77023a16Fa7515Dd60433A3c771D',
+  ),
+);
 
 export const App = () => {
   const [isMobileSideBarOpen, setIsMobileSideBarOpen] = useState(false);
