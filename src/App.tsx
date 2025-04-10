@@ -5,8 +5,8 @@ import { ChatInterface } from './ChatInterface';
 import { useIsMobileLayout, SearchHistoryModal, SideBar } from 'lib-kava-ai';
 import hardAILogo from './assets/hardAILogo.svg';
 import WalletModal from './WalletModal';
-import { EIP6963ProviderDetail } from './stores/walletStore';
 import { PROMOTED_WALLETS } from './utils/wallet';
+import { WalletProviderDetail } from './types';
 
 const sideBarLogo = <img src={hardAILogo} alt="Hard AI logo" height={18} />;
 
@@ -68,7 +68,7 @@ export const App = () => {
     setIsWalletConnectOpen(false);
   };
 
-  const onProviderSelect = async (provider: EIP6963ProviderDetail) => {
+  const onProviderSelect = async (provider: WalletProviderDetail) => {
     await handleProviderSelect(provider);
     closeWalletConnect();
   };

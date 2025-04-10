@@ -1,10 +1,6 @@
 import { describe, test, expect, beforeEach, afterEach, vi } from 'vitest';
-import {
-  EIP1193Provider,
-  walletStore,
-  WalletTypes,
-} from './stores/walletStore';
-import { EIP6963ProviderDetail } from './stores/walletStore';
+import { EIP1193Provider, walletStore, WalletTypes } from './walletStore';
+import { EIP6963ProviderDetail } from './walletStore';
 
 interface MockProviderOptions {
   name?: string;
@@ -110,7 +106,7 @@ async function simulateChainChanged(
   );
 }
 
-describe('Wallet Connection Integration', () => {
+describe('walletStore', () => {
   beforeEach(() => {
     walletStore.disconnectWallet();
     vi.useFakeTimers();
@@ -145,7 +141,6 @@ describe('Wallet Connection Integration', () => {
   });
 
   test('should connect to a selected provider', async () => {
-    // Create and announce a provider
     const metamask = mockEIP6963Provider({
       name: 'MetaMask',
       uuid: 'metamask-uuid',

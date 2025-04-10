@@ -6,6 +6,7 @@ import {
   ConversationHistories,
   ConversationHistory,
   SearchableChatHistories,
+  WalletProviderDetail,
 } from './types';
 import {
   deleteConversation,
@@ -68,7 +69,7 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
   const walletAddress = walletConnection.walletAddress;
 
   const [availableProviders, setAvailableProviders] = useState<
-    EIP6963ProviderDetail[]
+    WalletProviderDetail[]
   >([]);
 
   const refreshProviders = useCallback(() => {

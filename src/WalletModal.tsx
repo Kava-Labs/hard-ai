@@ -1,14 +1,13 @@
 import React, { useEffect, useRef } from 'react';
-import { EIP6963ProviderDetail } from './stores/walletStore';
 import styles from './WalletModal.module.css';
 import { ButtonIcon } from 'lib-kava-ai';
 import { X } from 'lucide-react';
-import { PromotedWallet } from './types';
+import { PromotedWallet, WalletProviderDetail } from './types';
 
 interface WalletModalProps {
   onClose: () => void;
-  availableProviders: EIP6963ProviderDetail[];
-  onSelectProvider: (provider: EIP6963ProviderDetail) => void;
+  availableProviders: WalletProviderDetail[];
+  onSelectProvider: (provider: WalletProviderDetail) => void;
   promotedWallets: PromotedWallet[];
 }
 
