@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { EIP6963ProviderDetail } from './stores/walletStore';
 import styles from './WalletModal.module.css';
 import { ButtonIcon } from 'lib-kava-ai';
@@ -18,9 +18,28 @@ const WalletModal: React.FC<WalletModalProps> = ({
   onSelectProvider,
 }) => {
   const hasProviders = availableProviders.length > 0;
+  const modalRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        modalRef.current &&
+        !modalRef.current.contains(event.target as Node)
+      ) {
+        onClose();
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [onClose]);
+
   return (
     <div className={styles.providerModalBackdrop}>
-      <div className={styles.providerModal}>
+      <div className={styles.providerModal} ref={modalRef}>
         <div className={styles.modalHeader}>
           <h3>{hasProviders ? 'Select a Wallet' : 'Get a Wallet'}</h3>
           <ButtonIcon
