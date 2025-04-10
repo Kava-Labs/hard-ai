@@ -101,6 +101,7 @@ export const App = () => {
         walletProviderInfo={walletProviderInfo}
         onConnectWalletClick={openWalletConnect}
         disconnectWallet={disconnectWallet}
+        availableProviderCount={availableProviders.length}
       />
       {isSearchHistoryOpen && searchableHistory && (
         <SearchHistoryModal

@@ -23,6 +23,7 @@ export interface ChatInterfaceProps {
   walletProviderInfo?: DisplayedWalletProviderInfo;
   onConnectWalletClick: () => void;
   disconnectWallet: () => void;
+  availableProviderCount: number;
 }
 
 export const ChatInterface = ({
@@ -38,6 +39,7 @@ export const ChatInterface = ({
   walletProviderInfo,
   onConnectWalletClick,
   disconnectWallet,
+  availableProviderCount,
 }: ChatInterfaceProps) => {
   const { isConversationStarted, isRequesting } = activeChat;
   const containerRef = useRef<HTMLDivElement>(null);
@@ -100,6 +102,7 @@ export const ChatInterface = ({
                     disconnectWallet={disconnectWallet}
                     icon={walletProviderInfo?.icon}
                     walletName={walletProviderInfo?.name}
+                    showSwitchWallet={availableProviderCount > 1}
                   />
                 )
               }

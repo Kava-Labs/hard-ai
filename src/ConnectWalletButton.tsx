@@ -8,6 +8,7 @@ interface ConnectWalletButtonProps {
   disconnectWallet: () => void;
   icon?: string;
   walletName?: string;
+  showSwitchWallet: boolean;
 }
 
 const ConnectWalletButton = ({
@@ -16,6 +17,7 @@ const ConnectWalletButton = ({
   disconnectWallet,
   icon,
   walletName,
+  showSwitchWallet,
 }: ConnectWalletButtonProps) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
@@ -68,9 +70,11 @@ const ConnectWalletButton = ({
           <div className={styles.dropdownItem} onClick={copyAddressToClipboard}>
             Copy Address
           </div>
-          <div className={styles.dropdownItem} onClick={onSwitchWalletClick}>
-            Switch Wallet
-          </div>
+          {showSwitchWallet && (
+            <div className={styles.dropdownItem} onClick={onSwitchWalletClick}>
+              Switch Wallet
+            </div>
+          )}
           <div className={styles.dropdownItem} onClick={onDisconnectClick}>
             Disconnect
           </div>
