@@ -14,10 +14,28 @@
   text-align: center;
   transition: background-color 0.2s, transform 0.1s;
   width: 15rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.8rem;
 }
 
 .walletButton:hover {
   background-color: var(--colors-accentTransparent);
+}
+
+.providerIcon {
+  width: 1.8rem;
+  height: 1.8rem;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.providerIconSmall {
+  width: 1.6rem;
+  height: 1.6rem;
+  object-fit: contain;
+  flex-shrink: 0;
 }
 
 .dropdown {
@@ -29,6 +47,17 @@
   text-align: center;
   width: 15rem;
   z-index: 10;
+}
+
+.providerInfo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.8rem;
+  padding: var(--spacing-sm);
+  color: var(--colors-textPrimary);
+  font-size: 1.4rem;
+  border-bottom: 1px solid var(--colors-bgQuaternary);
 }
 
 .dropdownItem {
@@ -47,10 +76,10 @@
   background-color: var(--colors-bgQuaternary);
 }
 
-.dropdownItem:nth-child(2) {
+.dropdownItem:last-child {
   color: var(--colors-accent);
 }
 
-.dropdownItem:nth-child(2):hover {
+.dropdownItem:last-child:hover {
   background-color: var(--colors-accentBorder);
 }

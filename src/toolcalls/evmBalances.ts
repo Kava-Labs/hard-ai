@@ -17,7 +17,7 @@ export class EvmBalancesQuery
   operationType = OperationType.QUERY;
   chainType = ChainType.EVM;
   walletMustMatchChainID = false;
-  needsWallet = [WalletTypes.METAMASK];
+  needsWallet = [WalletTypes.EIP6963];
 
   validate(params: EvmBalanceQueryParams, walletStore: WalletStore): boolean {
     validateWallet(walletStore, this.needsWallet);

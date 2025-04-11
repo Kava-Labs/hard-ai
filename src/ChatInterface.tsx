@@ -2,7 +2,7 @@ import { LandingContent } from './LandingContent';
 import { ChatInput } from './ChatInput';
 import { NavBar } from 'lib-kava-ai';
 import { ConversationWrapper } from './ConversationWrapper';
-import { ActiveChat, ChatMessage } from './types';
+import { ActiveChat, ChatMessage, DisplayedWalletProviderInfo } from './types';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { ToolCallRegistry } from './toolcalls/chain';
 import ConnectWalletButton from './ConnectWalletButton';
@@ -20,8 +20,10 @@ export interface ChatInterfaceProps {
   onMenuClick: () => void;
   styles: Record<string, string>;
   walletAddress: string;
-  connectWallet: () => Promise<void>;
+  walletProviderInfo?: DisplayedWalletProviderInfo;
+  onConnectWalletClick: () => void;
   disconnectWallet: () => void;
+  availableProviderCount: number;
 }
 
 export const ChatInterface = ({
@@ -34,8 +36,10 @@ export const ChatInterface = ({
   onMenuClick,
   styles,
   walletAddress,
-  connectWallet,
+  walletProviderInfo,
+  onConnectWalletClick,
   disconnectWallet,
+  availableProviderCount,
 }: ChatInterfaceProps) => {
   const { isConversationStarted, isRequesting } = activeChat;
   const containerRef = useRef<HTMLDivElement>(null);
@@ -80,6 +84,7 @@ export const ChatInterface = ({
       });
     }
   }, [shouldAutoScroll, scrollToBottom]);
+
   return (
     <div className={styles.content}>
       <div className={styles.chatview}>
@@ -92,9 +97,12 @@ export const ChatInterface = ({
               primaryControlComponent={
                 showWalletConnect && (
                   <ConnectWalletButton
-                    connectWallet={connectWallet}
-                    disconnectWallet={disconnectWallet}
                     walletAddress={walletAddress}
+                    handleConnectClick={onConnectWalletClick}
+                    disconnectWallet={disconnectWallet}
+                    icon={walletProviderInfo?.icon}
+                    walletName={walletProviderInfo?.name}
+                    showSwitchWallet={availableProviderCount > 1}
                   />
                 )
               }

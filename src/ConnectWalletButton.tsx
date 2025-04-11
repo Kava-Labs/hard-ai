@@ -4,14 +4,20 @@ import { formatWalletAddress } from './utils/wallet';
 
 interface ConnectWalletButtonProps {
   walletAddress: string;
-  connectWallet: () => Promise<void>;
+  handleConnectClick: () => void;
   disconnectWallet: () => void;
+  icon?: string;
+  walletName?: string;
+  showSwitchWallet: boolean;
 }
 
 const ConnectWalletButton = ({
   walletAddress,
-  connectWallet,
+  handleConnectClick,
   disconnectWallet,
+  icon,
+  walletName,
+  showSwitchWallet,
 }: ConnectWalletButtonProps) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
@@ -29,11 +35,18 @@ const ConnectWalletButton = ({
     setIsDropdownOpen(false);
   };
 
-  const onConnectClick = async () => {
+  const onSwitchWalletClick = () => {
+    handleConnectClick();
+    setIsDropdownOpen(false);
+  };
+
+  const onConnectClick = () => {
     if (!walletAddress) {
-      await connectWallet();
+      handleConnectClick();
     }
   };
+
+  const showWalletIcon = icon && walletAddress;
 
   return (
     <div
@@ -42,7 +55,14 @@ const ConnectWalletButton = ({
       onMouseLeave={() => setIsDropdownOpen(false)}
     >
       <button onClick={onConnectClick} className={styles.walletButton}>
-        {displayedButtonText}
+        {showWalletIcon && (
+          <img
+            src={icon}
+            alt={`${walletName}-icon`}
+            className={styles.providerIcon}
+          />
+        )}
+        <span>{displayedButtonText}</span>
       </button>
 
       {isDropdownOpen && (
@@ -50,6 +70,11 @@ const ConnectWalletButton = ({
           <div className={styles.dropdownItem} onClick={copyAddressToClipboard}>
             Copy Address
           </div>
+          {showSwitchWallet && (
+            <div className={styles.dropdownItem} onClick={onSwitchWalletClick}>
+              Switch Wallet
+            </div>
+          )}
           <div className={styles.dropdownItem} onClick={onDisconnectClick}>
             Disconnect
           </div>

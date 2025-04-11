@@ -4,6 +4,9 @@ import { useChat } from './useChat';
 import { ChatInterface } from './ChatInterface';
 import { useIsMobileLayout, SearchHistoryModal, SideBar } from 'lib-kava-ai';
 import hardAILogo from './assets/hardAILogo.svg';
+import WalletModal from './WalletModal';
+import { PROMOTED_WALLETS } from './utils/wallet';
+import { WalletProviderDetail } from './types';
 
 const sideBarLogo = <img src={hardAILogo} alt="Hard AI logo" height={18} />;
 
@@ -11,6 +14,7 @@ export const App = () => {
   const [isMobileSideBarOpen, setIsMobileSideBarOpen] = useState(false);
   const [isDesktopSideBarOpen, setIsDesktopSideBarOpen] = useState(true);
   const [isSearchHistoryOpen, setIsSearchHistoryOpen] = useState(false);
+  const [isWalletConnectOpen, setIsWalletConnectOpen] = useState(false);
 
   const onCloseSearchHistory = () => {
     setIsSearchHistoryOpen(false);
@@ -20,6 +24,7 @@ export const App = () => {
     await fetchSearchHistory();
     setIsSearchHistoryOpen(true);
   };
+
   const isMobileLayout = useIsMobileLayout();
 
   const onCloseSideBar = isMobileLayout
@@ -47,9 +52,26 @@ export const App = () => {
     fetchSearchHistory,
     toolCallRegistry,
     walletAddress,
-    connectWallet,
     disconnectWallet,
+    detectProviders,
+    handleProviderSelect,
+    availableProviders,
+    walletProviderInfo,
   } = useChat();
+
+  const openWalletConnect = async () => {
+    await detectProviders();
+    setIsWalletConnectOpen(true);
+  };
+
+  const closeWalletConnect = () => {
+    setIsWalletConnectOpen(false);
+  };
+
+  const onProviderSelect = async (provider: WalletProviderDetail) => {
+    await handleProviderSelect(provider);
+    closeWalletConnect();
+  };
 
   return (
     <div className={styles.app}>
@@ -75,14 +97,25 @@ export const App = () => {
         isSideBarOpen={isSideBarOpen}
         styles={styles}
         walletAddress={walletAddress}
-        connectWallet={connectWallet}
+        walletProviderInfo={walletProviderInfo}
+        onConnectWalletClick={openWalletConnect}
         disconnectWallet={disconnectWallet}
+        availableProviderCount={availableProviders.length}
       />
       {isSearchHistoryOpen && searchableHistory && (
         <SearchHistoryModal
           searchableHistory={searchableHistory}
           onSelectConversation={onSelectConversation}
           onCloseSearchHistory={onCloseSearchHistory}
+        />
+      )}
+
+      {isWalletConnectOpen && (
+        <WalletModal
+          onClose={closeWalletConnect}
+          availableProviders={availableProviders}
+          onSelectProvider={onProviderSelect}
+          promotedWallets={PROMOTED_WALLETS}
         />
       )}
     </div>

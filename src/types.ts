@@ -7,6 +7,10 @@ import type { MessageHistoryStore } from './stores/messageHistoryStore';
 import type { TextStreamStore } from 'lib-kava-ai';
 import OpenAI from 'openai/index';
 import { ToolCallStreamStore } from './stores/toolCallStreamStore';
+import {
+  EIP6963ProviderDetail,
+  EIP6963ProviderInfo,
+} from './stores/walletStore';
 
 export type ActiveChat = {
   id: string;
@@ -47,3 +51,15 @@ export type SearchableChatHistory = {
 
 //  type returned from getSearchableHistory
 export type SearchableChatHistories = Record<string, SearchableChatHistory>;
+
+export type DisplayedWalletProviderInfo = Partial<
+  Pick<EIP6963ProviderInfo, 'name' | 'icon'>
+>;
+
+export interface PromotedWallet {
+  name: string;
+  logo: string;
+  downloadUrl: string;
+}
+
+export type WalletProviderDetail = EIP6963ProviderDetail;

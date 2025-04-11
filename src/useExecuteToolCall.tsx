@@ -69,11 +69,11 @@ export const useExecuteToolCall = (
         }
       }
 
-      // if the chain id in metamask doesn't match the chain id we need to be on
+      // if the chain id in the wallet doesn't match the chain id we need to be on
       // start the network switching process
       if (
         operation.walletMustMatchChainID &&
-        walletStore.getSnapshot().walletType === WalletTypes.METAMASK &&
+        walletStore.getSnapshot().walletType === WalletTypes.EIP6963 &&
         walletStore.getSnapshot().walletChainId !== chainId
       ) {
         switch (operation.chainType) {
@@ -89,13 +89,13 @@ export const useExecuteToolCall = (
                 `0x${chainRegistry[ChainType.EVM][evmChainName].chainID.toString(16)}` !==
                 walletStore.getSnapshot().walletChainId
               ) {
-                await walletStore.metamaskSwitchNetwork(evmChainName);
+                await walletStore.switchNetwork(evmChainName);
               }
             }
             break;
           }
           default: {
-            await walletStore.metamaskSwitchNetwork(chainName);
+            await walletStore.switchNetwork(chainName);
           }
         }
       }
@@ -106,6 +106,7 @@ export const useExecuteToolCall = (
         throw new Error('Invalid parameters for operation');
       }
       setIsOperationValidated(true);
+
       if ('buildTransaction' in operation) {
         return (operation as ChainToolCallMessage<unknown>).buildTransaction(
           params,

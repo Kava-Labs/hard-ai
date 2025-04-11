@@ -6,6 +6,7 @@ import {
   ConversationHistories,
   ConversationHistory,
   SearchableChatHistories,
+  WalletProviderDetail,
 } from './types';
 import {
   deleteConversation,
@@ -23,7 +24,11 @@ import { doChat, generateConversationTitle } from './api/chat';
 import { initializeToolCallRegistry } from './toolcalls/chain';
 import { ToolCallStreamStore } from './stores/toolCallStreamStore';
 import { useExecuteToolCall } from './useExecuteToolCall';
-import { WalletStore, WalletTypes } from './stores/walletStore';
+import {
+  WalletTypes,
+  EIP6963ProviderDetail,
+  walletStore,
+} from './stores/walletStore';
 import { defaultSystemPrompt } from './toolcalls/chain/prompts';
 import { useWalletStore } from './stores/walletStore/useWalletStore';
 
@@ -60,19 +65,56 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
 
   const [toolCallRegistry] = useState(() => initializeToolCallRegistry());
 
-  const [walletStore] = useState(() => new WalletStore());
-  const walletAddress = useWalletStore(walletStore).walletAddress;
+  const walletConnection = useWalletStore(walletStore);
+  const walletAddress = walletConnection.walletAddress;
 
-  const connectWallet = useCallback(async () => {
-    await walletStore.connectWallet({
-      chainId: '2222',
-      walletType: WalletTypes.METAMASK,
-    });
-  }, [walletStore]);
+  const [availableProviders, setAvailableProviders] = useState<
+    WalletProviderDetail[]
+  >([]);
+
+  const refreshProviders = useCallback(() => {
+    setAvailableProviders(walletStore.getProviders());
+  }, []);
+
+  const connectEIP6963Provider = useCallback(
+    async (providerId: string, chainId?: string) => {
+      try {
+        await walletStore.connectWallet({
+          chainId,
+          walletType: WalletTypes.EIP6963,
+          providerId,
+        });
+      } catch (error) {
+        console.error('Failed to connect to wallet provider:', error);
+        throw error;
+      }
+    },
+    [],
+  );
+
+  const detectProviders = useCallback(async () => {
+    refreshProviders();
+  }, [refreshProviders]);
 
   const disconnectWallet = useCallback(() => {
     walletStore.disconnectWallet();
-  }, [walletStore]);
+  }, []);
+
+  const handleProviderSelect = useCallback(
+    async (provider: EIP6963ProviderDetail) => {
+      try {
+        await connectEIP6963Provider(
+          provider.info.uuid,
+          `0x${Number(2222).toString(16)}`,
+        );
+      } catch (err) {
+        console.error(
+          `Failed to connect to ${provider.info.name}: ${(err as Error).message}`,
+        );
+      }
+    },
+    [connectEIP6963Provider],
+  );
 
   const setIsOperationValidated = useCallback(
     (isOperationValidated: boolean) => {
@@ -283,8 +325,13 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
     });
   }, [fetchConversations]);
 
-  return useMemo(
-    () => ({
+  return useMemo(() => {
+    const walletProviderInfo =
+      walletConnection.isWalletConnected && walletConnection.rdns
+        ? availableProviders.find((p) => p.info.rdns === walletConnection.rdns)
+            ?.info
+        : undefined;
+    return {
       activeChat,
       conversationHistories,
       handleNewChat,
@@ -297,23 +344,28 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
       fetchSearchHistory,
       toolCallRegistry,
       walletAddress,
-      connectWallet,
+      detectProviders,
+      handleProviderSelect,
       disconnectWallet,
-    }),
-    [
-      activeChat,
-      conversationHistories,
-      handleNewChat,
-      handleChatCompletion,
-      handleCancel,
-      onSelectConversation,
-      onDeleteConversation,
-      onUpdateConversationTitle,
-      searchableHistory,
-      toolCallRegistry,
-      walletAddress,
-      connectWallet,
-      disconnectWallet,
-    ],
-  );
+      availableProviders,
+      walletProviderInfo,
+    };
+  }, [
+    walletConnection,
+    availableProviders,
+    activeChat,
+    conversationHistories,
+    handleNewChat,
+    handleChatCompletion,
+    handleCancel,
+    onSelectConversation,
+    onDeleteConversation,
+    onUpdateConversationTitle,
+    searchableHistory,
+    toolCallRegistry,
+    walletAddress,
+    detectProviders,
+    handleProviderSelect,
+    disconnectWallet,
+  ]);
 };
