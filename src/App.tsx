@@ -14,7 +14,6 @@ export const App = () => {
   const [isMobileSideBarOpen, setIsMobileSideBarOpen] = useState(false);
   const [isDesktopSideBarOpen, setIsDesktopSideBarOpen] = useState(true);
   const [isSearchHistoryOpen, setIsSearchHistoryOpen] = useState(false);
-  const [isWalletConnectOpen, setIsWalletConnectOpen] = useState(false);
 
   const onCloseSearchHistory = () => {
     setIsSearchHistoryOpen(false);
@@ -57,20 +56,23 @@ export const App = () => {
     handleProviderSelect,
     availableProviders,
     walletProviderInfo,
+    openWalletConnectModal,
+    closeWalletConnectModal,
+    isWalletConnectOpen,
   } = useChat();
 
   const openWalletConnect = async () => {
     await detectProviders();
-    setIsWalletConnectOpen(true);
+    openWalletConnectModal();
   };
 
   const closeWalletConnect = () => {
-    setIsWalletConnectOpen(false);
+    closeWalletConnectModal();
   };
 
   const onProviderSelect = async (provider: WalletProviderDetail) => {
     await handleProviderSelect(provider);
-    closeWalletConnect();
+    closeWalletConnectModal();
   };
 
   return (

@@ -46,6 +46,13 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
   const [conversationHistories, setConversationHistories] =
     useState<ConversationHistories | null>(null);
 
+  const [isWalletConnectOpen, setIsWalletConnectOpen] = useState(false);
+
+  const openWalletConnectModal = () => {
+    refreshProviders();
+    setIsWalletConnectOpen(true);
+  };
+
   // **********
   const [activeChat, setActiveChat] = useState<ActiveChat>({
     id: uuidv4(), // add uuid v4 for conversation id
@@ -126,12 +133,20 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
     [],
   );
 
-  const { executeOperation } = useExecuteToolCall(
+  const { executeOperation, handleModalClose } = useExecuteToolCall(
     toolCallRegistry,
     walletStore,
     activeChat.isOperationValidated,
     setIsOperationValidated,
+    openWalletConnectModal,
   );
+
+  const closeWalletConnectModal = useCallback(() => {
+    setIsWalletConnectOpen(false);
+    if (handleModalClose) {
+      handleModalClose();
+    }
+  }, [handleModalClose]);
 
   const fetchConversations = useCallback(() => {
     getAllConversations()
@@ -349,9 +364,13 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
       disconnectWallet,
       availableProviders,
       walletProviderInfo,
+      isWalletConnectOpen,
+      openWalletConnectModal,
+      closeWalletConnectModal,
     };
   }, [
-    walletConnection,
+    walletConnection.isWalletConnected,
+    walletConnection.rdns,
     availableProviders,
     activeChat,
     conversationHistories,
@@ -367,5 +386,8 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
     detectProviders,
     handleProviderSelect,
     disconnectWallet,
+    isWalletConnectOpen,
+    openWalletConnectModal,
+    closeWalletConnectModal,
   ]);
 };
