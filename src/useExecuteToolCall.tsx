@@ -45,111 +45,115 @@ export const useExecuteToolCall = (
   /**
    * Helper function to complete the operation after wallet connection is established
    */
-  const completeOperation = async (
-    operation: ChainToolCallOperation<unknown>,
-    params: unknown,
-    chainName: string,
-    chainId: string,
-    walletStore: WalletStore,
-  ) => {
-    if (
-      operation.walletMustMatchChainID &&
-      walletStore.getSnapshot().walletType === WalletTypes.EIP6963 &&
-      walletStore.getSnapshot().walletChainId !== chainId
-    ) {
-      switch (operation.chainType) {
-        case ChainType.COSMOS: {
-          // for cosmos chains using metamask
-          // get the evmChainName and use that to find the chainID we are supposed to be on
-          // if those don't match we can then switch to the correct evm network
-          const { evmChainName } = chainRegistry[operation.chainType][
-            chainName
-          ] as CosmosChainConfig;
-          if (evmChainName) {
-            if (
-              `0x${chainRegistry[ChainType.EVM][evmChainName].chainID.toString(16)}` !==
-              walletStore.getSnapshot().walletChainId
-            ) {
-              await walletStore.switchNetwork(evmChainName);
+  const completeOperation = useCallback(
+    async (
+      operation: ChainToolCallOperation<unknown>,
+      params: unknown,
+      chainName: string,
+      chainId: string,
+      walletStore: WalletStore,
+    ) => {
+      if (
+        operation.walletMustMatchChainID &&
+        walletStore.getSnapshot().walletType === WalletTypes.EIP6963 &&
+        walletStore.getSnapshot().walletChainId !== chainId
+      ) {
+        switch (operation.chainType) {
+          case ChainType.COSMOS: {
+            // for cosmos chains using metamask
+            // get the evmChainName and use that to find the chainID we are supposed to be on
+            // if those don't match we can then switch to the correct evm network
+            const { evmChainName } = chainRegistry[operation.chainType][
+              chainName
+            ] as CosmosChainConfig;
+            if (evmChainName) {
+              if (
+                `0x${chainRegistry[ChainType.EVM][evmChainName].chainID.toString(16)}` !==
+                walletStore.getSnapshot().walletChainId
+              ) {
+                await walletStore.switchNetwork(evmChainName);
+              }
             }
+            break;
           }
-          break;
-        }
-        default: {
-          await walletStore.switchNetwork(chainName);
+          default: {
+            await walletStore.switchNetwork(chainName);
+          }
         }
       }
-    }
 
-    const validatedParams = await operation.validate(params, walletStore);
+      const validatedParams = await operation.validate(params, walletStore);
 
-    if (!validatedParams) {
-      throw new Error('Invalid parameters for operation');
-    }
-    setIsOperationValidated(true);
+      if (!validatedParams) {
+        throw new Error('Invalid parameters for operation');
+      }
+      setIsOperationValidated(true);
 
-    if ('buildTransaction' in operation) {
-      return (operation as ChainToolCallMessage<unknown>).buildTransaction(
-        params,
-        walletStore,
-      );
-    } else if ('executeQuery' in operation) {
-      return (operation as ChainToolCallQuery<unknown>).executeQuery(
-        params,
-        walletStore,
-      );
-    }
+      if ('buildTransaction' in operation) {
+        return (operation as ChainToolCallMessage<unknown>).buildTransaction(
+          params,
+          walletStore,
+        );
+      } else if ('executeQuery' in operation) {
+        return (operation as ChainToolCallQuery<unknown>).executeQuery(
+          params,
+          walletStore,
+        );
+      }
 
-    throw new Error('Invalid operation type');
-  };
+      throw new Error('Invalid operation type');
+    },
+    [setIsOperationValidated], // Add dependencies here
+  );
 
   /**
    * Creates a promise that resolves when the wallet connects or rejects on user cancellation/timeout
    */
-  const waitForWalletConnection = async (
-    operation: ChainToolCallOperation<unknown>,
-  ) => {
-    return new Promise((resolve, reject) => {
-      // Store the reject function so we can call it if modal is closed
-      modalRef.current.rejectConnection = reject;
+  const waitForWalletConnection = useCallback(
+    async (operation: ChainToolCallOperation<unknown>) => {
+      return new Promise((resolve, reject) => {
+        // Store the reject function so we can call it if modal is closed
+        modalRef.current.rejectConnection = reject;
 
-      const unsubscribe = walletStore.subscribe(() => {
-        if (
-          operation.needsWallet &&
-          Array.isArray(operation.needsWallet) &&
-          operation.needsWallet.includes(walletStore.getSnapshot().walletType)
-        ) {
+        const unsubscribe = walletStore.subscribe(() => {
+          if (
+            operation.needsWallet &&
+            Array.isArray(operation.needsWallet) &&
+            operation.needsWallet.includes(walletStore.getSnapshot().walletType)
+          ) {
+            modalRef.current.isOpen = false;
+            modalRef.current.rejectConnection = null;
+            unsubscribe();
+            resolve(true);
+          }
+        });
+
+        // The user has 5 minutes to connect (as a fallback)
+        const timeoutId = setTimeout(() => {
+          unsubscribe();
           modalRef.current.isOpen = false;
           modalRef.current.rejectConnection = null;
+          reject(new Error('Wallet connection timed out'));
+        }, 300000);
+
+        // Cleanup function
+        const cleanup = () => {
+          clearTimeout(timeoutId);
           unsubscribe();
-          resolve(true);
-        }
+        };
+
+        // Store cleanup function to be called on promise resolution or rejection
+        (async () => {
+          try {
+            await Promise.resolve();
+          } finally {
+            cleanup();
+          }
+        })();
       });
-
-      // The user has 5 minutes to connect (as a fallback)
-      const timeoutId = setTimeout(() => {
-        unsubscribe();
-        modalRef.current.isOpen = false;
-        modalRef.current.rejectConnection = null;
-        reject(new Error('Wallet connection timed out'));
-      }, 300000);
-
-      // Cleanup function
-      const cleanup = () => {
-        clearTimeout(timeoutId);
-        unsubscribe();
-      };
-
-      // Store cleanup function to be called on promise resolution or rejection
-      (async () => {
-        try {
-          await Promise.resolve();
-        } finally {
-          cleanup();
-        }
-      })();
-    });
-  };
+    },
+    [walletStore, modalRef],
+  );
 
   /**
    * Executes a chain operation with the provided parameters.
@@ -184,7 +188,6 @@ export const useExecuteToolCall = (
             : String(chain.chainID);
       }
 
-      // Check if wallet connection is needed and not already established
       if (
         operation.needsWallet &&
         Array.isArray(operation.needsWallet) &&
@@ -194,10 +197,8 @@ export const useExecuteToolCall = (
         openModal();
 
         try {
-          // Wait for wallet connection to be established
           await waitForWalletConnection(operation);
 
-          // Wallet is now connected, complete the operation
           return await completeOperation(
             operation,
             params,
@@ -212,7 +213,7 @@ export const useExecuteToolCall = (
         }
       }
 
-      //  If wallet already connected, proceed with operation directly
+      //  If the wallet is already connected, proceed
       return await completeOperation(
         operation,
         params,
