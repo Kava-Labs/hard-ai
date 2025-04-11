@@ -172,9 +172,7 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
       if (newActiveChat.messageHistoryStore.getSnapshot().length === 0) {
         newActiveChat.messageHistoryStore.addMessage({
           role: 'system',
-          content: defaultSystemPrompt.concat(
-            `Here is important information about the user: Wallet address: ${walletStore.getSnapshot().walletAddress} Connected Chain: ${parseInt(walletStore.getSnapshot().walletChainId, 16)}`,
-          ),
+          content: defaultSystemPrompt,
         });
       }
       // update isRequesting state and create a new abortController
