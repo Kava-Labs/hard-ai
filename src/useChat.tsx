@@ -72,9 +72,8 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
     WalletProviderDetail[]
   >([]);
 
-  const refreshProviders = useCallback(() => {
-    setAvailableProviders(walletStore.getProviders());
-  }, []);
+  const [isWalletModalOpen, setIsWalletModalOpen] = useState(false);
+  const [isWalletConnecting, setIsWalletConnecting] = useState(false);
 
   const connectEIP6963Provider = useCallback(
     async (providerId: string, chainId?: string) => {
@@ -92,9 +91,14 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
     [],
   );
 
-  const detectProviders = useCallback(async () => {
+  const refreshProviders = useCallback(() => {
+    setAvailableProviders(walletStore.getProviders());
+  }, []);
+
+  const openWalletConnectModal = useCallback(() => {
     refreshProviders();
-  }, [refreshProviders]);
+    setIsWalletModalOpen(true);
+  }, [refreshProviders, setIsWalletModalOpen]);
 
   const disconnectWallet = useCallback(() => {
     walletStore.disconnectWallet();
@@ -126,12 +130,22 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
     [],
   );
 
-  const { executeOperation } = useExecuteToolCall(
+  const { executeOperation, handleModalClose } = useExecuteToolCall(
     toolCallRegistry,
     walletStore,
     activeChat.isOperationValidated,
     setIsOperationValidated,
+    openWalletConnectModal,
+    isWalletConnecting,
+    setIsWalletConnecting,
   );
+
+  const closeWalletConnectModal = useCallback(() => {
+    setIsWalletModalOpen(false);
+    if (handleModalClose) {
+      handleModalClose();
+    }
+  }, [handleModalClose]);
 
   const fetchConversations = useCallback(() => {
     getAllConversations()
@@ -344,14 +358,17 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
       fetchSearchHistory,
       toolCallRegistry,
       walletAddress,
-      detectProviders,
       handleProviderSelect,
       disconnectWallet,
       availableProviders,
       walletProviderInfo,
+      isWalletModalOpen,
+      openWalletConnectModal,
+      closeWalletConnectModal,
     };
   }, [
-    walletConnection,
+    walletConnection.isWalletConnected,
+    walletConnection.rdns,
     availableProviders,
     activeChat,
     conversationHistories,
@@ -364,8 +381,10 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
     searchableHistory,
     toolCallRegistry,
     walletAddress,
-    detectProviders,
     handleProviderSelect,
     disconnectWallet,
+    isWalletModalOpen,
+    openWalletConnectModal,
+    closeWalletConnectModal,
   ]);
 };
