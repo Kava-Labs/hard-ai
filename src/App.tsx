@@ -52,7 +52,6 @@ export const App = () => {
     toolCallRegistry,
     walletAddress,
     disconnectWallet,
-    detectProviders,
     handleProviderSelect,
     availableProviders,
     walletProviderInfo,
@@ -61,8 +60,7 @@ export const App = () => {
     isWalletConnectOpen,
   } = useChat();
 
-  const openWalletConnect = async () => {
-    await detectProviders();
+  const openWalletConnect = () => {
     openWalletConnectModal();
   };
 

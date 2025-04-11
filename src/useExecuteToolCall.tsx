@@ -227,6 +227,7 @@ export const useExecuteToolCall = (
       walletStore,
       completeOperation,
       openModal,
+      waitForWalletConnection,
     ],
   );
 

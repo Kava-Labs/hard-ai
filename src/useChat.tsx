@@ -48,11 +48,6 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
 
   const [isWalletConnectOpen, setIsWalletConnectOpen] = useState(false);
 
-  const openWalletConnectModal = () => {
-    refreshProviders();
-    setIsWalletConnectOpen(true);
-  };
-
   // **********
   const [activeChat, setActiveChat] = useState<ActiveChat>({
     id: uuidv4(), // add uuid v4 for conversation id
@@ -79,10 +74,6 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
     WalletProviderDetail[]
   >([]);
 
-  const refreshProviders = useCallback(() => {
-    setAvailableProviders(walletStore.getProviders());
-  }, []);
-
   const connectEIP6963Provider = useCallback(
     async (providerId: string, chainId?: string) => {
       try {
@@ -99,9 +90,14 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
     [],
   );
 
-  const detectProviders = useCallback(async () => {
+  const refreshProviders = useCallback(() => {
+    setAvailableProviders(walletStore.getProviders());
+  }, []);
+
+  const openWalletConnectModal = useCallback(() => {
     refreshProviders();
-  }, [refreshProviders]);
+    setIsWalletConnectOpen(true);
+  }, [refreshProviders, setIsWalletConnectOpen]);
 
   const disconnectWallet = useCallback(() => {
     walletStore.disconnectWallet();
@@ -359,7 +355,6 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
       fetchSearchHistory,
       toolCallRegistry,
       walletAddress,
-      detectProviders,
       handleProviderSelect,
       disconnectWallet,
       availableProviders,
@@ -383,7 +378,6 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
     searchableHistory,
     toolCallRegistry,
     walletAddress,
-    detectProviders,
     handleProviderSelect,
     disconnectWallet,
     isWalletConnectOpen,
