@@ -1,7 +1,5 @@
 import { ethers } from 'ethers';
 import { HARD_SWAP_POSITION_NFT_V1_ABI } from './hardSwapPositionsNftV1';
-import { Token } from '@uniswap/sdk-core';
-import { Pool, Position } from '@uniswap/v3-sdk';
 import { ERC2O_ABI } from '../../abi';
 import { HARD_SWAP_POOL_ABI } from '../pools/hardSwapPool';
 import { getPoolTokenUSDPrice } from '../../../../api/tokenPrice';
@@ -75,11 +73,14 @@ export async function getPositionValueInUSD(tokenId: bigint) {
   const sqrtPriceX96 = slot0.sqrtPriceX96;
   const tickCurrent = slot0.tick;
 
+  const { Token } = await import('@uniswap/sdk-core');
+  const { Pool, Position } = await import('@uniswap/v3-sdk');
+
   // Create Uniswap SDK token instances
   const tokenA = new Token(2222, token0, Number(dec0));
   const tokenB = new Token(2222, token1, Number(dec1));
 
-  let pos: Position | null = null;
+  let pos = null;
 
   for (const feeTier of FEE_TIERS) {
     try {
