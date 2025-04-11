@@ -46,8 +46,6 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
   const [conversationHistories, setConversationHistories] =
     useState<ConversationHistories | null>(null);
 
-  const [isWalletConnectOpen, setIsWalletConnectOpen] = useState(false);
-
   // **********
   const [activeChat, setActiveChat] = useState<ActiveChat>({
     id: uuidv4(), // add uuid v4 for conversation id
@@ -74,6 +72,9 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
     WalletProviderDetail[]
   >([]);
 
+  const [isWalletModalOpen, setIsWalletModalOpen] = useState(false);
+  const [isWalletConnecting, setIsWalletConnecting] = useState(false);
+
   const connectEIP6963Provider = useCallback(
     async (providerId: string, chainId?: string) => {
       try {
@@ -96,8 +97,8 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
 
   const openWalletConnectModal = useCallback(() => {
     refreshProviders();
-    setIsWalletConnectOpen(true);
-  }, [refreshProviders, setIsWalletConnectOpen]);
+    setIsWalletModalOpen(true);
+  }, [refreshProviders, setIsWalletModalOpen]);
 
   const disconnectWallet = useCallback(() => {
     walletStore.disconnectWallet();
@@ -135,10 +136,12 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
     activeChat.isOperationValidated,
     setIsOperationValidated,
     openWalletConnectModal,
+    isWalletConnecting,
+    setIsWalletConnecting,
   );
 
   const closeWalletConnectModal = useCallback(() => {
-    setIsWalletConnectOpen(false);
+    setIsWalletModalOpen(false);
     if (handleModalClose) {
       handleModalClose();
     }
@@ -169,7 +172,9 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
       if (newActiveChat.messageHistoryStore.getSnapshot().length === 0) {
         newActiveChat.messageHistoryStore.addMessage({
           role: 'system',
-          content: defaultSystemPrompt,
+          content: defaultSystemPrompt.concat(
+            `Here is important information about the user: Wallet address: ${walletStore.getSnapshot().walletAddress} Connected Chain: ${parseInt(walletStore.getSnapshot().walletChainId, 16)}`,
+          ),
         });
       }
       // update isRequesting state and create a new abortController
@@ -359,7 +364,7 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
       disconnectWallet,
       availableProviders,
       walletProviderInfo,
-      isWalletConnectOpen,
+      isWalletModalOpen,
       openWalletConnectModal,
       closeWalletConnectModal,
     };
@@ -380,7 +385,7 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
     walletAddress,
     handleProviderSelect,
     disconnectWallet,
-    isWalletConnectOpen,
+    isWalletModalOpen,
     openWalletConnectModal,
     closeWalletConnectModal,
   ]);

@@ -57,7 +57,7 @@ export const App = () => {
     walletProviderInfo,
     openWalletConnectModal,
     closeWalletConnectModal,
-    isWalletConnectOpen,
+    isWalletModalOpen,
   } = useChat();
 
   const openWalletConnect = () => {
@@ -110,7 +110,7 @@ export const App = () => {
         />
       )}
 
-      {isWalletConnectOpen && (
+      {isWalletModalOpen && (
         <WalletModal
           onClose={closeWalletConnect}
           availableProviders={availableProviders}

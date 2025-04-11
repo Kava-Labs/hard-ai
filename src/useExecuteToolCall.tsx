@@ -1,4 +1,4 @@
-import { useCallback, useState, useRef } from 'react';
+import { useCallback, useRef } from 'react';
 import { WalletStore, WalletTypes } from './stores/walletStore';
 import {
   ChainNames,
@@ -18,9 +18,9 @@ export const useExecuteToolCall = (
   isOperationValidated: boolean,
   setIsOperationValidated: (isOperationValidated: boolean) => void,
   openWalletConnectModal: () => void,
+  isWalletConnecting: boolean,
+  setIsWalletConnecting: (isWalletConnecting: boolean) => void,
 ) => {
-  const [isWalletConnecting, setIsWalletConnecting] = useState(false);
-
   //  Reference to track connect wallet modal state
   const modalRef = useRef({
     isOpen: false,
@@ -226,6 +226,7 @@ export const useExecuteToolCall = (
       registry,
       walletStore,
       completeOperation,
+      setIsWalletConnecting,
       openModal,
       waitForWalletConnection,
     ],
@@ -235,6 +236,6 @@ export const useExecuteToolCall = (
     executeOperation,
     isOperationValidated,
     isWalletConnecting,
-    handleModalClose, // Export this so it can be attached to your modal's onClose event
+    handleModalClose,
   };
 };
