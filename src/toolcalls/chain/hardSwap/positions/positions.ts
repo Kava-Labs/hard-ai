@@ -14,7 +14,7 @@ const FEE_TIERS = [0, 100, 200, 300, 400, 500, 3000, 10000];
 const provider = new ethers.JsonRpcProvider('https://evm.kava-rpc.com');
 
 export async function getLiquidityPositionsForAddress(userAddress: string) {
-  let results = [];
+  const results = [];
   const manager = new ethers.Contract(
     HARD_SWAP_POSITIONS_NFT_V1_CONTRACT_ADDRESS,
     HARD_SWAP_POSITION_NFT_V1_ABI,
@@ -101,6 +101,7 @@ export async function getPositionValueInUSD(tokenId: bigint) {
       });
       break;
     } catch (err) {
+      console.debug(err);
       continue;
     }
   }
