@@ -1,4 +1,4 @@
-export const erc20ABI = [
+export const ERC2O_ABI = [
   {
     anonymous: false,
     inputs: [
