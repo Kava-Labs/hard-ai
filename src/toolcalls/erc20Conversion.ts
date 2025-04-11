@@ -14,9 +14,9 @@ import {
   WalletStore,
   WalletTypes,
 } from '../stores/walletStore';
-import { erc20ABI } from './erc20ABI';
 import { InProgressTxDisplay } from './components/InProgressTxDisplay';
 import { getCoinRecord, getERC20Record } from '../utils/helpers';
+import { ERC2O_ABI } from './chain/abi';
 
 interface ERC20ConvertParams {
   chainName: string;
@@ -139,7 +139,7 @@ export class ERC20ConversionMessage
     const { contractAddress } = getERC20Record(denom, erc20Contracts)!;
     const rpcProvider = new ethers.JsonRpcProvider(rpcUrls[0]);
 
-    const contract = new Contract(contractAddress, erc20ABI, rpcProvider);
+    const contract = new Contract(contractAddress, ERC2O_ABI, rpcProvider);
 
     const decimals = await contract.decimals();
 
@@ -228,7 +228,7 @@ export class ERC20ConversionMessage
 
     const contract = new ethers.Contract(
       contractAddress,
-      erc20ABI,
+      ERC2O_ABI,
       rpcProvider,
     );
 

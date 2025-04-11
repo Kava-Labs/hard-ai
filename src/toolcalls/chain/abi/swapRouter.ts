@@ -1,6 +1,3 @@
-export const SWAP_ROUTER_CONTRACT_ADDRESS =
-  '0x51c73ceAF73D03F9b26d93736Cd021F795586afd';
-
 export const SWAP_ROUTER_ABI = [
   {
     inputs: [

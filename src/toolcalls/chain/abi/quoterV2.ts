@@ -1,6 +1,3 @@
-export const QUOTER_V2_CONTACT_ADDRESS =
-  '0x9d097985C4ee2c9414b7d069897dDC3010D8070E';
-
 export const QUOTER_V2_ABI = [
   {
     inputs: [

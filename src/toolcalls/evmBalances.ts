@@ -1,8 +1,8 @@
 import { ChainToolCallQuery, ChainType, OperationType } from './chain';
-import { erc20ABI } from './erc20ABI';
 import { WalletStore, WalletTypes } from '../stores/walletStore';
 import { chainNameToolCallParam, chainRegistry, EVMChainConfig } from './chain';
 import { validateChain, validateWallet } from '../utils/wallet';
+import { ERC2O_ABI } from './chain/abi';
 
 type EvmBalanceQueryParams = {
   chainName: string;
@@ -61,7 +61,7 @@ export class EvmBalancesQuery
 
         const contract = new ethers.Contract(
           contractAddress,
-          erc20ABI,
+          ERC2O_ABI,
           rpcProvider,
         );
 

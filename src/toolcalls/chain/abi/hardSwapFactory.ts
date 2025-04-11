@@ -1,6 +1,3 @@
-export const HARD_SWAP_FACTORY_CONTRACT_ADDRESS =
-  '0xD6E4170C9097A5B5C85E8A39111bF37E47C90076';
-
 export const HARD_SWAP_FACTORY_ABI = [
   { inputs: [], stateMutability: 'nonpayable', type: 'constructor' },
   {

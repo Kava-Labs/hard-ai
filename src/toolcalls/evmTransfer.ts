@@ -1,4 +1,4 @@
-import { erc20ABI } from './erc20ABI';
+import { ERC2O_ABI } from './chain/abi';
 import { getERC20Record } from '../utils/helpers';
 import {
   ChainToolCallMessage,
@@ -98,7 +98,7 @@ export class EvmTransferMessage
 
     const contract = new ethers.Contract(
       erc20Record.contractAddress,
-      erc20ABI,
+      ERC2O_ABI,
       rpcProvider,
     );
 
@@ -191,7 +191,7 @@ export class EvmTransferMessage
 
         const contract = new ethers.Contract(
           contractAddress,
-          erc20ABI,
+          ERC2O_ABI,
           rpcProvider,
         );
         const decimals = await contract.decimals();

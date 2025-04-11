@@ -4,13 +4,8 @@ import { useChat } from './useChat';
 import { ChatInterface } from './ChatInterface';
 import { useIsMobileLayout, SearchHistoryModal, SideBar } from 'lib-kava-ai';
 import hardAILogo from './assets/hardAILogo.svg';
-import {
-  getLiquidityPositionsForAddress,
-  getPoolTVL,
-  getQuoteExactInputSingle,
-  getTokenUSDPrice,
-  swapExactInputSingle,
-} from './toolcalls/chain';
+import { swapExactInputSingle } from './toolcalls/chain/hardSwap';
+
 // import { getPoolTVL } from './toolcalls/chain';
 
 const sideBarLogo = <img src={hardAILogo} alt="Hard AI logo" height={18} />;
@@ -29,11 +24,11 @@ const sideBarLogo = <img src={hardAILogo} alt="Hard AI logo" height={18} />;
 
 // console.log(await getTokenUSDPrice('0x25e9171C98Fc1924Fa9415CF50750274F0664764'))
 
-console.log(
-  await getLiquidityPositionsForAddress(
-    '0xC07918E451Ab77023a16Fa7515Dd60433A3c771D',
-  ),
-);
+// console.log(
+//   await getLiquidityPositionsForAddress(
+//     '0xC07918E451Ab77023a16Fa7515Dd60433A3c771D',
+//   ),
+// );
 
 export const App = () => {
   const [isMobileSideBarOpen, setIsMobileSideBarOpen] = useState(false);
