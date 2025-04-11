@@ -3,4 +3,4 @@ export * from './msgs/messageTypes';
 export * from './chainsRegistry';
 export * from './chainToolCallOperation';
 export * from './ToolCallRegistry';
-export * from './hardSwap/uniswapV3';
+export * from './hardSwap';
