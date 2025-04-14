@@ -31,6 +31,7 @@ import {
 } from './stores/walletStore';
 import { defaultSystemPrompt } from './toolcalls/chain/prompts';
 import { useWalletStore } from './stores/walletStore/useWalletStore';
+import { getWalletBalances } from './utils/getWalletBalances';
 
 const activeChats: Record<string, ActiveChat> = {};
 
@@ -325,6 +326,27 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
     [],
   );
 
+  const logWalletBalances = useCallback(async () => {
+    if (walletConnection.isWalletConnected && walletConnection.provider) {
+      console.log(
+        'Fetching balances for wallet:',
+        walletConnection.walletAddress,
+      );
+      const balances = await getWalletBalances(
+        walletConnection.provider,
+        walletConnection.walletAddress,
+      );
+      console.log('Wallet balances:', balances);
+      return balances;
+    }
+    return null;
+  }, [
+    walletConnection.isWalletConnected,
+    walletConnection.provider,
+    walletConnection.walletAddress,
+  ]);
+
+  logWalletBalances();
   const [searchableHistory, setSearchableHistory] =
     useState<SearchableChatHistories | null>(null);
 
