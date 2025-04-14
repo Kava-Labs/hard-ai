@@ -33,7 +33,7 @@ interface AccountResult {
   tokens: Record<string, TokenBalance>;
 }
 
-interface ChainResult {
+interface ChainAccountsResult {
   chain: string;
   chainId: number | string;
   accounts: AccountResult[];
@@ -111,11 +111,11 @@ async function getTokenBalance(
 async function getEVMChainBalances(
   chainConfig: EVMChainConfig,
   walletAddresses: string[],
-): Promise<ChainResult> {
+): Promise<ChainAccountsResult> {
   try {
     const rpcProvider = new ethers.JsonRpcProvider(chainConfig.rpcUrls[0]);
 
-    const chainResult: ChainResult = {
+    const chainAccounts: ChainAccountsResult = {
       chain: chainConfig.name,
       chainId: chainConfig.chainID,
       accounts: [],
@@ -124,7 +124,7 @@ async function getEVMChainBalances(
     for (const address of walletAddresses) {
       const nativeBalance = await rpcProvider.getBalance(address);
 
-      const accountResult: AccountResult = {
+      const account: AccountResult = {
         address: address,
         nativeToken: {
           symbol: chainConfig.nativeToken,
@@ -137,7 +137,6 @@ async function getEVMChainBalances(
         tokens: {},
       };
 
-      //  Process tokens in parallel
       if (chainConfig.erc20Contracts) {
         const tokenPromises = Object.values(chainConfig.erc20Contracts).map(
           async (tokenInfo) => {
@@ -146,8 +145,10 @@ async function getEVMChainBalances(
               address,
               rpcProvider,
             );
+            const tokenName = tokenInfo.displayName;
+
             return {
-              tokenName: tokenInfo.displayName,
+              tokenName,
               balance,
             };
           },
@@ -156,13 +157,13 @@ async function getEVMChainBalances(
         const results = await Promise.all(tokenPromises);
 
         results.forEach((result) => {
-          accountResult.tokens[result.tokenName] = result.balance;
+          account.tokens[result.tokenName] = result.balance;
         });
       }
 
-      chainResult.accounts.push(accountResult);
+      chainAccounts.accounts.push(account);
     }
-    return chainResult;
+    return chainAccounts;
   } catch (error) {
     console.error(`Error processing ${chainConfig.name} chain:`, error);
     return {
@@ -192,7 +193,7 @@ async function getWalletAccounts(provider: EIP1193Provider): Promise<string[]> {
  */
 export async function getAccountWalletBalances(
   provider: EIP1193Provider,
-): Promise<ChainResult[]> {
+): Promise<ChainAccountsResult[]> {
   if (!provider) {
     return [];
   }
@@ -203,10 +204,10 @@ export async function getAccountWalletBalances(
     return [];
   }
 
-  const results: ChainResult[] = [];
+  const results: ChainAccountsResult[] = [];
 
   try {
-    const chainPromises: Promise<ChainResult>[] = [];
+    const chainPromises: Promise<ChainAccountsResult>[] = [];
 
     for (const chainConfig of Object.values(chainRegistry[ChainType.EVM])) {
       const evmConfig = chainConfig as EVMChainConfig;
@@ -225,7 +226,9 @@ export async function getAccountWalletBalances(
  * Format wallet balances as a string for inclusion in system prompt
  * With tokens displayed as a bulleted list on their own lines
  */
-export function formatWalletBalancesForPrompt(balances: ChainResult[]): string {
+export function formatWalletBalancesForPrompt(
+  balances: ChainAccountsResult[],
+): string {
   if (!balances || balances.length === 0) return '';
 
   let formattedText = '\n\nWallet Balance Information:';
