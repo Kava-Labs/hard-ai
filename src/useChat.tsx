@@ -120,11 +120,6 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
     [connectEIP6963Provider],
   );
 
-  const onProviderSelect = async (provider: WalletProviderDetail) => {
-    await handleProviderSelect(provider);
-    closeWalletConnectModal();
-  };
-
   const setIsOperationValidated = useCallback(
     (isOperationValidated: boolean) => {
       setActiveChat((prev) => {
@@ -151,6 +146,14 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
       handleModalClose();
     }
   }, [handleModalClose]);
+
+  const onProviderSelect = useCallback(
+    async (provider: WalletProviderDetail) => {
+      await handleProviderSelect(provider);
+      closeWalletConnectModal();
+    },
+    [handleProviderSelect, closeWalletConnectModal],
+  );
 
   const fetchConversations = useCallback(() => {
     getAllConversations()
