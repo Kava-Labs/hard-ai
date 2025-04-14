@@ -173,7 +173,6 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
     fetchConversations();
   }, [fetchConversations]);
 
-  // Replace logWalletBalances with getWalletBalancesForPrompt
   const getWalletBalancesForPrompt = useCallback(async () => {
     if (walletConnection.isWalletConnected && walletConnection.provider) {
       const balances = await getAccountWalletBalances(
@@ -197,7 +196,6 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
         abortController: new AbortController(),
       };
 
-      // Get wallet balances string for the system prompt
       const walletBalancesPrompt = await getWalletBalancesForPrompt();
 
       if (newActiveChat.messageHistoryStore.getSnapshot().length === 0) {
