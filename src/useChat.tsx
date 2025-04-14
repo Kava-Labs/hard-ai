@@ -203,6 +203,7 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
       if (newActiveChat.messageHistoryStore.getSnapshot().length === 0) {
         newActiveChat.messageHistoryStore.addMessage({
           role: 'system',
+          //  todo - formalize
           content: defaultSystemPrompt.concat(
             'Here is important info',
             walletBalancesPrompt,

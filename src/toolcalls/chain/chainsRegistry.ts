@@ -6,7 +6,6 @@ export enum ChainType {
 export type ERC20Record = {
   contractAddress: string;
   displayName: string;
-  decimals?: number;
 };
 
 export type CoinRecord = { denom: string; displayName: string };
@@ -58,12 +57,10 @@ export const chainRegistry: ChainRegistry = {
       nativeToken: 'KAVA',
       nativeTokenDecimals: 18,
       blockExplorerUrls: ['https://kavascan.com/'],
-
       erc20Contracts: {
         USDT: {
           contractAddress: '0x919C1c267BC06a7039e03fcc2eF738525769109c',
           displayName: 'USD₮',
-          decimals: 6,
         },
         WKAVA: {
           contractAddress: '0xc86c7C0eFbd6A49B35E8714C5f59D99De09A225b',
@@ -80,7 +77,6 @@ export const chainRegistry: ChainRegistry = {
         AXLUSDC: {
           contractAddress: '0xEB466342C4d449BC9f53A865D5Cb90586f405215',
           displayName: 'axlUSDC',
-          decimals: 6,
         },
         AXLDAI: {
           contractAddress: '0x5C7e299CF531eb66f2A1dF637d37AbB78e6200C7',
@@ -89,7 +85,6 @@ export const chainRegistry: ChainRegistry = {
         AXLUSDT: {
           contractAddress: '0x7f5373AE26c3E8FfC4c77b7255DF7eC1A9aF52a6',
           displayName: 'axlUSDT',
-          decimals: 6,
         },
         WATOM: {
           contractAddress: '0x15932E26f5BD4923d46a2b205191C4b5d5f43FE3',
@@ -114,7 +109,6 @@ export const chainRegistry: ChainRegistry = {
         WBTC: {
           contractAddress: '0xb5c4423a65B953905949548276654C96fcaE6992',
           displayName: 'wBTC',
-          decimals: 8,
         },
       },
     },
@@ -127,6 +121,10 @@ export const chainRegistry: ChainRegistry = {
       nativeTokenDecimals: 18,
       blockExplorerUrls: ['https://kavascan.com/'],
       erc20Contracts: {
+        WHARD: {
+          contractAddress: '0x25e9171C98Fc1924Fa9415CF50750274F0664764',
+          displayName: 'wHARD',
+        },
         USDT: {
           contractAddress: '0xaCF81e57CBd9aF95FaBbe53678FcB70B1dD1b7A1',
           displayName: 'USD₮',
@@ -134,6 +132,26 @@ export const chainRegistry: ChainRegistry = {
         WKAVA: {
           contractAddress: '0x70C79B608aBBC502c2F61f38E04190fB407BefCF',
           displayName: 'wKAVA',
+        },
+        AXLETH: {
+          contractAddress: '0x5d6D67a665C9F169B0f9436E05B11108C1606043',
+          displayName: 'axlETH',
+        },
+        AXLWBTC: {
+          contractAddress: '0x7d2Ee2914324d5D4dC33A5c295E720659D5F3fA7',
+          displayName: 'axlwBTC',
+        },
+        AXLUSDC: {
+          contractAddress: '0x7a5DBf8e6ac1F6aCCF14f5B4E88b21EAA04c983d',
+          displayName: 'axlUSDC',
+        },
+        AXLDAI: {
+          contractAddress: '0xAa03872057AD496Bd6f3eE85b85e1e4DABdb1a5d',
+          displayName: 'axlDAI',
+        },
+        AXLUSDT: {
+          contractAddress: '0xA637F4CECbA91Ad19075bA3d330cd95f694B1707',
+          displayName: 'axlUSDT',
         },
         WATOM: {
           contractAddress: '0x15932E26f5BD4923d46a2b205191C4b5d5f43FE3',
