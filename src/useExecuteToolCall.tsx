@@ -21,26 +21,31 @@ export const useExecuteToolCall = (
   isWalletConnecting: boolean,
   setIsWalletConnecting: (isWalletConnecting: boolean) => void,
 ) => {
-  //  Reference to track connect wallet modal state
-  const modalRef = useRef({
-    isOpen: false,
-    rejectConnection: null as ((e: Error) => void) | null,
+  //  Reference to track connection promise state
+  const connectionRef = useRef<{
+    pendingReject: ((reason?: Error) => void) | null;
+    cleanupFn: (() => void) | null;
+  }>({
+    pendingReject: null,
+    cleanupFn: null,
   });
 
   const handleModalClose = useCallback(() => {
-    if (modalRef.current.isOpen && modalRef.current.rejectConnection) {
-      modalRef.current.isOpen = false;
-      modalRef.current.rejectConnection(
+    //  Only reject if we're in the connecting state and have a rejection function
+    if (isWalletConnecting && connectionRef.current.pendingReject) {
+      if (connectionRef.current.cleanupFn) {
+        connectionRef.current.cleanupFn();
+        connectionRef.current.cleanupFn = null;
+      }
+
+      connectionRef.current.pendingReject(
         new Error('Wallet connection rejected by user'),
       );
-      modalRef.current.rejectConnection = null;
-    }
-  }, []);
+      connectionRef.current.pendingReject = null;
 
-  const openModal = useCallback(() => {
-    modalRef.current.isOpen = true;
-    openWalletConnectModal();
-  }, [openWalletConnectModal]);
+      setIsWalletConnecting(false);
+    }
+  }, [isWalletConnecting, setIsWalletConnecting]);
 
   /**
    * Helper function to complete the operation after wallet connection is established
@@ -111,52 +116,64 @@ export const useExecuteToolCall = (
    */
   const waitForWalletConnection = useCallback(
     async (operation: ChainToolCallOperation<unknown>) => {
-      return new Promise((resolve, reject) => {
-        //  Store the reject function so we can call it if modal is closed
-        modalRef.current.rejectConnection = reject;
+      return new Promise<boolean>((resolve, reject) => {
+        // Store the reject function for later use if modal is closed
+        connectionRef.current.pendingReject = reject;
 
+        // Set up the wallet subscription
         const unsubscribe = walletStore.subscribe(() => {
+          // Check if the wallet has been connected with the required type
           if (
             operation.needsWallet &&
             Array.isArray(operation.needsWallet) &&
             operation.needsWallet.includes(walletStore.getSnapshot().walletType)
           ) {
-            modalRef.current.isOpen = false;
-            modalRef.current.rejectConnection = null;
+            // Clean up the subscription
             unsubscribe();
+
+            // Clear the rejection function
+            connectionRef.current.pendingReject = null;
+
+            // If there's a cleanup function, call it
+            if (connectionRef.current.cleanupFn) {
+              connectionRef.current.cleanupFn();
+              connectionRef.current.cleanupFn = null;
+            }
+
+            // Resolve the promise
             resolve(true);
           }
         });
 
-        //  The user has 5 minutes to connect (as a fallback)
+        // Set up timeout to avoid hanging forever
         const timeoutId = setTimeout(() => {
+          // Clean up the subscription
           unsubscribe();
-          modalRef.current.isOpen = false;
-          modalRef.current.rejectConnection = null;
-          reject(new Error('Wallet connection timed out'));
-        }, 300000);
 
-        const cleanup = () => {
+          // Clear the rejection function
+          connectionRef.current.pendingReject = null;
+
+          // Reject with timeout error
+          reject(new Error('Wallet connection timed out'));
+
+          // Update the connecting state
+          setIsWalletConnecting(false);
+        }, 300000); // 5 minute timeout
+
+        // Store cleanup function
+        connectionRef.current.cleanupFn = () => {
           clearTimeout(timeoutId);
           unsubscribe();
         };
-
-        (async () => {
-          try {
-            await Promise.resolve();
-          } finally {
-            cleanup();
-          }
-        })();
       });
     },
-    [walletStore, modalRef],
+    [walletStore, setIsWalletConnecting],
   );
 
   /**
    * Executes a chain operation with the provided parameters.
    * Handles both transaction and query operations.
-   * @param operationType - Type identifier for the operation
+   * @param operationName - Type identifier for the operation
    * @param params - Parameters for the operation
    * @returns Result of the operation (transaction or query result)
    */
@@ -192,7 +209,7 @@ export const useExecuteToolCall = (
         !operation.needsWallet.includes(walletStore.getSnapshot().walletType)
       ) {
         setIsWalletConnecting(true);
-        openModal();
+        openWalletConnectModal();
 
         try {
           await waitForWalletConnection(operation);
@@ -205,7 +222,7 @@ export const useExecuteToolCall = (
             walletStore,
           );
         } catch {
-          console.error('Error connecting wallet');
+          throw new Error('Error connecting wallet');
         } finally {
           setIsWalletConnecting(false);
         }
@@ -226,7 +243,7 @@ export const useExecuteToolCall = (
       walletStore,
       completeOperation,
       setIsWalletConnecting,
-      openModal,
+      openWalletConnectModal,
       waitForWalletConnection,
     ],
   );
