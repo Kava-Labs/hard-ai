@@ -32,7 +32,7 @@ interface AccountResult {
   tokens: Record<string, TokenBalance>;
 }
 
-interface ChainAccountsResult {
+interface WalletResult {
   chain: string;
   chainId: number | string;
   accounts: AccountResult[];
@@ -102,11 +102,11 @@ async function getTokenBalance(
 async function getEVMChainBalances(
   chainConfig: EVMChainConfig,
   walletAddresses: string[],
-): Promise<ChainAccountsResult> {
+): Promise<WalletResult> {
   try {
     const rpcProvider = new ethers.JsonRpcProvider(chainConfig.rpcUrls[0]);
 
-    const chainAccounts: ChainAccountsResult = {
+    const wallet: WalletResult = {
       chain: chainConfig.name,
       chainId: chainConfig.chainID,
       accounts: [],
@@ -151,9 +151,9 @@ async function getEVMChainBalances(
         });
       }
 
-      chainAccounts.accounts.push(account);
+      wallet.accounts.push(account);
     }
-    return chainAccounts;
+    return wallet;
   } catch (error) {
     console.error(`Error processing ${chainConfig.name} chain:`, error);
     return {
@@ -181,9 +181,9 @@ async function getWalletAccounts(provider: EIP1193Provider): Promise<string[]> {
 /**
  * Function to get wallet balances across multiple chains for all accounts
  */
-export async function getAccountWalletBalances(
+export async function getChainAccounts(
   provider: EIP1193Provider,
-): Promise<ChainAccountsResult[]> {
+): Promise<WalletResult[]> {
   if (!provider) {
     return [];
   }
@@ -194,22 +194,22 @@ export async function getAccountWalletBalances(
     return [];
   }
 
-  const results: ChainAccountsResult[] = [];
+  const walletAccounts: WalletResult[] = [];
 
   try {
-    const chainPromises: Promise<ChainAccountsResult>[] = [];
+    const chainPromises: Promise<WalletResult>[] = [];
 
     for (const chainConfig of Object.values(chainRegistry[ChainType.EVM])) {
       const evmConfig = chainConfig as EVMChainConfig;
       chainPromises.push(getEVMChainBalances(evmConfig, accounts));
     }
 
-    results.push(...(await Promise.all(chainPromises)));
+    walletAccounts.push(...(await Promise.all(chainPromises)));
   } catch (error) {
     console.error('Error fetching wallet balances:', error);
   }
 
-  return results;
+  return walletAccounts;
 }
 
 /**
@@ -217,26 +217,26 @@ export async function getAccountWalletBalances(
  * With tokens displayed as a bulleted list on their own lines
  */
 export function formatWalletBalancesForPrompt(
-  balances: ChainAccountsResult[],
+  balances: WalletResult[],
 ): string {
   if (!balances || balances.length === 0) return '';
 
   let formattedText = '\n\nWallet Balance Information:';
 
-  balances.forEach((chain) => {
-    formattedText += `\n- ${chain.chain} (${chain.chainId}):`;
+  balances.forEach((wallet) => {
+    formattedText += `\n- ${wallet.chain} (${wallet.chainId}):`;
 
-    if (chain.error) {
-      formattedText += `\n  - Error: ${chain.error}`;
+    if (wallet.error) {
+      formattedText += `\n  - Error: ${wallet.error}`;
       return;
     }
 
-    if (chain.accounts.length === 0) {
+    if (wallet.accounts.length === 0) {
       formattedText += '\n  - No accounts found';
       return;
     }
 
-    chain.accounts.forEach((account) => {
+    wallet.accounts.forEach((account) => {
       formattedText += `\n  - Account: ${account.address}`;
       formattedText += `\n    - Native: ${account.nativeToken.symbol}: ${account.nativeToken.displayBalance}`;
 

@@ -33,7 +33,7 @@ import { defaultSystemPrompt } from './toolcalls/chain/prompts';
 import { useWalletStore } from './stores/walletStore/useWalletStore';
 import {
   formatWalletBalancesForPrompt,
-  getAccountWalletBalances,
+  getChainAccounts,
 } from './utils/getWalletBalances';
 
 const activeChats: Record<string, ActiveChat> = {};
@@ -175,9 +175,7 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
 
   const getWalletBalancesForPrompt = useCallback(async () => {
     if (walletConnection.isWalletConnected && walletConnection.provider) {
-      const balances = await getAccountWalletBalances(
-        walletConnection.provider,
-      );
+      const balances = await getChainAccounts(walletConnection.provider);
       return formatWalletBalancesForPrompt(balances);
     }
     return '';
