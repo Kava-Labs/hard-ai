@@ -117,50 +117,40 @@ export const useExecuteToolCall = (
   const waitForWalletConnection = useCallback(
     async (operation: ChainToolCallOperation<unknown>) => {
       return new Promise<boolean>((resolve, reject) => {
-        // Store the reject function for later use if modal is closed
+        //  Store the reject function for later use if connection is rejected
         connectionRef.current.pendingReject = reject;
 
-        // Set up the wallet subscription
         const unsubscribe = walletStore.subscribe(() => {
-          // Check if the wallet has been connected with the required type
           if (
             operation.needsWallet &&
             Array.isArray(operation.needsWallet) &&
             operation.needsWallet.includes(walletStore.getSnapshot().walletType)
           ) {
-            // Clean up the subscription
             unsubscribe();
 
-            // Clear the rejection function
             connectionRef.current.pendingReject = null;
 
-            // If there's a cleanup function, call it
             if (connectionRef.current.cleanupFn) {
               connectionRef.current.cleanupFn();
               connectionRef.current.cleanupFn = null;
             }
 
-            // Resolve the promise
+            //  Resolve the promise
             resolve(true);
           }
         });
 
-        // Set up timeout to avoid hanging forever
+        //  Set up 5 minute timeout
         const timeoutId = setTimeout(() => {
-          // Clean up the subscription
           unsubscribe();
 
-          // Clear the rejection function
           connectionRef.current.pendingReject = null;
 
-          // Reject with timeout error
           reject(new Error('Wallet connection timed out'));
 
-          // Update the connecting state
           setIsWalletConnecting(false);
-        }, 300000); // 5 minute timeout
+        }, 300000);
 
-        // Store cleanup function
         connectionRef.current.cleanupFn = () => {
           clearTimeout(timeoutId);
           unsubscribe();
