@@ -40,8 +40,6 @@ interface ChainAccountsResult {
   error?: string;
 }
 
-// Cache for token decimals to avoid repeated contract calls
-const decimalsRecord: Record<string, number> = {};
 const DEFAULT_DECIMALS = 18;
 
 /**
@@ -52,10 +50,6 @@ async function getTokenDecimals(
   provider: ethers.JsonRpcProvider,
   defaultDecimals: number = DEFAULT_DECIMALS,
 ): Promise<number> {
-  if (decimalsRecord[tokenAddress]) {
-    return decimalsRecord[tokenAddress];
-  }
-
   try {
     const tokenContract = new ethers.Contract(
       tokenAddress,
@@ -64,14 +58,12 @@ async function getTokenDecimals(
     );
 
     const decimals = await tokenContract.decimals();
-    decimalsRecord[tokenAddress] = Number(decimals);
     return Number(decimals);
   } catch (error) {
     console.warn(
       `Error fetching decimals for token ${tokenAddress}, using default ${defaultDecimals}:`,
       error,
     );
-    decimalsRecord[tokenAddress] = defaultDecimals;
     return defaultDecimals;
   }
 }
