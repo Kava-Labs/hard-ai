@@ -31,7 +31,10 @@ import {
 } from './stores/walletStore';
 import { defaultSystemPrompt } from './toolcalls/chain/prompts';
 import { useWalletStore } from './stores/walletStore/useWalletStore';
-import { getWalletBalances } from './utils/getWalletBalances';
+import {
+  formatMultiAccountWalletBalancesForPrompt,
+  getMultiAccountWalletBalances,
+} from './utils/getWalletBalances';
 
 const activeChats: Record<string, ActiveChat> = {};
 
@@ -170,6 +173,21 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
     fetchConversations();
   }, [fetchConversations]);
 
+  // Replace logWalletBalances with getWalletBalancesForPrompt
+  const getWalletBalancesForPrompt = useCallback(async () => {
+    if (walletConnection.isWalletConnected && walletConnection.provider) {
+      const balances = await getMultiAccountWalletBalances(
+        walletConnection.provider,
+      );
+      return formatMultiAccountWalletBalancesForPrompt(balances);
+    }
+    return '';
+  }, [
+    walletConnection.isWalletConnected,
+    walletConnection.provider,
+    walletConnection.walletAddress,
+  ]);
+
   const handleChatCompletion = useCallback(
     async (newMessages: ChatMessage[]) => {
       const newActiveChat: ActiveChat = {
@@ -178,10 +196,17 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
         isConversationStarted: true,
         abortController: new AbortController(),
       };
+
+      // Get wallet balances string for the system prompt
+      const walletBalancesPrompt = await getWalletBalancesForPrompt();
+
       if (newActiveChat.messageHistoryStore.getSnapshot().length === 0) {
         newActiveChat.messageHistoryStore.addMessage({
           role: 'system',
-          content: defaultSystemPrompt,
+          content: defaultSystemPrompt.concat(
+            'Here is important info',
+            walletBalancesPrompt,
+          ),
         });
       }
       // update isRequesting state and create a new abortController
@@ -248,7 +273,13 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
           delete activeChats[activeChat.id];
         });
     },
-    [activeChat, conversationHistories, toolCallRegistry, executeOperation],
+    [
+      activeChat,
+      conversationHistories,
+      toolCallRegistry,
+      executeOperation,
+      getWalletBalancesForPrompt,
+    ],
   );
 
   const handleCancel = useCallback(() => {
@@ -326,27 +357,6 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
     [],
   );
 
-  const logWalletBalances = useCallback(async () => {
-    if (walletConnection.isWalletConnected && walletConnection.provider) {
-      console.log(
-        'Fetching balances for wallet:',
-        walletConnection.walletAddress,
-      );
-      const balances = await getWalletBalances(
-        walletConnection.provider,
-        walletConnection.walletAddress,
-      );
-      console.log('Wallet balances:', balances);
-      return balances;
-    }
-    return null;
-  }, [
-    walletConnection.isWalletConnected,
-    walletConnection.provider,
-    walletConnection.walletAddress,
-  ]);
-
-  logWalletBalances();
   const [searchableHistory, setSearchableHistory] =
     useState<SearchableChatHistories | null>(null);
 

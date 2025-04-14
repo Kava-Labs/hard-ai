@@ -17,7 +17,7 @@ export const doChat = async (
         model: activeChat.model,
         messages: activeChat.messageHistoryStore.getSnapshot(),
         stream: true,
-        tools: toolCallRegistry.getToolDefinitions(),
+        tools: [],
       },
       {
         signal: activeChat.abortController.signal,
