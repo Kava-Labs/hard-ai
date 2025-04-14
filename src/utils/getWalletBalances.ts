@@ -2,7 +2,6 @@ import { ethers } from 'ethers';
 import { chainRegistry, ChainType, EVMChainConfig } from '../toolcalls/chain';
 import { EIP1193Provider } from '../stores/walletStore';
 
-// ERC20 ABI - minimal version just for balanceOf function
 const ERC20_ABI = [
   {
     constant: true,
@@ -11,21 +10,14 @@ const ERC20_ABI = [
     outputs: [{ name: 'balance', type: 'uint256' }],
     type: 'function',
   },
+  {
+    constant: true,
+    inputs: [],
+    name: 'decimals',
+    outputs: [{ name: '', type: 'uint8' }],
+    type: 'function',
+  },
 ];
-
-interface TokenInfo {
-  address: string;
-  decimals: number;
-}
-
-interface ChainConfig {
-  chainId: number;
-  name: string;
-  rpcUrl: string;
-  nativeToken: string;
-  nativeTokenDecimals: number;
-  tokens: Record<string, TokenInfo>;
-}
 
 interface TokenBalance {
   displayBalance: string;
@@ -48,12 +40,47 @@ interface ChainResult {
   error?: string;
 }
 
+// Cache for token decimals to avoid repeated contract calls
+const decimalsRecord: Record<string, number> = {};
+const DEFAULT_DECIMALS = 18;
+
+/**
+ * Fetches token decimals from the contract
+ */
+async function getTokenDecimals(
+  tokenAddress: string,
+  provider: ethers.JsonRpcProvider,
+  defaultDecimals: number = DEFAULT_DECIMALS,
+): Promise<number> {
+  if (decimalsRecord[tokenAddress]) {
+    return decimalsRecord[tokenAddress];
+  }
+
+  try {
+    const tokenContract = new ethers.Contract(
+      tokenAddress,
+      ERC20_ABI,
+      provider,
+    );
+
+    const decimals = await tokenContract.decimals();
+    decimalsRecord[tokenAddress] = Number(decimals);
+    return Number(decimals);
+  } catch (error) {
+    console.warn(
+      `Error fetching decimals for token ${tokenAddress}, using default ${defaultDecimals}:`,
+      error,
+    );
+    decimalsRecord[tokenAddress] = defaultDecimals;
+    return defaultDecimals;
+  }
+}
+
 /**
  * Gets token balance for a specific token
  */
 async function getTokenBalance(
   tokenAddress: string,
-  tokenDecimals: number,
   walletAddress: string,
   provider: ethers.JsonRpcProvider,
 ): Promise<TokenBalance> {
@@ -65,9 +92,10 @@ async function getTokenBalance(
     );
 
     const tokenBalance = await tokenContract.balanceOf(walletAddress);
+    const decimals = await getTokenDecimals(tokenAddress, provider);
 
     return {
-      displayBalance: ethers.formatUnits(tokenBalance, tokenDecimals),
+      displayBalance: ethers.formatUnits(tokenBalance, decimals),
     };
   } catch (error) {
     console.error(`Error fetching token ${tokenAddress}:`, error);
@@ -78,45 +106,18 @@ async function getTokenBalance(
 }
 
 /**
- * Creates a chain config from registry data
+ * Gets balances for multiple accounts on a specific EVM chain
  */
-function createChainConfigFromRegistry(evmConfig: EVMChainConfig): ChainConfig {
-  const tokens: Record<string, TokenInfo> = {};
-
-  // Add all tokens from the chain's erc20Contracts
-  if (evmConfig.erc20Contracts) {
-    Object.entries(evmConfig.erc20Contracts).forEach(([_, tokenInfo]) => {
-      tokens[tokenInfo.displayName] = {
-        address: tokenInfo.contractAddress,
-        // Use specified decimals or default to 18
-        decimals: tokenInfo.decimals || 18,
-      };
-    });
-  }
-
-  return {
-    chainId: evmConfig.chainID,
-    name: evmConfig.name,
-    rpcUrl: evmConfig.rpcUrls[0],
-    nativeToken: evmConfig.nativeToken,
-    nativeTokenDecimals: evmConfig.nativeTokenDecimals,
-    tokens,
-  };
-}
-
-/**
- * Gets balances for multiple accounts on a specific chain
- */
-async function getChainBalances(
-  chainConfig: ChainConfig,
+async function getEVMChainBalances(
+  chainConfig: EVMChainConfig,
   walletAddresses: string[],
 ): Promise<ChainResult> {
   try {
-    const rpcProvider = new ethers.JsonRpcProvider(chainConfig.rpcUrl);
+    const rpcProvider = new ethers.JsonRpcProvider(chainConfig.rpcUrls[0]);
 
     const chainResult: ChainResult = {
       chain: chainConfig.name,
-      chainId: chainConfig.chainId,
+      chainId: chainConfig.chainID,
       accounts: [],
     };
 
@@ -136,35 +137,37 @@ async function getChainBalances(
         tokens: {},
       };
 
-      // Get token balances in parallel for better performance
-      const tokenEntries = Object.entries(chainConfig.tokens);
-      if (tokenEntries.length > 0) {
-        const tokenPromises = tokenEntries.map(([symbol, tokenInfo]) =>
-          getTokenBalance(
-            tokenInfo.address,
-            tokenInfo.decimals,
-            address,
-            rpcProvider,
-          ).then((balance) => [symbol, balance]),
+      //  Process tokens in parallel
+      if (chainConfig.erc20Contracts) {
+        const tokenPromises = Object.values(chainConfig.erc20Contracts).map(
+          async (tokenInfo) => {
+            const balance = await getTokenBalance(
+              tokenInfo.contractAddress,
+              address,
+              rpcProvider,
+            );
+            return {
+              tokenName: tokenInfo.displayName,
+              balance,
+            };
+          },
         );
 
-        const tokenResults = await Promise.all(tokenPromises);
+        const results = await Promise.all(tokenPromises);
 
-        // Add results to accountResult
-        tokenResults.forEach(([symbol, balance]) => {
-          accountResult.tokens[symbol as string] = balance as TokenBalance;
+        results.forEach((result) => {
+          accountResult.tokens[result.tokenName] = result.balance;
         });
       }
 
       chainResult.accounts.push(accountResult);
     }
-
     return chainResult;
   } catch (error) {
     console.error(`Error processing ${chainConfig.name} chain:`, error);
     return {
       chain: chainConfig.name,
-      chainId: chainConfig.chainId,
+      chainId: chainConfig.chainID,
       accounts: [],
       error: `Failed to get balances: ${error}`,
     };
@@ -203,15 +206,11 @@ export async function getAccountWalletBalances(
   const results: ChainResult[] = [];
 
   try {
-    // Process all EVM chains from registry
     const chainPromises: Promise<ChainResult>[] = [];
 
-    for (const [_, chainConfig] of Object.entries(
-      chainRegistry[ChainType.EVM],
-    )) {
+    for (const chainConfig of Object.values(chainRegistry[ChainType.EVM])) {
       const evmConfig = chainConfig as EVMChainConfig;
-      const chainConfigFromRegistry = createChainConfigFromRegistry(evmConfig);
-      chainPromises.push(getChainBalances(chainConfigFromRegistry, accounts));
+      chainPromises.push(getEVMChainBalances(evmConfig, accounts));
     }
 
     results.push(...(await Promise.all(chainPromises)));
@@ -224,6 +223,7 @@ export async function getAccountWalletBalances(
 
 /**
  * Format wallet balances as a string for inclusion in system prompt
+ * With tokens displayed as a bulleted list on their own lines
  */
 export function formatWalletBalancesForPrompt(balances: ChainResult[]): string {
   if (!balances || balances.length === 0) return '';
@@ -247,7 +247,6 @@ export function formatWalletBalancesForPrompt(balances: ChainResult[]): string {
       formattedText += `\n  - Account: ${account.address}`;
       formattedText += `\n    - Native: ${account.nativeToken.symbol}: ${account.nativeToken.displayBalance}`;
 
-      //  Filter tokens to only include those with non-zero balances
       const nonZeroTokens = Object.entries(account.tokens).filter(
         ([_, balance]) => Number(balance.displayBalance) !== 0,
       );
@@ -255,7 +254,7 @@ export function formatWalletBalancesForPrompt(balances: ChainResult[]): string {
       if (nonZeroTokens.length > 0) {
         formattedText += '\n    - Tokens:';
         nonZeroTokens.forEach(([symbol, balance]) => {
-          formattedText += `\n      - ${symbol}: ${balance.displayBalance}`;
+          formattedText += `\n      • ${symbol}: ${balance.displayBalance}`;
         });
       }
     });

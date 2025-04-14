@@ -130,7 +130,6 @@ export const chainRegistry: ChainRegistry = {
         USDT: {
           contractAddress: '0xaCF81e57CBd9aF95FaBbe53678FcB70B1dD1b7A1',
           displayName: 'USD₮',
-          decimals: 6,
         },
         WKAVA: {
           contractAddress: '0x70C79B608aBBC502c2F61f38E04190fB407BefCF',
@@ -143,7 +142,6 @@ export const chainRegistry: ChainRegistry = {
         WBTC: {
           contractAddress: '0x4ef4e7b4281e813Bf0FED39728E025D01c3e76AC',
           displayName: 'wBTC',
-          decimals: 8,
         },
       },
     },
@@ -196,27 +194,14 @@ export const chainRegistry: ChainRegistry = {
         WETH: {
           contractAddress: '0x2170Ed0880ac9A755fd29B2688956BD959F933F8',
           displayName: 'WETH',
-          decimals: 18,
         },
         WBTC: {
           contractAddress: '0x7130d2A12B9BCbFAe4f2634d864A1Ee1Ce3Ead9c',
           displayName: 'WBTC',
-          decimals: 18,
         },
         USDT: {
           contractAddress: '0x55d398326f99059fF775485246999027B3197955',
           displayName: 'USDT',
-          decimals: 18,
-        },
-        BUSD: {
-          contractAddress: '0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56',
-          displayName: 'BUSD',
-          decimals: 18,
-        },
-        CAKE: {
-          contractAddress: '0x0E09FaBB73Bd3Ade0a17ECC321fD13a19e81cE82',
-          displayName: 'CAKE',
-          decimals: 18,
         },
       },
     },
@@ -229,13 +214,10 @@ export const chainRegistry: ChainRegistry = {
       blockExplorerUrls: ['https://www.mintscan.io/kava/'],
       chainID: 'kava_2222-10',
       evmChainName: ChainNames.KAVA_EVM, // reference to the evm chain config, needed for eip712 signing
-
       nativeToken: 'ukava',
       nativeTokenDecimals: 6,
-
       bech32Prefix: 'kava',
       defaultGasWanted: '1000000',
-
       denoms: {
         WHARD: {
           denom: 'whard',
