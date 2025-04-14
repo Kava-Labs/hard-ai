@@ -6,7 +6,6 @@ import { useIsMobileLayout, SearchHistoryModal, SideBar } from 'lib-kava-ai';
 import hardAILogo from './assets/hardAILogo.svg';
 import WalletModal from './WalletModal';
 import { PROMOTED_WALLETS } from './utils/wallet';
-import { WalletProviderDetail } from './types';
 
 const sideBarLogo = <img src={hardAILogo} alt="Hard AI logo" height={18} />;
 
@@ -52,26 +51,13 @@ export const App = () => {
     toolCallRegistry,
     walletAddress,
     disconnectWallet,
-    handleProviderSelect,
     availableProviders,
     walletProviderInfo,
     openWalletConnectModal,
     closeWalletConnectModal,
     isWalletModalOpen,
+    onProviderSelect,
   } = useChat();
-
-  const openWalletConnect = () => {
-    openWalletConnectModal();
-  };
-
-  const closeWalletConnect = () => {
-    closeWalletConnectModal();
-  };
-
-  const onProviderSelect = async (provider: WalletProviderDetail) => {
-    await handleProviderSelect(provider);
-    closeWalletConnectModal();
-  };
 
   return (
     <div className={styles.app}>
@@ -98,7 +84,7 @@ export const App = () => {
         styles={styles}
         walletAddress={walletAddress}
         walletProviderInfo={walletProviderInfo}
-        onConnectWalletClick={openWalletConnect}
+        onConnectWalletClick={openWalletConnectModal}
         disconnectWallet={disconnectWallet}
         availableProviderCount={availableProviders.length}
       />
@@ -112,7 +98,7 @@ export const App = () => {
 
       {isWalletModalOpen && (
         <WalletModal
-          onClose={closeWalletConnect}
+          onClose={closeWalletConnectModal}
           availableProviders={availableProviders}
           onSelectProvider={onProviderSelect}
           promotedWallets={PROMOTED_WALLETS}

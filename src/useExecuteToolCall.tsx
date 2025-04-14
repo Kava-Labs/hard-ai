@@ -103,7 +103,7 @@ export const useExecuteToolCall = (
 
       throw new Error('Invalid operation type');
     },
-    [setIsOperationValidated], // Add dependencies here
+    [setIsOperationValidated],
   );
 
   /**
@@ -112,7 +112,7 @@ export const useExecuteToolCall = (
   const waitForWalletConnection = useCallback(
     async (operation: ChainToolCallOperation<unknown>) => {
       return new Promise((resolve, reject) => {
-        // Store the reject function so we can call it if modal is closed
+        //  Store the reject function so we can call it if modal is closed
         modalRef.current.rejectConnection = reject;
 
         const unsubscribe = walletStore.subscribe(() => {
@@ -128,7 +128,7 @@ export const useExecuteToolCall = (
           }
         });
 
-        // The user has 5 minutes to connect (as a fallback)
+        //  The user has 5 minutes to connect (as a fallback)
         const timeoutId = setTimeout(() => {
           unsubscribe();
           modalRef.current.isOpen = false;
@@ -136,13 +136,11 @@ export const useExecuteToolCall = (
           reject(new Error('Wallet connection timed out'));
         }, 300000);
 
-        // Cleanup function
         const cleanup = () => {
           clearTimeout(timeoutId);
           unsubscribe();
         };
 
-        // Store cleanup function to be called on promise resolution or rejection
         (async () => {
           try {
             await Promise.resolve();

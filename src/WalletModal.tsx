@@ -53,7 +53,7 @@ const WalletModal: React.FC<WalletModalProps> = ({
           <h3>{hasProviders ? 'Select a Wallet' : 'Get a Wallet'}</h3>
           <ButtonIcon
             icon={X}
-            aria-label={'Close wallet connect'}
+            aria-label={'Close wallet modal'}
             onClick={onClose}
           />
         </div>
