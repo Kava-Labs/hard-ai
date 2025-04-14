@@ -58,6 +58,10 @@ export const chainRegistry: ChainRegistry = {
       nativeTokenDecimals: 18,
       blockExplorerUrls: ['https://kavascan.com/'],
       erc20Contracts: {
+        WHARD: {
+          contractAddress: '0x25e9171C98Fc1924Fa9415CF50750274F0664764',
+          displayName: 'wHARD',
+        },
         USDT: {
           contractAddress: '0x919C1c267BC06a7039e03fcc2eF738525769109c',
           displayName: 'USD₮',
@@ -110,6 +114,10 @@ export const chainRegistry: ChainRegistry = {
           contractAddress: '0xb5c4423a65B953905949548276654C96fcaE6992',
           displayName: 'wBTC',
         },
+        MBTC: {
+          contractAddress: '0x59889b7021243dB5B1e065385F918316cD90D46c',
+          displayName: 'mBTC',
+        },
       },
     },
     [ChainNames.KAVA_EVM_INTERNAL_TESTNET]: {
@@ -157,9 +165,29 @@ export const chainRegistry: ChainRegistry = {
           contractAddress: '0x15932E26f5BD4923d46a2b205191C4b5d5f43FE3',
           displayName: 'wATOM',
         },
+        AXLBNB: {
+          contractAddress: '0x102dF7764fe9F0eFa850A07e25D5171d19bC7862',
+          displayName: 'axlBNB',
+        },
+        AXLBUSD: {
+          contractAddress: '0xB1f5FC6633BC2d67EC9B072FB1570Ea8adE02A22',
+          displayName: 'axlBUSD',
+        },
+        AXLXRPB: {
+          contractAddress: '0xd8DaCA0CA6F88a3a3B7dF15A26483254d80E8726',
+          displayName: 'axlXRPB',
+        },
+        AXLBTCB: {
+          contractAddress: '0x9920E05F1f5B0280fe2Fe32B758F3Dbd534A5480',
+          displayName: 'axlBTCB',
+        },
         WBTC: {
           contractAddress: '0x4ef4e7b4281e813Bf0FED39728E025D01c3e76AC',
           displayName: 'wBTC',
+        },
+        MBTC: {
+          contractAddress: '0x59889b7021243dB5B1e065385F918316cD90D46c',
+          displayName: 'mBTC',
         },
       },
     },
