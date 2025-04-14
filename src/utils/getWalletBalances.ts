@@ -27,7 +27,6 @@ interface AccountResult {
   address: string;
   nativeToken: {
     symbol: string;
-    balance: string;
     displayBalance: string;
   };
   tokens: Record<string, TokenBalance>;
@@ -120,7 +119,6 @@ async function getEVMChainBalances(
         address: address,
         nativeToken: {
           symbol: chainConfig.nativeToken,
-          balance: nativeBalance.toString(),
           displayBalance: ethers.formatUnits(
             nativeBalance,
             chainConfig.nativeTokenDecimals,
