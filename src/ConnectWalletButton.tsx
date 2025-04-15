@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import styles from './ConnectWalletButton.module.css';
-import { formatWalletAddress } from './utils/wallet';
+import { formatWalletAddress } from './utils/helpers';
 
 interface ConnectWalletButtonProps {
   walletAddress: string;

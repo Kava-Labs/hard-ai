@@ -13,7 +13,7 @@ import {
   WalletStore,
   WalletTypes,
 } from '../stores/walletStore/walletStore';
-import { validateChain, validateWallet } from '../utils/wallet';
+import { validateChain, validateWallet } from './helpers/wallet';
 import { InProgressTxDisplay } from './components/InProgressTxDisplay';
 
 interface SendToolParams {
