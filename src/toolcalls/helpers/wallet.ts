@@ -1,8 +1,8 @@
-import { WalletStore, WalletTypes } from '../stores/walletStore';
-import { chainRegistry, ChainType } from '../toolcalls/chain';
+import { WalletStore, WalletTypes } from '../../stores/walletStore';
+import { chainRegistry, ChainType } from '../../toolcalls/chain';
 import metamaskLogo from '../assets/MetaMask-icon-fox.svg';
 import hotWalletLogo from '../assets/HOT Wallet Short.svg';
-import { PromotedWallet } from '../types';
+import { PromotedWallet } from '../../types';
 
 /**
  * Validates if the wallet is connected and compatible

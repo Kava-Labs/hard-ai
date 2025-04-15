@@ -1,7 +1,7 @@
 import { ChainToolCallQuery, ChainType, OperationType } from './chain';
 import { WalletStore, WalletTypes } from '../stores/walletStore';
 import { chainNameToolCallParam, chainRegistry, EVMChainConfig } from './chain';
-import { validateChain, validateWallet } from '../utils/wallet';
+import { validateChain, validateWallet } from './helpers/wallet';
 import { ERC2O_ABI } from './chain/abi';
 
 type EvmBalanceQueryParams = {
