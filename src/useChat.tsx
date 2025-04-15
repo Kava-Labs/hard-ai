@@ -79,6 +79,55 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
   const [isWalletModalOpen, setIsWalletModalOpen] = useState(false);
   const [isWalletConnecting, setIsWalletConnecting] = useState(false);
 
+  const getWalletBalancesForPrompt = useCallback(async () => {
+    if (walletConnection.isWalletConnected && walletConnection.provider) {
+      const balances = await getChainAccounts(walletConnection.provider);
+      return formatWalletBalancesForPrompt(balances);
+    }
+    return '';
+  }, [walletConnection.isWalletConnected, walletConnection.provider]);
+
+  const updateSystemPromptWithWalletInfo = useCallback(async () => {
+    if (!walletConnection.isWalletConnected || !walletConnection.provider) {
+      return;
+    }
+
+    try {
+      const walletBalancesPrompt = await getWalletBalancesForPrompt();
+
+      const messages = activeChat.messageHistoryStore.getSnapshot();
+      const systemPromptContent = defaultSystemPrompt.concat(
+        'Here is important info',
+        walletBalancesPrompt,
+      );
+
+      const systemPrompt: ChatMessage = {
+        role: 'system',
+        content: systemPromptContent,
+      };
+
+      //  If a user has started a conversation and connects or changes wallets
+      //  Update the system prompt to have the most recent wallet context
+      if (messages.length > 0 && messages[0].role === 'system') {
+        const updatedMessages = [...messages];
+        updatedMessages[0] = systemPrompt;
+
+        activeChat.messageHistoryStore.setMessages(updatedMessages);
+        //  If the conversation hasn't started,
+        //  set the system prompt with wallet info
+      } else {
+        activeChat.messageHistoryStore.setMessages([systemPrompt, ...messages]);
+      }
+    } catch (error) {
+      console.error('Failed to update system prompt with wallet info:', error);
+    }
+  }, [
+    activeChat,
+    walletConnection.isWalletConnected,
+    walletConnection.provider,
+    getWalletBalancesForPrompt,
+  ]);
+
   const connectEIP6963Provider = useCallback(
     async (providerId: string, chainId?: string) => {
       try {
@@ -87,6 +136,8 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
           walletType: WalletTypes.EIP6963,
           providerId,
         });
+        // After successful connection, update the system prompt with wallet info
+        // We'll handle this in the useEffect that watches wallet connection
       } catch (error) {
         console.error('Failed to connect to wallet provider:', error);
         throw error;
@@ -94,6 +145,17 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
     },
     [],
   );
+
+  // Watch for wallet connection changes and update system prompt accordingly
+  useEffect(() => {
+    if (walletConnection.isWalletConnected && walletConnection.provider) {
+      updateSystemPromptWithWalletInfo();
+    }
+  }, [
+    walletConnection.isWalletConnected,
+    walletConnection.provider,
+    updateSystemPromptWithWalletInfo,
+  ]);
 
   const refreshProviders = useCallback(() => {
     setAvailableProviders(walletStore.getProviders());
@@ -106,6 +168,7 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
 
   const disconnectWallet = useCallback(() => {
     walletStore.disconnectWallet();
+    // System prompt update will be handled by the useEffect that watches wallet connection
   }, []);
 
   const handleProviderSelect = useCallback(
@@ -173,18 +236,6 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
     fetchConversations();
   }, [fetchConversations]);
 
-  const getWalletBalancesForPrompt = useCallback(async () => {
-    if (walletConnection.isWalletConnected && walletConnection.provider) {
-      const balances = await getChainAccounts(walletConnection.provider);
-      return formatWalletBalancesForPrompt(balances);
-    }
-    return '';
-  }, [
-    walletConnection.isWalletConnected,
-    walletConnection.provider,
-    walletConnection.walletAddress,
-  ]);
-
   const handleChatCompletion = useCallback(
     async (newMessages: ChatMessage[]) => {
       const newActiveChat: ActiveChat = {
@@ -194,22 +245,19 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
         abortController: new AbortController(),
       };
 
-      const walletBalancesPrompt = await getWalletBalancesForPrompt();
+      // Update isRequesting state and create a new abortController
+      setActiveChat(newActiveChat);
+      activeChats[activeChat.id] = newActiveChat;
 
+      // If we haven't added a system message yet (and wallet isn't connected), add the default one
       if (newActiveChat.messageHistoryStore.getSnapshot().length === 0) {
         newActiveChat.messageHistoryStore.addMessage({
           role: 'system',
-          //  todo - formalize
-          content: defaultSystemPrompt.concat(
-            'Here is important info',
-            walletBalancesPrompt,
-          ),
+          content: defaultSystemPrompt,
         });
       }
-      // update isRequesting state and create a new abortController
-      setActiveChat(newActiveChat);
-      activeChats[activeChat.id] = newActiveChat;
-      // add new messages to history
+
+      // Add new messages to history
       newActiveChat.messageHistoryStore.setMessages([
         ...newActiveChat.messageHistoryStore.getSnapshot(),
         ...newMessages,
@@ -270,13 +318,7 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
           delete activeChats[activeChat.id];
         });
     },
-    [
-      activeChat,
-      conversationHistories,
-      toolCallRegistry,
-      executeOperation,
-      getWalletBalancesForPrompt,
-    ],
+    [activeChat, conversationHistories, toolCallRegistry, executeOperation],
   );
 
   const handleCancel = useCallback(() => {
@@ -287,8 +329,9 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
 
   //  handler specific to the New Chat button
   const handleNewChat = useCallback(() => {
-    setActiveChat({
-      id: uuidv4(),
+    const newChatId = uuidv4();
+    const newChat = {
+      id: newChatId,
       isRequesting: false,
       isConversationStarted: false,
       isOperationValidated: false,
@@ -299,8 +342,21 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
       messageHistoryStore: new MessageHistoryStore(),
       messageStore: new TextStreamStore(),
       errorStore: new TextStreamStore(),
-    });
-  }, [initModel, client]);
+    };
+
+    setActiveChat(newChat);
+
+    // If wallet is already connected, add wallet info to the system prompt immediately
+    if (walletConnection.isWalletConnected && walletConnection.provider) {
+      setTimeout(() => updateSystemPromptWithWalletInfo(), 0);
+    }
+  }, [
+    initModel,
+    client,
+    walletConnection.isWalletConnected,
+    walletConnection.provider,
+    updateSystemPromptWithWalletInfo,
+  ]);
 
   const onSelectConversation = useCallback(
     async (id: string) => {
@@ -330,10 +386,32 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
           };
 
           setActiveChat(newActiveChat);
+
+          // If wallet is connected, check if we need to add wallet info
+          // if (walletConnection.isWalletConnected && walletConnection.provider) {
+          //   // Check if this conversation already has a system message with wallet info
+          //   const hasSystemMessage =
+          //     messages &&
+          //     messages.some(
+          //       (msg) =>
+          //         msg.role === 'system' && msg.content.includes('wallet'),
+          //     );
+          //
+          //   if (!hasSystemMessage) {
+          //     // If wallet is connected but the conversation doesn't have wallet info, add it
+          //     setTimeout(() => updateSystemPromptWithWalletInfo(), 0);
+          //   }
+          // }
         }
       }
     },
-    [conversationHistories, activeChat],
+    [
+      conversationHistories,
+      activeChat,
+      walletConnection.isWalletConnected,
+      walletConnection.provider,
+      updateSystemPromptWithWalletInfo,
+    ],
   );
 
   const onDeleteConversation = useCallback(

@@ -128,23 +128,23 @@ async function getEVMChainBalances(
       };
 
       if (chainConfig.erc20Contracts) {
-        const tokenPromises = Object.values(chainConfig.erc20Contracts).map(
-          async (tokenInfo) => {
-            const balance = await getTokenBalance(
-              tokenInfo.contractAddress,
-              address,
-              rpcProvider,
-            );
-            const tokenName = tokenInfo.displayName;
+        const tokenBalanceRequests = Object.values(
+          chainConfig.erc20Contracts,
+        ).map(async (tokenInfo) => {
+          const balance = await getTokenBalance(
+            tokenInfo.contractAddress,
+            address,
+            rpcProvider,
+          );
+          const tokenName = tokenInfo.displayName;
 
-            return {
-              tokenName,
-              balance,
-            };
-          },
-        );
+          return {
+            tokenName,
+            balance,
+          };
+        });
 
-        const results = await Promise.all(tokenPromises);
+        const results = await Promise.all(tokenBalanceRequests);
 
         results.forEach((result) => {
           account.tokens[result.tokenName] = result.balance;

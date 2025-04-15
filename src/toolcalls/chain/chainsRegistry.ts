@@ -129,10 +129,6 @@ export const chainRegistry: ChainRegistry = {
       nativeTokenDecimals: 18,
       blockExplorerUrls: ['https://kavascan.com/'],
       erc20Contracts: {
-        WHARD: {
-          contractAddress: '0x25e9171C98Fc1924Fa9415CF50750274F0664764',
-          displayName: 'wHARD',
-        },
         USDT: {
           contractAddress: '0xaCF81e57CBd9aF95FaBbe53678FcB70B1dD1b7A1',
           displayName: 'USD₮',
@@ -152,10 +148,6 @@ export const chainRegistry: ChainRegistry = {
         AXLUSDC: {
           contractAddress: '0x7a5DBf8e6ac1F6aCCF14f5B4E88b21EAA04c983d',
           displayName: 'axlUSDC',
-        },
-        AXLDAI: {
-          contractAddress: '0xAa03872057AD496Bd6f3eE85b85e1e4DABdb1a5d',
-          displayName: 'axlDAI',
         },
         AXLUSDT: {
           contractAddress: '0xA637F4CECbA91Ad19075bA3d330cd95f694B1707',
@@ -184,10 +176,6 @@ export const chainRegistry: ChainRegistry = {
         WBTC: {
           contractAddress: '0x4ef4e7b4281e813Bf0FED39728E025D01c3e76AC',
           displayName: 'wBTC',
-        },
-        MBTC: {
-          contractAddress: '0x59889b7021243dB5B1e065385F918316cD90D46c',
-          displayName: 'mBTC',
         },
       },
     },
