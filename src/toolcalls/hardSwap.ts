@@ -10,6 +10,8 @@ import {
   getPool,
   getQuoteExactInputSingle,
   getQuoteExactOutputSingle,
+  swapExactInputSingle,
+  swapExactOutputSingle,
 } from './chain';
 import {
   SignatureTypes,
@@ -36,7 +38,7 @@ interface HardSwapParams {
 
 export class HardSwapMessage implements ChainToolCallMessage<HardSwapParams> {
   name = 'uniswapV3';
-  description = 'Swap one assets to another';
+  description = 'Swap one token to another';
   operationType = OperationType.TRANSACTION;
   chainType = ChainType.EVM;
   needsWallet = [WalletTypes.EIP6963];
@@ -220,12 +222,23 @@ export class HardSwapMessage implements ChainToolCallMessage<HardSwapParams> {
       chain,
     );
 
+    const tokenANativeAsset = tokenAContract === 'native';
+
     if (params.interaction === 'quoteExactInput') {
       const quote = await getQuoteExactInputSingle(
-        tokenAContract,
-        tokenBContract,
+        tokenAContract === 'native'
+          ? this.getNativeWrappedAssetContract(chain)!
+          : tokenAContract,
+        tokenBContract === 'native'
+          ? this.getNativeWrappedAssetContract(chain)!
+          : tokenBContract,
         params.wantedAmount,
       );
+      if (quote.amountOut === 0n) {
+        return `amountOut for swap is zero, please make sure this pool has enough liquidity for this swap`;
+      }
+
+      console.log('here');
       console.info({ quote });
       return JSON.stringify({
         amountOut: quote.formattedAmountOut,
@@ -233,17 +246,54 @@ export class HardSwapMessage implements ChainToolCallMessage<HardSwapParams> {
       });
     } else if (params.interaction === 'quoteExactOutput') {
       const quote = await getQuoteExactOutputSingle(
-        tokenAContract,
-        tokenBContract,
+        tokenAContract === 'native'
+          ? this.getNativeWrappedAssetContract(chain)!
+          : tokenAContract,
+        tokenBContract === 'native'
+          ? this.getNativeWrappedAssetContract(chain)!
+          : tokenBContract,
         params.wantedAmount,
       );
+      if (quote.amountIn === 0n) {
+        return `amountIn for swap is zero, please make sure this pool has enough liquidity for this swap`;
+      }
       console.info({ quote });
       return JSON.stringify({
         amountIn: quote.formattedAmountIn,
         gasEstimate: quote.formattedGasEstimate,
       });
+    } else if (params.interaction === 'swapExactInput') {
+      const res = await swapExactInputSingle({
+        tokenInContractAddress:
+          tokenAContract === 'native'
+            ? this.getNativeWrappedAssetContract(chain)!
+            : tokenAContract,
+        tokenOutContractAddress:
+          tokenBContract === 'native'
+            ? this.getNativeWrappedAssetContract(chain)!
+            : tokenBContract,
+        amountIn: params.wantedAmount,
+        isNative: tokenANativeAsset,
+      });
+      console.log(res);
+      return res.hash;
+    } else if (params.interaction === 'swapExactOutput') {
+      const res = await swapExactOutputSingle({
+        tokenInContractAddress:
+          tokenAContract === 'native'
+            ? this.getNativeWrappedAssetContract(chain)!
+            : tokenAContract,
+        tokenOutContractAddress:
+          tokenBContract === 'native'
+            ? this.getNativeWrappedAssetContract(chain)!
+            : tokenBContract,
+        amountOut: params.wantedAmount,
+        isNative: tokenANativeAsset,
+      });
+      console.log(res);
+      return res.hash;
+    } else {
+      return `invalid uniswap interaction param ${params.interaction}`;
     }
-
-    return 'unimplemented';
   }
 }

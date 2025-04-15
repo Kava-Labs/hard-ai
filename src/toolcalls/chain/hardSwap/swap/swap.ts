@@ -9,11 +9,13 @@ export async function swapExactInputSingle({
   tokenOutContractAddress,
   amountIn, // e.g., "10.0"
   slippage = 0.005, // 0.5%
+  isNative,
 }: {
   tokenInContractAddress: string;
   tokenOutContractAddress: string;
   amountIn: string;
   slippage?: number;
+  isNative: boolean;
 }) {
   const browserProvider = new ethers.BrowserProvider(window.ethereum);
   const signer = await browserProvider.getSigner();
@@ -74,8 +76,9 @@ export async function swapExactInputSingle({
   };
 
   // for kava set the value to amountInParsed and the wrapping will happen automatically
-  // const tx = await router.exactInputSingle(swapParams, {value: amountInParsed});
-  const tx = await router.exactInputSingle(swapParams);
+  const tx = await (isNative
+    ? router.exactInputSingle(swapParams, { value: amountInParsed })
+    : router.exactInputSingle(swapParams));
 
   console.log(
     `⏳ Swapping ${amountIn} ${tokenInContract} for ${tokenOutContractAddress}... TX: ${tx.hash}`,
@@ -98,11 +101,13 @@ export async function swapExactOutputSingle({
   tokenOutContractAddress,
   amountOut, // desired output, e.g., "100.0"
   slippage = 0.005, // 0.5%
+  isNative,
 }: {
   tokenInContractAddress: string;
   tokenOutContractAddress: string;
   amountOut: string;
   slippage?: number;
+  isNative: boolean;
 }) {
   const browserProvider = new ethers.BrowserProvider(window.ethereum);
   const signer = await browserProvider.getSigner();
