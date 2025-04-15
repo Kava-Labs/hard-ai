@@ -241,7 +241,7 @@ export function formatWalletBalancesForPrompt(
         currentChainName = String(parseInt(currentChainId, 16));
       }
 
-      formattedText += `\n- Active Account: ${activeAccountAddress}${currentChainName}`;
+      formattedText += `\n- Active Account: ${activeAccountAddress} connected to ${currentChainName}`;
       break;
     }
   }

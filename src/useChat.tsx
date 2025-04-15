@@ -183,19 +183,19 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
 
   // Watch for wallet connection changes and update system prompt accordingly
   useEffect(() => {
+    // Only proceed if we're not already processing an update
     if (walletUpdateRef.current.isProcessing) {
       return;
     }
 
-    if (
-      walletUpdateRef.current.previousAddress ||
-      walletUpdateRef.current.previousChainId
-    ) {
-      const checkForWalletChanges = async () => {
-        // Get the latest wallet state directly
-        const currentState = walletStore.getSnapshot();
+    // Set up subscription for wallet changes
+    const unsubscribe = walletStore.subscribe(async () => {
+      const currentState = walletStore.getSnapshot();
 
-        // Address or chain changed
+      if (
+        walletUpdateRef.current.previousAddress ||
+        walletUpdateRef.current.previousChainId
+      ) {
         if (currentState.isWalletConnected && currentState.provider) {
           const addressChanged =
             currentState.walletAddress !==
@@ -207,9 +207,8 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
           if (addressChanged || chainChanged) {
             try {
               walletUpdateRef.current.isProcessing = true;
-
-              const walletIfno = await getCurrentWalletInfo();
-              await addWalletSystemMessage(walletIfno);
+              const walletInfo = await getCurrentWalletInfo();
+              await addWalletSystemMessage(walletInfo);
             } finally {
               walletUpdateRef.current.isProcessing = false;
             }
@@ -227,18 +226,12 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
             walletUpdateRef.current.isProcessing = false;
           }
         }
-      };
+      }
+    });
 
-      checkForWalletChanges();
-    }
-  }, [
-    walletConnection.isWalletConnected,
-    walletConnection.walletAddress,
-    walletConnection.walletChainId,
-    walletConnection.provider,
-    getCurrentWalletInfo,
-    addWalletSystemMessage,
-  ]);
+    // Clean up subscription
+    return () => unsubscribe();
+  }, [getCurrentWalletInfo, addWalletSystemMessage]);
 
   const refreshProviders = useCallback(() => {
     setAvailableProviders(walletStore.getProviders());
@@ -430,7 +423,7 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
     setActiveChat((prev) => ({ ...prev, isRequesting: false }));
   }, [activeChat]);
 
-  // Handler for New Chat button
+  // handler specific to the New Chat button
   const handleNewChat = useCallback(async () => {
     const newChatId = uuidv4();
     const newChat = {
