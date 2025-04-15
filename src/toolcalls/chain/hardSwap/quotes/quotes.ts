@@ -18,7 +18,7 @@ type QuoteExactInputSingleResults = {
 export async function getQuoteExactInputSingle(
   tokenInContractAddress: string,
   tokenOutContractAddress: string,
-  tokenInAmount: string, // human-readable string like "1.0"
+  tokenInAmount: string, // human-readable string like "1.0",
 ): Promise<QuoteExactInputSingleResults> {
   if (
     tokenInContractAddress.toLowerCase() ===

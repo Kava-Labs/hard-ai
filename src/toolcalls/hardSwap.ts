@@ -8,6 +8,8 @@ import {
   chainRegistry,
   EVMChainConfig,
   getPool,
+  getQuoteExactInputSingle,
+  getQuoteExactOutputSingle,
 } from './chain';
 import {
   SignatureTypes,
@@ -24,6 +26,12 @@ interface HardSwapParams {
   tokenB: string;
   wantedAmount: string;
   direction: 'swapIn' | 'swapOut';
+
+  interaction:
+    | 'swapExactOutput'
+    | 'quoteExactOutput'
+    | 'quoteExactInput'
+    | 'swapExactInput';
 }
 
 export class HardSwapMessage implements ChainToolCallMessage<HardSwapParams> {
@@ -40,13 +48,13 @@ export class HardSwapMessage implements ChainToolCallMessage<HardSwapParams> {
     {
       name: 'tokenA',
       type: 'string',
-      description: 'swap Input Token',
+      description: 'swap Token A',
       required: true,
     },
     {
       name: 'tokenB',
       type: 'string',
-      description: 'swap Output Token',
+      description: 'swap Token B',
       required: true,
     },
     {
@@ -63,6 +71,19 @@ export class HardSwapMessage implements ChainToolCallMessage<HardSwapParams> {
       enum: ['swapIn', 'swapOut'],
       required: true,
     },
+    {
+      name: 'interaction',
+      type: 'string',
+      description:
+        'the interaction type with the swap protocol, is this a swap quote request or a swap transaction',
+      enum: [
+        'swapExactOutput',
+        'quoteExactOutput',
+        'quoteExactInput',
+        'swapExactInput',
+      ],
+      required: true,
+    },
   ];
 
   inProgressComponent() {
@@ -74,8 +95,8 @@ export class HardSwapMessage implements ChainToolCallMessage<HardSwapParams> {
     tokenB: string,
     chainConfig: EVMChainConfig,
   ): Promise<{
-    tokenAContract: string | null;
-    tokenBContract: string | null;
+    tokenAContract: string;
+    tokenBContract: string;
   }> {
     const getContract = (token: string) => {
       if (token.toUpperCase() === chainConfig.nativeToken) {
@@ -86,10 +107,17 @@ export class HardSwapMessage implements ChainToolCallMessage<HardSwapParams> {
       }
     };
 
-    return {
-      tokenAContract: getContract(tokenA),
-      tokenBContract: getContract(tokenB),
-    };
+    const tokenAContract = getContract(tokenA);
+    const tokenBContract = getContract(tokenB);
+
+    if (tokenAContract === null) {
+      throw new Error(`failed to find ERC20 Asset Contract for ${tokenA}`);
+    }
+    if (tokenBContract === null) {
+      throw new Error(`failed to find ERC20 Asset Contract for ${tokenB}`);
+    }
+
+    return { tokenAContract, tokenBContract };
   }
 
   private getNativeWrappedAssetContract(chain: EVMChainConfig) {
@@ -126,17 +154,6 @@ export class HardSwapMessage implements ChainToolCallMessage<HardSwapParams> {
       params.tokenB,
       chain,
     );
-
-    if (tokenAContract === null) {
-      throw new Error(
-        `failed to find ERC20 Asset Contract for ${params.tokenA}`,
-      );
-    }
-    if (tokenBContract === null) {
-      throw new Error(
-        `failed to find ERC20 Asset Contract for ${params.tokenB}`,
-      );
-    }
 
     const rpcProvider = new ethers.JsonRpcProvider(chain.rpcUrls[0]);
     const address = walletStore.getSnapshot().walletAddress;
@@ -182,21 +199,7 @@ export class HardSwapMessage implements ChainToolCallMessage<HardSwapParams> {
       );
     }
 
-    // make sure there are enough balances
-
-    // if (tokenAContract === 'native') {
-    //   const rpcProvider = new ethers.JsonRpcProvider(chain.rpcUrls[0]);
-    //   const address = walletStore.getSnapshot().walletAddress;
-    //   const rawBalance = await rpcProvider.getBalance(address);
-    //   const formattedBalance = ethers.formatUnits(
-    //     rawBalance,
-    //     chain.nativeTokenDecimals,
-    //   );
-
-    //   return Number(formattedBalance) >= Number(amount);
-    // }
-
-    return false;
+    return true;
   }
 
   async buildTransaction(
@@ -204,15 +207,42 @@ export class HardSwapMessage implements ChainToolCallMessage<HardSwapParams> {
     walletStore: WalletStore,
   ): Promise<string> {
     if (!this.hasValidWallet) {
-      throw new Error('please connect your wallet');
+      throw new Error(`invalid wallet for this transaction`);
     }
 
-    const { ethers } = await import('ethers');
+    const chain = chainRegistry[this.chainType][
+      params.chainName
+    ] as EVMChainConfig;
 
-    const { erc20Contracts, rpcUrls, nativeToken, chainID } = chainRegistry[
-      this.chainType
-    ][params.chainName] as EVMChainConfig;
-    const rpcProvider = new ethers.JsonRpcProvider(rpcUrls[0]);
+    let { tokenAContract, tokenBContract } = await this.getAssetContracts(
+      params.tokenA,
+      params.tokenB,
+      chain,
+    );
+
+    if (params.interaction === 'quoteExactInput') {
+      const quote = await getQuoteExactInputSingle(
+        tokenAContract,
+        tokenBContract,
+        params.wantedAmount,
+      );
+      console.info({ quote });
+      return JSON.stringify({
+        amountOut: quote.formattedAmountOut,
+        gasEstimate: quote.formattedGasEstimate,
+      });
+    } else if (params.interaction === 'quoteExactOutput') {
+      const quote = await getQuoteExactOutputSingle(
+        tokenAContract,
+        tokenBContract,
+        params.wantedAmount,
+      );
+      console.info({ quote });
+      return JSON.stringify({
+        amountIn: quote.formattedAmountIn,
+        gasEstimate: quote.formattedGasEstimate,
+      });
+    }
 
     return 'unimplemented';
   }
