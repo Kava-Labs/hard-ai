@@ -95,7 +95,7 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
     pendingWalletMessage: null,
   });
 
-  const getCurrentWalletInfo = useCallback(async () => {
+  const getCurrentWalletInfoForPrompt = useCallback(async () => {
     const walletConnection = walletStore.getSnapshot();
 
     const walletInfo: WalletInfo = {
@@ -166,7 +166,7 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
           providerId,
         });
 
-        const walletInfo = await getCurrentWalletInfo();
+        const walletInfo = await getCurrentWalletInfoForPrompt();
 
         //  Add a message if connection was successful
         if (walletInfo.isConnected && walletInfo.address) {
@@ -179,7 +179,7 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
         walletUpdateRef.current.isProcessing = false;
       }
     },
-    [getCurrentWalletInfo, addWalletSystemMessage],
+    [getCurrentWalletInfoForPrompt, addWalletSystemMessage],
   );
 
   // Watch for wallet connection changes and update system prompt accordingly
@@ -208,7 +208,7 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
           if (addressChanged || chainChanged) {
             try {
               walletUpdateRef.current.isProcessing = true;
-              const walletInfo = await getCurrentWalletInfo();
+              const walletInfo = await getCurrentWalletInfoForPrompt();
               await addWalletSystemMessage(walletInfo);
             } finally {
               walletUpdateRef.current.isProcessing = false;
@@ -232,7 +232,7 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
 
     // Clean up subscription
     return () => unsubscribe();
-  }, [getCurrentWalletInfo, addWalletSystemMessage]);
+  }, [getCurrentWalletInfoForPrompt, addWalletSystemMessage]);
 
   const refreshProviders = useCallback(() => {
     setAvailableProviders(walletStore.getProviders());
@@ -453,7 +453,7 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
     try {
       walletUpdateRef.current.isProcessing = true;
 
-      const walletInfo = await getCurrentWalletInfo();
+      const walletInfo = await getCurrentWalletInfoForPrompt();
 
       if (walletInfo.isConnected && walletInfo.address) {
         const walletInfoMessage: ChatMessage = {
@@ -472,7 +472,7 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
     } finally {
       walletUpdateRef.current.isProcessing = false;
     }
-  }, [initModel, client, getCurrentWalletInfo]);
+  }, [initModel, client, getCurrentWalletInfoForPrompt]);
 
   const onSelectConversation = useCallback(
     async (id: string) => {
