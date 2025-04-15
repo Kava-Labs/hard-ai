@@ -244,18 +244,9 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
   }, [refreshProviders, setIsWalletModalOpen]);
 
   const disconnectWallet = useCallback(async () => {
-    try {
-      const walletConnection = walletStore.getSnapshot();
-      if (
-        walletConnection.isWalletConnected &&
-        walletConnection.walletAddress
-      ) {
-        walletStore.disconnectWallet();
-        await addWalletSystemMessage();
-      }
-    } finally {
-      walletUpdateRef.current.isProcessing = false;
-    }
+    walletStore.disconnectWallet();
+    await addWalletSystemMessage();
+    walletUpdateRef.current.isProcessing = false;
   }, [addWalletSystemMessage]);
 
   const handleProviderSelect = useCallback(
