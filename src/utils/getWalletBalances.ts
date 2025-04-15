@@ -215,6 +215,7 @@ export async function getChainAccounts(
 /**
  * Format wallet balances as a string for inclusion in system prompt
  * With tokens displayed as a bulleted list on their own lines
+ * Explicitly marks the first account across all chains as the global active account
  */
 export function formatWalletBalancesForPrompt(
   balances: WalletResult[],
@@ -222,6 +223,15 @@ export function formatWalletBalancesForPrompt(
   if (!balances || balances.length === 0) return '';
 
   let formattedText = '\n\nWallet Balance Information:';
+
+  let activeAccountAddress = null;
+  for (const wallet of balances) {
+    if (wallet.accounts && wallet.accounts.length > 0) {
+      activeAccountAddress = wallet.accounts[0].address;
+      formattedText += `\n- Active Account: ${activeAccountAddress}`;
+      break;
+    }
+  }
 
   balances.forEach((wallet) => {
     formattedText += `\n- ${wallet.chain} (${wallet.chainId}):`;
