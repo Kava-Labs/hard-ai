@@ -69,21 +69,6 @@ export class HardSwapMessage implements ChainToolCallMessage<HardSwapParams> {
     return InProgressTxDisplay;
   }
 
-  private async validateBalance(
-    params: {
-      denom: string;
-      amount: string;
-      chainName: string;
-    },
-    walletStore: WalletStore,
-  ): Promise<boolean> {
-    return true;
-  }
-
-  private async validatePool(tokenAContract: string, tokenBContract: string) {
-    const poolAddress = await getPool(tokenAContract, tokenBContract, 0);
-  }
-
   private async getAssetContracts(
     tokenA: string,
     tokenB: string,
@@ -153,9 +138,10 @@ export class HardSwapMessage implements ChainToolCallMessage<HardSwapParams> {
       );
     }
 
+    const rpcProvider = new ethers.JsonRpcProvider(chain.rpcUrls[0]);
+    const address = walletStore.getSnapshot().walletAddress;
+
     if (tokenAContract === 'native') {
-      const rpcProvider = new ethers.JsonRpcProvider(chain.rpcUrls[0]);
-      const address = walletStore.getSnapshot().walletAddress;
       const rawBalance = await rpcProvider.getBalance(address);
       const formattedBalance = ethers.formatUnits(
         rawBalance,
@@ -168,7 +154,23 @@ export class HardSwapMessage implements ChainToolCallMessage<HardSwapParams> {
       }
 
       tokenAContract = this.getNativeWrappedAssetContract(chain)!;
+    } else {
+      const contract = new ethers.Contract(
+        tokenAContract,
+        ERC2O_ABI,
+        rpcProvider,
+      );
+
+      const decimals = await contract.decimals();
+      const rawBalance = await contract.balanceOf(address);
+      const formattedBalance = ethers.formatUnits(rawBalance, decimals);
+      if (Number(formattedBalance) <= Number(params.wantedAmount)) {
+        throw new Error(
+          `not enough balances available for ${params.tokenA} user only has ${formattedBalance}`,
+        );
+      }
     }
+
     if (tokenBContract === 'native') {
       tokenBContract = this.getNativeWrappedAssetContract(chain)!;
     }
