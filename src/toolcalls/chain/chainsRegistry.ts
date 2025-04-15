@@ -15,7 +15,7 @@ export type EVMChainConfig = {
   name: string;
   rpcUrls: string[];
   blockExplorerUrls: string[];
-  chainID: number;
+  chainID: string;
   nativeToken: string;
   nativeTokenDecimals: number;
   erc20Contracts: Record<string, ERC20Record>;
@@ -53,7 +53,7 @@ export const chainRegistry: ChainRegistry = {
       chainType: ChainType.EVM,
       name: ChainNames.KAVA_EVM,
       rpcUrls: ['https://evm.kava-rpc.com'],
-      chainID: 2222,
+      chainID: '2222',
       nativeToken: 'KAVA',
       nativeTokenDecimals: 18,
       blockExplorerUrls: ['https://kavascan.com/'],
@@ -124,7 +124,7 @@ export const chainRegistry: ChainRegistry = {
       chainType: ChainType.EVM,
       name: ChainNames.KAVA_EVM_INTERNAL_TESTNET,
       rpcUrls: ['https://evm.data.internal.testnet.us-east.production.kava.io'],
-      chainID: 2221,
+      chainID: '2221',
       nativeToken: 'TKAVA',
       nativeTokenDecimals: 18,
       blockExplorerUrls: ['https://kavascan.com/'],
@@ -219,7 +219,7 @@ export const chainRegistry: ChainRegistry = {
     [ChainNames.BSC]: {
       chainType: ChainType.EVM,
       name: ChainNames.BSC,
-      chainID: 56,
+      chainID: '56',
       nativeToken: 'BNB',
       nativeTokenDecimals: 18,
       rpcUrls: ['https://bsc-dataseed.binance.org'],

@@ -34,7 +34,7 @@ interface AccountResult {
 
 interface WalletResult {
   chain: string;
-  chainId: number | string;
+  chainId: string;
   accounts: AccountResult[];
   error?: string;
 }
@@ -216,20 +216,41 @@ export async function getChainAccounts(
  * Format wallet balances as a string for inclusion in system prompt
  * With tokens displayed as a bulleted list on their own lines
  * Explicitly marks the first account across all chains as the global active account
+ * Indicates which chain the user is currently connected to
  */
 export function formatWalletBalancesForPrompt(
   balances: WalletResult[],
+  currentChainId?: string,
 ): string {
   if (!balances || balances.length === 0) return '';
 
   let formattedText = '\n\nWallet Balance Information:';
 
+  // Find active account address and current chain name
   let activeAccountAddress = null;
+  let currentChainName = '';
+  const currentChainWallet = currentChainId
+    ? balances.find((w) => w.chainId === currentChainId)
+    : null;
+
   for (const wallet of balances) {
     if (wallet.accounts && wallet.accounts.length > 0) {
       activeAccountAddress = wallet.accounts[0].address;
-      formattedText += `\n- Active Account: ${activeAccountAddress}`;
+
+      if (currentChainId) {
+        currentChainName = String(parseInt(currentChainId, 16));
+      }
+
+      formattedText += `\n- Active Account: ${activeAccountAddress}${currentChainName}`;
       break;
+    }
+  }
+
+  if (currentChainId) {
+    if (currentChainWallet) {
+      formattedText += `\n- Currently Connected to: ${currentChainWallet.chain} (Chain ID: ${String(parseInt(currentChainId, 16))})`;
+    } else {
+      formattedText += `\n- Currently Connected to Chain ID: ${String(parseInt(currentChainId, 16))}`;
     }
   }
 
