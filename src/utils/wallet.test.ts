@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { formatWalletBalancesForPrompt } from './getWalletBalances';
+import { formatWalletBalancesForPrompt } from './wallet';
 
 describe('Wallet Balance Functions', () => {
   const mockProvider = {

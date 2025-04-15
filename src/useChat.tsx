@@ -35,7 +35,7 @@ import { useWalletStore } from './stores/walletStore/useWalletStore';
 import {
   formatWalletBalancesForPrompt,
   getChainAccounts,
-} from './utils/getWalletBalances';
+} from './utils/wallet';
 
 const activeChats: Record<string, ActiveChat> = {};
 
