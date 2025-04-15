@@ -139,11 +139,12 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
           content: messageContent,
         };
 
-        // If there are already messages in the store, add the wallet message directly
+        //  If the conversation has already started, add the wallet message
         if (activeChat.messageHistoryStore.getSnapshot().length > 0) {
           activeChat.messageHistoryStore.addMessage(walletMessage);
         } else {
-          // Otherwise, store it in the ref to be added during handleChatCompletion
+          //  Otherwise, store it in the ref to be added during handleChatCompletion
+          //  after the initial system prompt (so as not to override it)
           walletUpdateRef.current.pendingWalletMessage = walletMessage;
         }
       } catch (error) {

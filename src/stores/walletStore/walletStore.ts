@@ -201,7 +201,7 @@ export class WalletStore {
       throw new Error('No wallet connection detected');
     }
 
-    const hexChainId = `0x${chainID.toString(16)}`;
+    const hexChainId = `0x${Number(chainID).toString(16)}`;
 
     try {
       await connection.provider.request({
