@@ -7,6 +7,7 @@ import {
   chainNameToolCallParam,
   chainRegistry,
   EVMChainConfig,
+  getPool,
 } from './chain';
 import {
   SignatureTypes,
@@ -15,11 +16,12 @@ import {
 } from '../stores/walletStore/walletStore';
 import { validateChain, validateWallet } from '../utils/wallet';
 import { InProgressTxDisplay } from './components/InProgressTxDisplay';
+import { ethers } from 'ethers';
 
 interface HardSwapParams {
   chainName: string;
-  denomIn: string;
-  denomOut: string;
+  tokenA: string;
+  tokenB: string;
   wantedAmount: string;
   direction: 'swapIn' | 'swapOut';
 }
@@ -36,15 +38,15 @@ export class HardSwapMessage implements ChainToolCallMessage<HardSwapParams> {
   parameters = [
     chainNameToolCallParam,
     {
-      name: 'denomIn',
+      name: 'tokenA',
       type: 'string',
-      description: 'swap Input Token denomination',
+      description: 'swap Input Token',
       required: true,
     },
     {
-      name: 'denomOut',
+      name: 'tokenB',
       type: 'string',
-      description: 'swap out Token denomination',
+      description: 'swap Output Token',
       required: true,
     },
     {
@@ -78,17 +80,121 @@ export class HardSwapMessage implements ChainToolCallMessage<HardSwapParams> {
     return true;
   }
 
+  private async validatePool(tokenAContract: string, tokenBContract: string) {
+    const poolAddress = await getPool(tokenAContract, tokenBContract, 0);
+  }
+
+  private async getAssetContracts(
+    tokenA: string,
+    tokenB: string,
+    chainConfig: EVMChainConfig,
+  ): Promise<{
+    tokenAContract: string | null;
+    tokenBContract: string | null;
+  }> {
+    const getContract = (token: string) => {
+      if (token.toUpperCase() === chainConfig.nativeToken) {
+        return 'native';
+      } else {
+        const erc20 = getERC20Record(token, chainConfig.erc20Contracts);
+        return erc20?.contractAddress ? erc20.contractAddress : null;
+      }
+    };
+
+    return {
+      tokenAContract: getContract(tokenA),
+      tokenBContract: getContract(tokenB),
+    };
+  }
+
+  private getNativeWrappedAssetContract(chain: EVMChainConfig) {
+    if (chain.chainID === 2222 || chain.chainID === 2221) {
+      return getERC20Record('WKAVA', chain.erc20Contracts)?.contractAddress;
+    } else {
+      throw new Error(
+        'only Kava EVM Chains are supported for this transaction at the moment',
+      );
+    }
+  }
+
   async validate(
     params: HardSwapParams,
     walletStore: WalletStore,
   ): Promise<boolean> {
+    console.log({ params });
     this.hasValidWallet = false;
     validateChain(this.chainType, params.chainName);
     validateWallet(walletStore, this.needsWallet);
     //  wallet checks have passed
     this.hasValidWallet = true;
 
-    return true;
+    if (params.tokenA === params.tokenB) {
+      throw new Error('tokenA must be different than tokenB');
+    }
+
+    const chain = chainRegistry[this.chainType][
+      params.chainName
+    ] as EVMChainConfig;
+
+    let { tokenAContract, tokenBContract } = await this.getAssetContracts(
+      params.tokenA,
+      params.tokenB,
+      chain,
+    );
+
+    if (tokenAContract === null) {
+      throw new Error(
+        `failed to find ERC20 Asset Contract for ${params.tokenA}`,
+      );
+    }
+    if (tokenBContract === null) {
+      throw new Error(
+        `failed to find ERC20 Asset Contract for ${params.tokenB}`,
+      );
+    }
+
+    if (tokenAContract === 'native') {
+      const rpcProvider = new ethers.JsonRpcProvider(chain.rpcUrls[0]);
+      const address = walletStore.getSnapshot().walletAddress;
+      const rawBalance = await rpcProvider.getBalance(address);
+      const formattedBalance = ethers.formatUnits(
+        rawBalance,
+        chain.nativeTokenDecimals,
+      );
+      if (Number(formattedBalance) <= Number(params.wantedAmount)) {
+        throw new Error(
+          `not enough balances available for ${params.tokenA} user only has ${formattedBalance}`,
+        );
+      }
+
+      tokenAContract = this.getNativeWrappedAssetContract(chain)!;
+    }
+    if (tokenBContract === 'native') {
+      tokenBContract = this.getNativeWrappedAssetContract(chain)!;
+    }
+
+    const poolAddress = await getPool(tokenAContract, tokenBContract, 0);
+    if (poolAddress === ethers.ZeroAddress) {
+      throw new Error(
+        `no pool exists for token pair ${params.tokenA}/${params.tokenB} with contracts  ${tokenAContract}/${tokenBContract}`,
+      );
+    }
+
+    // make sure there are enough balances
+
+    // if (tokenAContract === 'native') {
+    //   const rpcProvider = new ethers.JsonRpcProvider(chain.rpcUrls[0]);
+    //   const address = walletStore.getSnapshot().walletAddress;
+    //   const rawBalance = await rpcProvider.getBalance(address);
+    //   const formattedBalance = ethers.formatUnits(
+    //     rawBalance,
+    //     chain.nativeTokenDecimals,
+    //   );
+
+    //   return Number(formattedBalance) >= Number(amount);
+    // }
+
+    return false;
   }
 
   async buildTransaction(
