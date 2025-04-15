@@ -168,7 +168,19 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
 
   const disconnectWallet = useCallback(() => {
     walletStore.disconnectWallet();
-  }, []);
+
+    const messages = activeChat.messageHistoryStore.getSnapshot();
+    const disconnectMessage: ChatMessage = {
+      role: 'system',
+      content:
+        'Wallet has been disconnected. All previous wallet information is no longer valid.',
+    };
+
+    activeChat.messageHistoryStore.setMessages([
+      ...messages,
+      disconnectMessage,
+    ]);
+  }, [activeChat]);
 
   const handleProviderSelect = useCallback(
     async (provider: EIP6963ProviderDetail) => {
