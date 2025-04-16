@@ -213,14 +213,14 @@ export async function getChainAccounts(
   const walletAccounts: WalletResult[] = [];
 
   try {
-    const chainPromises: Promise<WalletResult>[] = [];
+    const walletAccountPromise: Promise<WalletResult>[] = [];
 
     for (const chainConfig of Object.values(chainRegistry[ChainType.EVM])) {
       const evmConfig = chainConfig as EVMChainConfig;
-      chainPromises.push(getEVMChainBalances(evmConfig, accounts));
+      walletAccountPromise.push(getEVMChainBalances(evmConfig, accounts));
     }
 
-    walletAccounts.push(...(await Promise.all(chainPromises)));
+    walletAccounts.push(...(await Promise.all(walletAccountPromise)));
   } catch (error) {
     console.error('Error fetching wallet balances:', error);
   }
@@ -240,7 +240,8 @@ export function formatWalletBalancesForPrompt(
 ): string {
   if (!balances || balances.length === 0) return '';
 
-  let formattedText = '\n\nWallet Balance Information:';
+  let formattedText =
+    '\n\nFormat the following information as a table\n\nWallet Balance Information:';
 
   // Find active account address and current chain name
   let activeAccountAddress = null;

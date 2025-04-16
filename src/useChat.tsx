@@ -129,7 +129,7 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
           walletUpdateRef.current.previousAddress = '';
           walletUpdateRef.current.previousChainId = '';
         } else {
-          messageContent = `Wallet account changed. New address: ${walletInfo.address} on chain ID: ${walletInfo.chainId}. Any previous wallet information is no longer valid. ${walletInfo.balancesPrompt}`;
+          messageContent = `Wallet account changed. New address: ${walletInfo.address} on chain ID: ${walletInfo.chainId}. Keep previous wallet information in context, but recognize that it is not current. ${walletInfo.balancesPrompt}`;
           walletUpdateRef.current.previousAddress = walletInfo.address;
           walletUpdateRef.current.previousChainId = walletInfo.chainId;
         }
