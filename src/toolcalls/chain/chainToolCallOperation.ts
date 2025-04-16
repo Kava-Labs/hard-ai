@@ -13,6 +13,7 @@ export interface MessageParam {
 export enum OperationType {
   TRANSACTION = 'transaction',
   QUERY = 'query',
+  WALLET = 'wallet',
 }
 
 export interface InProgressComponentProps {
@@ -65,6 +66,11 @@ export interface ChainToolCallMessage<T> extends ChainToolCallOperation<T> {
 export interface ChainToolCallQuery<T> extends ChainToolCallOperation<T> {
   /** Executes the query with the provided parameters */
   executeQuery(params: T, walletStore: WalletStore): Promise<string>;
+}
+
+export interface ChainToolCallWalletAction<T>
+  extends ChainToolCallOperation<T> {
+  executeRequest(params: T): Promise<string>;
 }
 
 export type OperationResult = {
