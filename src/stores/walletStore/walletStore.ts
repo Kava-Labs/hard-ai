@@ -210,6 +210,8 @@ export class WalletStore {
         method: 'wallet_switchEthereumChain',
         params: [{ chainId: hexChainId }],
       });
+      //  todo - this still throws console error after successfully adding and switching networks
+      //  can we quiet this down?
     } catch (switchError: unknown) {
       // This error code indicates that the chain has not been added to the wallet
       if (
