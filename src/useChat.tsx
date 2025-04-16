@@ -128,6 +128,11 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
             'Wallet has been disconnected. All previous wallet information is no longer valid.';
           walletUpdateRef.current.previousAddress = '';
           walletUpdateRef.current.previousChainId = '';
+        } else if (
+          walletInfo.address === walletUpdateRef.current.previousAddress &&
+          walletInfo.chainId === walletUpdateRef.current.previousChainId
+        ) {
+          return;
         } else {
           messageContent = `Wallet account changed. New address: ${walletInfo.address} on chain ID: ${walletInfo.chainId}. Keep previous wallet information in context, but recognize that it is not current. ${walletInfo.balancesPrompt}`;
           walletUpdateRef.current.previousAddress = walletInfo.address;
@@ -182,58 +187,59 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
     [getCurrentWalletInfoForPrompt, addWalletSystemMessage],
   );
 
-  // Watch for wallet connection changes and update system prompt accordingly
+  //  Subscribe to wallet connection changes and update system prompt accordingly
   useEffect(() => {
-    // Only proceed if we're not already processing an update
+    //  Only proceed if we're not already processing an update
     if (walletUpdateRef.current.isProcessing) {
       return;
     }
 
-    // Set up subscription for wallet changes
+    //  Set up subscription for wallet changes
     const unsubscribe = walletStore.subscribe(async () => {
       const currentState = walletStore.getSnapshot();
 
-      if (
-        walletUpdateRef.current.previousAddress ||
-        walletUpdateRef.current.previousChainId
-      ) {
-        if (currentState.isWalletConnected && currentState.provider) {
-          const addressChanged =
-            currentState.walletAddress !==
-            walletUpdateRef.current.previousAddress;
-          const chainChanged =
-            currentState.walletChainId !==
-            walletUpdateRef.current.previousChainId;
+      //  Only process if we're not already handling a wallet update
+      if (walletUpdateRef.current.isProcessing) {
+        return;
+      }
 
-          if (addressChanged || chainChanged) {
-            try {
+      try {
+        if (
+          walletUpdateRef.current.previousAddress ||
+          walletUpdateRef.current.previousChainId
+        ) {
+          if (currentState.isWalletConnected && currentState.provider) {
+            const addressChanged =
+              currentState.walletAddress !==
+              walletUpdateRef.current.previousAddress;
+            const chainChanged =
+              currentState.walletChainId !==
+              walletUpdateRef.current.previousChainId;
+
+            if (addressChanged || chainChanged) {
               walletUpdateRef.current.isProcessing = true;
               const walletInfo = await getCurrentWalletInfoForPrompt();
               await addWalletSystemMessage(walletInfo);
-            } finally {
-              walletUpdateRef.current.isProcessing = false;
             }
           }
-        }
-        //  Wallet was disconnected
-        else if (
-          !currentState.isWalletConnected &&
-          walletUpdateRef.current.previousAddress.length > 0
-        ) {
-          try {
+          // Wallet was disconnected from outside our UI and disconnectWallet()
+          // wasn't called (which would have set isProcessing=true)
+          else if (
+            !currentState.isWalletConnected &&
+            walletUpdateRef.current.previousAddress.length > 0
+          ) {
             walletUpdateRef.current.isProcessing = true;
             await addWalletSystemMessage();
-          } finally {
-            walletUpdateRef.current.isProcessing = false;
           }
         }
+      } finally {
+        walletUpdateRef.current.isProcessing = false;
       }
     });
 
-    // Clean up subscription
+    //  Clean up subscription
     return () => unsubscribe();
   }, [getCurrentWalletInfoForPrompt, addWalletSystemMessage]);
-
   const refreshProviders = useCallback(() => {
     setAvailableProviders(walletStore.getProviders());
   }, []);
@@ -244,8 +250,11 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
   }, [refreshProviders, setIsWalletModalOpen]);
 
   const disconnectWallet = useCallback(async () => {
+    walletUpdateRef.current.isProcessing = true;
+
     walletStore.disconnectWallet();
     await addWalletSystemMessage();
+
     walletUpdateRef.current.isProcessing = false;
   }, [addWalletSystemMessage]);
 
