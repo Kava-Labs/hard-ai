@@ -1,4 +1,4 @@
-import { WalletStore, WalletTypes } from '../../stores/walletStore';
+import { WalletStore, WalletProvider } from '../../stores/walletStore';
 import { chainRegistry, ChainType } from '../../toolcalls/chain';
 
 /**
@@ -9,7 +9,7 @@ import { chainRegistry, ChainType } from '../../toolcalls/chain';
  */
 export function validateWallet(
   walletStore: WalletStore,
-  requiredWalletTypes: WalletTypes[] | null,
+  requiredWalletTypes: WalletProvider[] | null,
 ): boolean {
   if (!walletStore.getSnapshot().isWalletConnected) {
     throw new Error('please connect to a compatible wallet');

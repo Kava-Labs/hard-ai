@@ -26,7 +26,8 @@ import { initializeToolCallRegistry } from './toolcalls/chain';
 import { ToolCallStreamStore } from './stores/toolCallStreamStore';
 import { useExecuteToolCall } from './useExecuteToolCall';
 import {
-  WalletTypes,
+  WalletProvider,
+  WalletType,
   EIP6963ProviderDetail,
   walletStore,
 } from './stores/walletStore';
@@ -103,6 +104,7 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
       address: walletConnection.walletAddress,
       chainId: walletConnection.walletChainId,
       balancesPrompt: '',
+      walletType: walletConnection.walletType || 'UNKNOWN', // Add wallet type
     };
 
     if (walletInfo.isConnected && walletConnection.provider) {
@@ -134,7 +136,11 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
         ) {
           return;
         } else {
-          messageContent = `Wallet account changed. New address: ${walletInfo.address} on chain ID: ${walletInfo.chainId}. Keep previous wallet information in context, but recognize that it is not current. ${walletInfo.balancesPrompt}`;
+          // Include wallet type in the message
+          messageContent = `Wallet account changed. New address: ${walletInfo.address} on chain ID: ${walletInfo.chainId}. 
+          Wallet type: ${walletInfo.walletType || 'Unknown'}. 
+          Keep previous wallet information in context, but recognize that it is not current. ${walletInfo.balancesPrompt}`;
+
           walletUpdateRef.current.previousAddress = walletInfo.address;
           walletUpdateRef.current.previousChainId = walletInfo.chainId;
         }
@@ -167,7 +173,7 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
       try {
         await walletStore.connectWallet({
           chainId,
-          walletType: WalletTypes.EIP6963,
+          walletProvider: WalletProvider.EIP6963,
           providerId,
         });
 
@@ -240,6 +246,7 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
     //  Clean up subscription
     return () => unsubscribe();
   }, [getCurrentWalletInfoForPrompt, addWalletSystemMessage]);
+
   const refreshProviders = useCallback(() => {
     setAvailableProviders(walletStore.getProviders());
   }, []);
@@ -458,7 +465,9 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
       if (walletInfo.isConnected && walletInfo.address) {
         const walletInfoMessage: ChatMessage = {
           role: 'system',
-          content: `Current wallet information: Address: ${walletInfo.address}... on chain ID: ${walletInfo.chainId}. ${walletInfo.balancesPrompt}`,
+          content: `Current wallet information: Address: ${walletInfo.address} on chain ID: ${walletInfo.chainId}. 
+          Wallet type: ${walletInfo.walletType || 'Unknown'}. 
+          ${walletInfo.balancesPrompt}`,
         };
 
         newChat.messageHistoryStore.addMessage(walletInfoMessage);
@@ -554,6 +563,7 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
         ? availableProviders.find((p) => p.info.rdns === walletConnection.rdns)
             ?.info
         : undefined;
+
     return {
       activeChat,
       conversationHistories,
@@ -567,6 +577,7 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
       fetchSearchHistory,
       toolCallRegistry,
       walletAddress,
+      walletType: walletConnection.walletType, // Add wallet type to returned object
       handleProviderSelect,
       disconnectWallet,
       availableProviders,
@@ -579,6 +590,7 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
   }, [
     walletConnection.isWalletConnected,
     walletConnection.rdns,
+    walletConnection.walletType, // Add wallet type to dependencies
     availableProviders,
     activeChat,
     conversationHistories,

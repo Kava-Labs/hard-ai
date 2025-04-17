@@ -1,5 +1,5 @@
 import { useCallback, useRef } from 'react';
-import { WalletStore, WalletTypes } from './stores/walletStore';
+import { WalletStore, WalletProvider } from './stores/walletStore';
 import {
   ChainNames,
   chainNameToolCallParam,
@@ -60,7 +60,7 @@ export const useExecuteToolCall = (
     ) => {
       if (
         operation.walletMustMatchChainID &&
-        walletStore.getSnapshot().walletType === WalletTypes.EIP6963 &&
+        walletStore.getSnapshot().walletType === WalletProvider.EIP6963 &&
         walletStore.getSnapshot().walletChainId !== chainId
       ) {
         switch (operation.chainType) {

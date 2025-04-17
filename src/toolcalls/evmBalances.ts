@@ -1,5 +1,5 @@
 import { ChainToolCallQuery, ChainType, OperationType } from './chain';
-import { WalletStore, WalletTypes } from '../stores/walletStore';
+import { WalletStore, WalletProvider } from '../stores/walletStore';
 import { chainNameToolCallParam, chainRegistry, EVMChainConfig } from './chain';
 import { validateChain, validateWallet } from './helpers/wallet';
 import { ERC2O_ABI } from './chain/abi';
@@ -17,7 +17,7 @@ export class EvmBalancesQuery
   operationType = OperationType.QUERY;
   chainType = ChainType.EVM;
   walletMustMatchChainID = false;
-  needsWallet = [WalletTypes.EIP6963];
+  needsWallet = [WalletProvider.EIP6963];
 
   validate(params: EvmBalanceQueryParams, walletStore: WalletStore): boolean {
     validateWallet(walletStore, this.needsWallet);

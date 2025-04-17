@@ -1,5 +1,5 @@
 import { describe, test, expect, beforeEach, afterEach, vi } from 'vitest';
-import { EIP1193Provider, walletStore, WalletTypes } from './walletStore';
+import { EIP1193Provider, walletStore, WalletProvider } from './walletStore';
 import { EIP6963ProviderDetail } from './walletStore';
 
 interface MockProviderOptions {
@@ -150,7 +150,7 @@ describe('walletStore', () => {
     announceProvider(metamask);
 
     await walletStore.connectWallet({
-      walletType: WalletTypes.EIP6963,
+      walletProvider: WalletProvider.EIP6963,
       providerId: 'metamask-uuid',
       chainId: '0x8ae', // Chain ID 2222
     });
@@ -177,7 +177,7 @@ describe('walletStore', () => {
     announceProvider(metamask);
 
     await walletStore.connectWallet({
-      walletType: WalletTypes.EIP6963,
+      walletProvider: WalletProvider.EIP6963,
       providerId: 'metamask-uuid',
     });
 
@@ -208,7 +208,7 @@ describe('walletStore', () => {
     announceProvider(metamask);
 
     await walletStore.connectWallet({
-      walletType: WalletTypes.EIP6963,
+      walletProvider: WalletProvider.EIP6963,
       providerId: 'metamask-uuid',
     });
 
@@ -236,7 +236,7 @@ describe('walletStore', () => {
     announceProvider(metamask);
 
     await walletStore.connectWallet({
-      walletType: WalletTypes.EIP6963,
+      walletProvider: WalletProvider.EIP6963,
       providerId: 'metamask-uuid',
     });
 
@@ -268,7 +268,7 @@ describe('walletStore', () => {
 
     await expect(
       walletStore.connectWallet({
-        walletType: WalletTypes.EIP6963,
+        walletProvider: WalletProvider.EIP6963,
         providerId: 'rejecting-wallet',
       }),
     ).rejects.toThrow('User rejected the request');
@@ -290,7 +290,7 @@ describe('walletStore', () => {
     const requestSpy = vi.spyOn(wrongChainProvider.provider, 'request');
 
     await walletStore.connectWallet({
-      walletType: WalletTypes.EIP6963,
+      walletProvider: WalletProvider.EIP6963,
       providerId: 'wrong-chain-wallet',
       chainId: '0x8ae', // Chain ID 2222
     });

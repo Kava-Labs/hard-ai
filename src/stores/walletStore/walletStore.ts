@@ -7,9 +7,19 @@ import {
 
 type Listener = () => void;
 
-export enum WalletTypes {
+export enum WalletProvider {
   EIP6963 = 'EIP6963',
   NONE = 'NONE',
+}
+
+export enum WalletType {
+  METAMASK = 'MetaMask',
+  HOTWALLET = 'HOT Wallet',
+  OKX = 'OKX Wallet',
+  COINBASE = 'Coinbase Wallet',
+  KEPLR = 'Keplr',
+  OTHER = 'other',
+  NONE = 'none',
 }
 
 export enum SignatureTypes {
@@ -65,7 +75,8 @@ export interface EIP1193Provider {
 export type WalletConnection = {
   walletAddress: string;
   walletChainId: string;
-  walletType: WalletTypes;
+  walletProvider: WalletProvider;
+  walletType: WalletType;
   isWalletConnected: boolean;
   provider?: EIP1193Provider;
   rdns?: string;
@@ -92,11 +103,21 @@ export class WalletStore {
   private currentValue: WalletConnection = {
     walletAddress: '',
     walletChainId: '',
-    walletType: WalletTypes.NONE,
+    walletProvider: WalletProvider.NONE,
+    walletType: WalletType.NONE,
     isWalletConnected: false,
   };
   private listeners: Set<Listener> = new Set();
   private providers: Map<string, EIP6963ProviderDetail> = new Map();
+
+  // Map to identify wallet types based on rdns
+  private rdnsToWalletType: Record<string, WalletType> = {
+    'io.metamask': WalletType.METAMASK,
+    'org.hot-labs': WalletType.HOTWALLET,
+    'com.okex.wallet': WalletType.OKX,
+    'com.coinbase.wallet': WalletType.COINBASE,
+    'app.keplr': WalletType.KEPLR,
+  };
 
   constructor() {
     this.setupEIP6963Listeners();
@@ -160,24 +181,29 @@ export class WalletStore {
     return Array.from(this.providers.values());
   }
 
+  //  Helper method to determine wallet type from rdns
+  private getWalletType(rdns: string): WalletType {
+    return this.rdnsToWalletType[rdns] || WalletType.OTHER;
+  }
+
   public async connectWallet(opts: {
     chainId?: string;
-    walletType: WalletTypes;
+    walletProvider: WalletProvider;
     providerId?: string;
   }) {
-    switch (opts.walletType) {
-      case WalletTypes.EIP6963: {
+    switch (opts.walletProvider) {
+      case WalletProvider.EIP6963: {
         if (opts.providerId) {
           await this.connectEIP6963Provider(opts.providerId);
         }
         break;
       }
-      case WalletTypes.NONE: {
-        this.disconnectWallet(); // disconnect when passed WalletTypes.NONE
+      case WalletProvider.NONE: {
+        this.disconnectWallet(); // disconnect when passed WalletProvider.NONE
         break;
       }
       default:
-        throw new Error(`Unknown wallet type: ${opts.walletType}`);
+        throw new Error(`Unknown wallet provider: ${opts.walletProvider}`);
     }
   }
 
@@ -242,7 +268,8 @@ export class WalletStore {
     this.currentValue = {
       walletAddress: '',
       walletChainId: '',
-      walletType: WalletTypes.NONE,
+      walletProvider: WalletProvider.NONE,
+      walletType: undefined,
       isWalletConnected: false,
       provider: undefined,
       rdns: undefined,
@@ -308,14 +335,17 @@ export class WalletStore {
         });
 
         const chainId = chainIdResponse as string;
+        const rdns = providerDetail.info.rdns;
+        const walletType = this.getWalletType(rdns);
 
         this.currentValue = {
           walletAddress: accounts[0],
           walletChainId: chainId,
-          walletType: WalletTypes.EIP6963,
+          walletProvider: WalletProvider.EIP6963,
+          walletType: walletType,
           isWalletConnected: true,
           provider: providerDetail.provider,
-          rdns: providerDetail.info.rdns,
+          rdns: rdns,
         };
         this.emitChange();
       } else {
@@ -326,6 +356,7 @@ export class WalletStore {
       throw error;
     }
   }
+
   private async refreshCurrentConnection() {
     const connection = this.getSnapshot();
 
