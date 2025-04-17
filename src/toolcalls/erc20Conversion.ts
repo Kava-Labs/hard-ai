@@ -12,7 +12,7 @@ import {
 import {
   SignatureTypes,
   WalletStore,
-  WalletTypes,
+  WalletProvider,
 } from '../stores/walletStore';
 import { InProgressTxDisplay } from './components/InProgressTxDisplay';
 import { getCoinRecord, getERC20Record } from '../utils/helpers';
@@ -34,7 +34,7 @@ export class ERC20ConversionMessage
   chainType = ChainType.COSMOS;
   operationType = OperationType.TRANSACTION;
   walletMustMatchChainID = true;
-  needsWallet = [WalletTypes.EIP6963];
+  needsWallet = [WalletProvider.EIP6963];
 
   /**
    * Parameter definitions for the message.
@@ -85,7 +85,9 @@ export class ERC20ConversionMessage
     }
 
     if (Array.isArray(this.needsWallet)) {
-      if (!this.needsWallet.includes(walletStore.getSnapshot().walletType)) {
+      if (
+        !this.needsWallet.includes(walletStore.getSnapshot().walletProvider)
+      ) {
         throw new Error('please connect to a compatible wallet');
       }
     }

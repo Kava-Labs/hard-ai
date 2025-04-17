@@ -1,5 +1,5 @@
 import { ToolCallStream } from '../../stores/toolCallStreamStore';
-import { WalletTypes, WalletStore } from '../../stores/walletStore';
+import { WalletProvider, WalletStore } from '../../stores/walletStore';
 import { ChainType } from './chainsRegistry';
 
 export interface MessageParam {
@@ -37,7 +37,7 @@ export interface ChainToolCallOperation<T> {
   /** Identifies this as a transaction operation */
   operationType: OperationType;
 
-  needsWallet?: WalletTypes[];
+  needsWallet?: WalletProvider[];
 
   /* when set to true, the operation will attempt to switch the wallet network to the chainID this operation expects */
   walletMustMatchChainID?: boolean;

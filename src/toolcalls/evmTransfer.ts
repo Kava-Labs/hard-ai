@@ -11,7 +11,7 @@ import {
 import {
   SignatureTypes,
   WalletStore,
-  WalletTypes,
+  WalletProvider,
 } from '../stores/walletStore/walletStore';
 import { validateChain, validateWallet } from './helpers/wallet';
 import { InProgressTxDisplay } from './components/InProgressTxDisplay';
@@ -31,7 +31,7 @@ export class EvmTransferMessage
   description = 'Send erc20 tokens from one address to another';
   operationType = OperationType.TRANSACTION;
   chainType = ChainType.EVM;
-  needsWallet = [WalletTypes.EIP6963];
+  needsWallet = [WalletProvider.EIP6963];
   walletMustMatchChainID = true;
   private hasValidWallet = false;
 

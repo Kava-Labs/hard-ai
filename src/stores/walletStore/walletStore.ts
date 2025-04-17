@@ -7,7 +7,7 @@ import {
 
 type Listener = () => void;
 
-export enum WalletTypes {
+export enum WalletProvider {
   EIP6963 = 'EIP6963',
   NONE = 'NONE',
 }
@@ -65,7 +65,8 @@ export interface EIP1193Provider {
 export type WalletConnection = {
   walletAddress: string;
   walletChainId: string;
-  walletType: WalletTypes;
+  walletProvider: WalletProvider;
+  walletType: string;
   isWalletConnected: boolean;
   provider?: EIP1193Provider;
   rdns?: string;
@@ -92,7 +93,8 @@ export class WalletStore {
   private currentValue: WalletConnection = {
     walletAddress: '',
     walletChainId: '',
-    walletType: WalletTypes.NONE,
+    walletProvider: WalletProvider.NONE,
+    walletType: '',
     isWalletConnected: false,
   };
   private listeners: Set<Listener> = new Set();
@@ -162,22 +164,22 @@ export class WalletStore {
 
   public async connectWallet(opts: {
     chainId?: string;
-    walletType: WalletTypes;
+    walletProvider: WalletProvider;
     providerId?: string;
   }) {
-    switch (opts.walletType) {
-      case WalletTypes.EIP6963: {
+    switch (opts.walletProvider) {
+      case WalletProvider.EIP6963: {
         if (opts.providerId) {
           await this.connectEIP6963Provider(opts.providerId);
         }
         break;
       }
-      case WalletTypes.NONE: {
-        this.disconnectWallet(); // disconnect when passed WalletTypes.NONE
+      case WalletProvider.NONE: {
+        this.disconnectWallet(); // disconnect when passed WalletProvider.NONE
         break;
       }
       default:
-        throw new Error(`Unknown wallet type: ${opts.walletType}`);
+        throw new Error(`Unknown wallet provider: ${opts.walletProvider}`);
     }
   }
 
@@ -242,7 +244,8 @@ export class WalletStore {
     this.currentValue = {
       walletAddress: '',
       walletChainId: '',
-      walletType: WalletTypes.NONE,
+      walletProvider: WalletProvider.NONE,
+      walletType: '',
       isWalletConnected: false,
       provider: undefined,
       rdns: undefined,
@@ -309,13 +312,19 @@ export class WalletStore {
 
         const chainId = chainIdResponse as string;
 
+        const {
+          provider,
+          info: { rdns, name },
+        } = providerDetail;
+
         this.currentValue = {
           walletAddress: accounts[0],
           walletChainId: chainId,
-          walletType: WalletTypes.EIP6963,
+          walletProvider: WalletProvider.EIP6963,
+          walletType: name,
           isWalletConnected: true,
-          provider: providerDetail.provider,
-          rdns: providerDetail.info.rdns,
+          provider,
+          rdns,
         };
         this.emitChange();
       } else {
@@ -326,6 +335,7 @@ export class WalletStore {
       throw error;
     }
   }
+
   private async refreshCurrentConnection() {
     const connection = this.getSnapshot();
 

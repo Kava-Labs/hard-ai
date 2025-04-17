@@ -69,4 +69,5 @@ export interface WalletInfo {
   address: string;
   chainId: string;
   balancesPrompt: string;
+  walletType: string;
 }
