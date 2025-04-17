@@ -162,10 +162,6 @@ export class WalletStore {
     return Array.from(this.providers.values());
   }
 
-  // private getWalletType(rdns: string): WalletType {
-  //   return this.rdnsToWalletType[rdns] || WalletType.OTHER;
-  // }
-
   public async connectWallet(opts: {
     chainId?: string;
     walletProvider: WalletProvider;
