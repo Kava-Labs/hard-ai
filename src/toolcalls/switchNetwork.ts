@@ -12,7 +12,7 @@ interface SwitchChainToolParams {
   chainName: string;
 }
 
-export class EvmChainSwitcherMessage
+export class EvmChainSwitchMessage
   implements ChainToolCallWalletAction<SwitchChainToolParams>
 {
   name = 'evm-switch-chain';

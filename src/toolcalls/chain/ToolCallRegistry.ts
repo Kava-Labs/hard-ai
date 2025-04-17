@@ -13,7 +13,7 @@ import {
 import { EvmBalancesQuery } from '../evmBalances';
 import { EvmTransferMessage } from '../evmTransfer';
 import { ERC20ConversionMessage } from '../erc20Conversion';
-import { EvmChainSwitcherMessage } from '../switchNetwork';
+import { EvmChainSwitchMessage } from '../switchNetwork';
 /**
  * Central registry for all chain operations (messages and queries).
  * Manages the registration and retrieval of operations, and generates
@@ -138,7 +138,7 @@ export function initializeToolCallRegistry(): ToolCallRegistry<unknown> {
   registry.register(new EvmTransferMessage());
   registry.register(new EvmBalancesQuery());
   registry.register(new ERC20ConversionMessage());
-  registry.register(new EvmChainSwitcherMessage());
+  registry.register(new EvmChainSwitchMessage());
 
   return registry;
 }
