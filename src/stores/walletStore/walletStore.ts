@@ -110,7 +110,8 @@ export class WalletStore {
   private listeners: Set<Listener> = new Set();
   private providers: Map<string, EIP6963ProviderDetail> = new Map();
 
-  // Map to identify wallet types based on rdns
+  //  Note - if wallets aren't enumerated here, they will get categorized
+  //  as 'other' and we won't be able to auto-connect
   private rdnsToWalletType: Record<string, WalletType> = {
     'io.metamask': WalletType.METAMASK,
     'org.hot-labs': WalletType.HOTWALLET,
@@ -181,7 +182,6 @@ export class WalletStore {
     return Array.from(this.providers.values());
   }
 
-  //  Helper method to determine wallet type from rdns
   private getWalletType(rdns: string): WalletType {
     return this.rdnsToWalletType[rdns] || WalletType.OTHER;
   }
