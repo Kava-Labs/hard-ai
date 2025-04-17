@@ -67,7 +67,6 @@ const ConversationComponent = ({
               prevMessage={
                 messages[index - 1] as ChatCompletionAssistantMessageParam
               }
-              onRendered={onRendered}
               toolCallRegistry={toolCallRegistry}
             />
           );

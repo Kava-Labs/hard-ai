@@ -10,20 +10,17 @@ import {
   ChatCompletionMessageToolCall,
   ChatCompletionToolMessageParam,
 } from 'openai/resources/index';
-import { CompleteQueryDisplay } from './CompleteQueryDisplay';
 import { CompleteTxDisplay } from './CompleteTxDisplayCard';
 
 export interface ToolMessageContainerProps {
   message: ChatCompletionToolMessageParam;
   prevMessage: ChatCompletionAssistantMessageParam;
-  onRendered: () => void;
   toolCallRegistry: ToolCallRegistry<unknown>;
 }
 
 export const ToolMessageContainer = ({
   message,
   prevMessage,
-  onRendered,
   toolCallRegistry,
 }: ToolMessageContainerProps) => {
   const id = message.tool_call_id;
