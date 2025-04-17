@@ -4,19 +4,21 @@ import { chainRegistry, ChainType } from '../../toolcalls/chain';
 /**
  * Validates if the wallet is connected and compatible
  * @param walletStore The wallet store instance
- * @param requiredWalletTypes Array of required wallet types
+ * @param requiredWalletProvider Array of required wallet types
  * @returns boolean - true if wallet is valid, throws error otherwise
  */
 export function validateWallet(
   walletStore: WalletStore,
-  requiredWalletTypes: WalletProvider[] | null,
+  requiredWalletProvider: WalletProvider[] | null,
 ): boolean {
   if (!walletStore.getSnapshot().isWalletConnected) {
     throw new Error('please connect to a compatible wallet');
   }
 
-  if (Array.isArray(requiredWalletTypes)) {
-    if (!requiredWalletTypes.includes(walletStore.getSnapshot().walletType)) {
+  if (Array.isArray(requiredWalletProvider)) {
+    if (
+      !requiredWalletProvider.includes(walletStore.getSnapshot().walletProvider)
+    ) {
       throw new Error('please connect to a compatible wallet');
     }
   }

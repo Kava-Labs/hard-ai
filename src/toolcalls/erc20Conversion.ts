@@ -85,7 +85,9 @@ export class ERC20ConversionMessage
     }
 
     if (Array.isArray(this.needsWallet)) {
-      if (!this.needsWallet.includes(walletStore.getSnapshot().walletType)) {
+      if (
+        !this.needsWallet.includes(walletStore.getSnapshot().walletProvider)
+      ) {
         throw new Error('please connect to a compatible wallet');
       }
     }

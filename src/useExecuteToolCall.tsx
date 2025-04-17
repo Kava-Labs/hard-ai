@@ -60,7 +60,7 @@ export const useExecuteToolCall = (
     ) => {
       if (
         operation.walletMustMatchChainID &&
-        walletStore.getSnapshot().walletType === WalletProvider.EIP6963 &&
+        walletStore.getSnapshot().walletProvider === WalletProvider.EIP6963 &&
         walletStore.getSnapshot().walletChainId !== chainId
       ) {
         switch (operation.chainType) {
@@ -124,7 +124,9 @@ export const useExecuteToolCall = (
           if (
             operation.needsWallet &&
             Array.isArray(operation.needsWallet) &&
-            operation.needsWallet.includes(walletStore.getSnapshot().walletType)
+            operation.needsWallet.includes(
+              walletStore.getSnapshot().walletProvider,
+            )
           ) {
             unsubscribe();
 
@@ -196,7 +198,9 @@ export const useExecuteToolCall = (
       if (
         operation.needsWallet &&
         Array.isArray(operation.needsWallet) &&
-        !operation.needsWallet.includes(walletStore.getSnapshot().walletType)
+        !operation.needsWallet.includes(
+          walletStore.getSnapshot().walletProvider,
+        )
       ) {
         setIsWalletConnecting(true);
         openWalletConnectModal();

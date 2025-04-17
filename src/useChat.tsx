@@ -27,7 +27,6 @@ import { ToolCallStreamStore } from './stores/toolCallStreamStore';
 import { useExecuteToolCall } from './useExecuteToolCall';
 import {
   WalletProvider,
-  WalletType,
   EIP6963ProviderDetail,
   walletStore,
 } from './stores/walletStore';
