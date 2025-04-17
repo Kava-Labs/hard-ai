@@ -269,7 +269,7 @@ export class WalletStore {
       walletAddress: '',
       walletChainId: '',
       walletProvider: WalletProvider.NONE,
-      walletType: undefined,
+      walletType: WalletType.NONE,
       isWalletConnected: false,
       provider: undefined,
       rdns: undefined,
@@ -335,7 +335,11 @@ export class WalletStore {
         });
 
         const chainId = chainIdResponse as string;
-        const rdns = providerDetail.info.rdns;
+
+        const {
+          provider,
+          info: { rdns },
+        } = providerDetail;
         const walletType = this.getWalletType(rdns);
 
         this.currentValue = {
@@ -344,8 +348,8 @@ export class WalletStore {
           walletProvider: WalletProvider.EIP6963,
           walletType: walletType,
           isWalletConnected: true,
-          provider: providerDetail.provider,
-          rdns: rdns,
+          provider,
+          rdns,
         };
         this.emitChange();
       } else {
