@@ -19,6 +19,7 @@ import { InProgressTxDisplay } from './components/InProgressTxDisplay';
 interface SendToolParams {
   chainName: string;
   toAddress: string;
+  fromAddress?: string;
   amount: string;
   denom: string;
 }
@@ -41,6 +42,12 @@ export class EvmTransferMessage
       type: 'string',
       description: 'Recipient address',
       required: true,
+    },
+    {
+      name: 'fromAddress',
+      type: 'string',
+      description: 'Sending address',
+      required: false,
     },
     {
       name: 'amount',
@@ -123,9 +130,6 @@ export class EvmTransferMessage
 
     const { toAddress, amount, denom } = params;
 
-    // const { masksToValues } = getStoredMasks();
-
-    // const validToAddress = masksToValues[toAddress] ?? '';
     const validToAddress = toAddress;
     if (!validToAddress.length) {
       throw new Error(`please provide a valid address to send to`);
@@ -163,7 +167,7 @@ export class EvmTransferMessage
     }
 
     const { ethers } = await import('ethers');
-    const { toAddress, amount, denom } = params;
+    const { toAddress, fromAddress, amount, denom } = params;
 
     const { erc20Contracts, rpcUrls, nativeToken, chainID } = chainRegistry[
       this.chainType
@@ -174,7 +178,8 @@ export class EvmTransferMessage
       let txParams: Record<string, string>;
 
       const addressTo = toAddress;
-      const addressFrom = walletStore.getSnapshot().walletAddress;
+      const addressFrom =
+        fromAddress ?? walletStore.getSnapshot().walletAddress;
 
       const receivingAddress = ethers.getAddress(addressTo);
       const sendingAddress = ethers.getAddress(addressFrom);
