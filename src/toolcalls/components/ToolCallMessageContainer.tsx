@@ -61,12 +61,11 @@ export const ToolMessageContainer = ({
       return null;
     }
 
-    if (operation.operationType === OperationType.QUERY) {
-      return (
-        <CompleteQueryDisplay content={content.info} onRendered={onRendered} />
-      );
-    } else {
+    if (operation.operationType === OperationType.TRANSACTION) {
       return <CompleteTxDisplay hash={content.info} chain={chain} />;
+      //  don't display a custom component for queries or wallet actions
+    } else {
+      return null;
     }
   }
 
