@@ -12,16 +12,6 @@ export enum WalletProvider {
   NONE = 'NONE',
 }
 
-export enum WalletType {
-  METAMASK = 'MetaMask',
-  HOTWALLET = 'HOT Wallet',
-  OKX = 'OKX Wallet',
-  COINBASE = 'Coinbase Wallet',
-  KEPLR = 'Keplr',
-  OTHER = 'other',
-  NONE = 'none',
-}
-
 export enum SignatureTypes {
   EIP712 = 'EIP712',
   EVM = 'EVM',
@@ -76,7 +66,7 @@ export type WalletConnection = {
   walletAddress: string;
   walletChainId: string;
   walletProvider: WalletProvider;
-  walletType: WalletType;
+  walletType: string;
   isWalletConnected: boolean;
   provider?: EIP1193Provider;
   rdns?: string;
@@ -104,21 +94,11 @@ export class WalletStore {
     walletAddress: '',
     walletChainId: '',
     walletProvider: WalletProvider.NONE,
-    walletType: WalletType.NONE,
+    walletType: '',
     isWalletConnected: false,
   };
   private listeners: Set<Listener> = new Set();
   private providers: Map<string, EIP6963ProviderDetail> = new Map();
-
-  //  Note - if wallets aren't enumerated here, they will get categorized
-  //  as 'other' and we won't be able to auto-connect
-  private rdnsToWalletType: Record<string, WalletType> = {
-    'io.metamask': WalletType.METAMASK,
-    'org.hot-labs': WalletType.HOTWALLET,
-    'com.okex.wallet': WalletType.OKX,
-    'com.coinbase.wallet': WalletType.COINBASE,
-    'app.keplr': WalletType.KEPLR,
-  };
 
   constructor() {
     this.setupEIP6963Listeners();
@@ -182,9 +162,9 @@ export class WalletStore {
     return Array.from(this.providers.values());
   }
 
-  private getWalletType(rdns: string): WalletType {
-    return this.rdnsToWalletType[rdns] || WalletType.OTHER;
-  }
+  // private getWalletType(rdns: string): WalletType {
+  //   return this.rdnsToWalletType[rdns] || WalletType.OTHER;
+  // }
 
   public async connectWallet(opts: {
     chainId?: string;
@@ -269,7 +249,7 @@ export class WalletStore {
       walletAddress: '',
       walletChainId: '',
       walletProvider: WalletProvider.NONE,
-      walletType: WalletType.NONE,
+      walletType: '',
       isWalletConnected: false,
       provider: undefined,
       rdns: undefined,
@@ -338,15 +318,14 @@ export class WalletStore {
 
         const {
           provider,
-          info: { rdns },
+          info: { rdns, name },
         } = providerDetail;
-        const walletType = this.getWalletType(rdns);
 
         this.currentValue = {
           walletAddress: accounts[0],
           walletChainId: chainId,
           walletProvider: WalletProvider.EIP6963,
-          walletType: walletType,
+          walletType: name,
           isWalletConnected: true,
           provider,
           rdns,
