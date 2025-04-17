@@ -206,42 +206,83 @@ export class WalletStore {
     const hexChainId = `0x${Number(chainID).toString(16)}`;
 
     try {
+      // First attempt to switch chains
       await connection.provider.request({
         method: 'wallet_switchEthereumChain',
         params: [{ chainId: hexChainId }],
       });
-      //  todo - this still throws console error after successfully adding and switching networks
-      //  can we quiet this down?
+
+      await this.refreshCurrentConnection();
+      return;
     } catch (switchError: unknown) {
-      // This error code indicates that the chain has not been added to the wallet
+      // Check if this is the "chain not added" error
       if (
         typeof switchError === 'object' &&
         switchError !== null &&
         'code' in switchError &&
         switchError.code === 4902
       ) {
-        await connection.provider.request({
-          method: 'wallet_addEthereumChain',
-          params: [
-            {
+        try {
+          if (chainName === ChainNames.KAVA_EVM) {
+            const kavaEVMParams = {
               chainId: hexChainId,
-              chainName: name === ChainNames.KAVA_EVM ? 'Kava' : name,
-              rpcUrls: rpcUrls,
-              blockExplorerUrls,
+              chainName: 'Kava EVM',
+              rpcUrls: Array.isArray(rpcUrls) ? rpcUrls : [rpcUrls],
+              blockExplorerUrls: blockExplorerUrls,
+              nativeCurrency: {
+                name: 'KAVA',
+                symbol: 'KAVA',
+                decimals: 18,
+              },
+            };
+
+            await connection.provider.request({
+              method: 'wallet_addEthereumChain',
+              params: [kavaEVMParams],
+            });
+          } else {
+            // For other chains, use the standard format
+            const addChainParams = {
+              chainId: hexChainId,
+              chainName: name,
+              rpcUrls: Array.isArray(rpcUrls) ? rpcUrls : [rpcUrls],
               nativeCurrency: {
                 name: nativeToken,
                 symbol: nativeToken,
-                decimals: nativeTokenDecimals,
+                decimals: nativeTokenDecimals || 18,
               },
-            },
-          ],
-        });
+            };
+
+            await connection.provider.request({
+              method: 'wallet_addEthereumChain',
+              params: [addChainParams],
+            });
+          }
+
+          // MetaMask typically auto-switches, but let's refresh to be sure
+          await this.refreshCurrentConnection();
+          return;
+          //  MetaMask throws an error here, but if we've added the chain, we can ignore it
+        } catch {
+          await this.refreshCurrentConnection();
+          const updatedConnection = this.getSnapshot();
+
+          if (
+            updatedConnection.walletChainId.toLowerCase() ===
+            hexChainId.toLowerCase()
+          ) {
+            console.log(`Already on chain ${chainName} despite error`);
+            return;
+          }
+
+          //  If we get here, it's a genuine failure
+          throw new Error(`Failed to add chain: ${chainName}`);
+        }
       } else {
-        throw switchError;
+        throw new Error(`Failed to switch to chain: ${chainName}`);
       }
     }
   }
-
   public disconnectWallet() {
     this.currentValue = {
       walletAddress: '',
