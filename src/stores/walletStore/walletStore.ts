@@ -206,7 +206,6 @@ export class WalletStore {
     const hexChainId = `0x${Number(chainID).toString(16)}`;
 
     try {
-      // First attempt to switch chains
       await connection.provider.request({
         method: 'wallet_switchEthereumChain',
         params: [{ chainId: hexChainId }],
@@ -215,7 +214,7 @@ export class WalletStore {
       await this.refreshCurrentConnection();
       return;
     } catch (switchError: unknown) {
-      // Check if this is the "chain not added" error
+      // This error code indicates that the chain has not been added to the wallet
       if (
         typeof switchError === 'object' &&
         switchError !== null &&
@@ -241,7 +240,7 @@ export class WalletStore {
               params: [kavaEVMParams],
             });
           } else {
-            // For other chains, use the standard format
+            //  For other chains, use the standard format
             const addChainParams = {
               chainId: hexChainId,
               chainName: name,
@@ -259,10 +258,8 @@ export class WalletStore {
             });
           }
 
-          // MetaMask typically auto-switches, but let's refresh to be sure
           await this.refreshCurrentConnection();
           return;
-          //  MetaMask throws an error here, but if we've added the chain, we can ignore it
         } catch {
           await this.refreshCurrentConnection();
           const updatedConnection = this.getSnapshot();
@@ -271,11 +268,11 @@ export class WalletStore {
             updatedConnection.walletChainId.toLowerCase() ===
             hexChainId.toLowerCase()
           ) {
-            console.log(`Already on chain ${chainName} despite error`);
+            //  MetaMask throws an error here, but if the chain is successfully added,
+            //  it can be ignored
             return;
           }
 
-          //  If we get here, it's a genuine failure
           throw new Error(`Failed to add chain: ${chainName}`);
         }
       } else {
