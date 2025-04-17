@@ -4,7 +4,7 @@ import { chainRegistry, ChainType } from '../../toolcalls/chain';
 /**
  * Validates if the wallet is connected and compatible
  * @param walletStore The wallet store instance
- * @param requiredWalletProvider Array of required wallet types
+ * @param requiredWalletProvider Array of required wallet providers
  * @returns boolean - true if wallet is valid, throws error otherwise
  */
 export function validateWallet(

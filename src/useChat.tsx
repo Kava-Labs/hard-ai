@@ -135,7 +135,6 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
         ) {
           return;
         } else {
-          // Include wallet type in the message
           messageContent = `Wallet account changed. New address: ${walletInfo.address} on chain ID: ${walletInfo.chainId}. 
           Wallet type: ${walletInfo.walletType || 'Unknown'}. 
           Keep previous wallet information in context, but recognize that it is not current. ${walletInfo.balancesPrompt}`;
@@ -576,7 +575,6 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
       fetchSearchHistory,
       toolCallRegistry,
       walletAddress,
-      walletType: walletConnection.walletType, // Add wallet type to returned object
       handleProviderSelect,
       disconnectWallet,
       availableProviders,
@@ -589,7 +587,6 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
   }, [
     walletConnection.isWalletConnected,
     walletConnection.rdns,
-    walletConnection.walletType, // Add wallet type to dependencies
     availableProviders,
     activeChat,
     conversationHistories,
