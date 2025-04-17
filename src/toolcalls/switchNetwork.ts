@@ -5,7 +5,7 @@ import {
   chainRegistry,
   ChainToolCallWalletAction,
 } from './chain';
-import { walletStore, WalletTypes } from '../stores/walletStore/walletStore';
+import { WalletProvider, walletStore } from '../stores/walletStore/walletStore';
 import { validateChain, validateWallet } from './helpers/wallet';
 
 interface SwitchChainToolParams {
@@ -20,7 +20,7 @@ export class EvmChainSwitcherMessage
     'Switch the connected wallet to a different EVM-compatible chain';
   operationType = OperationType.WALLET;
   chainType = ChainType.EVM;
-  needsWallet = [WalletTypes.EIP6963];
+  needsWallet = [WalletProvider.EIP6963];
   private hasValidWallet = false;
   parameters = [chainNameToolCallParam];
 
