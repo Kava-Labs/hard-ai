@@ -15,6 +15,7 @@ import {
 } from '../stores/walletStore/walletStore';
 import { validateChain, validateWallet } from './helpers/wallet';
 import { InProgressTxDisplay } from './components/InProgressTxDisplay';
+import { ethers } from 'ethers';
 
 interface SendToolParams {
   chainName: string;
@@ -128,11 +129,18 @@ export class EvmTransferMessage
     //  wallet checks have passed
     this.hasValidWallet = true;
 
-    const { toAddress, amount, denom } = params;
+    const { toAddress, fromAddress, amount, denom } = params;
 
     const validToAddress = toAddress;
     if (!validToAddress.length) {
-      throw new Error(`please provide a valid address to send to`);
+      throw new Error(`Please provide a valid address to send to`);
+    }
+
+    if (fromAddress) {
+      const isValidAddress = ethers.isAddress(fromAddress);
+      if (!isValidAddress) {
+        throw new Error(`Please provide a valid address to send from`);
+      }
     }
 
     if (Number(amount) <= 0) {
