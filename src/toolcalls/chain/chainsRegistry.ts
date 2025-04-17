@@ -3,7 +3,10 @@ export enum ChainType {
   EVM = 'evm',
 }
 
-export type ERC20Record = { contractAddress: string; displayName: string };
+export type ERC20Record = {
+  contractAddress: string;
+  displayName: string;
+};
 
 export type CoinRecord = { denom: string; displayName: string };
 
@@ -12,7 +15,7 @@ export type EVMChainConfig = {
   name: string;
   rpcUrls: string[];
   blockExplorerUrls: string[];
-  chainID: number;
+  chainID: string;
   nativeToken: string;
   nativeTokenDecimals: number;
   erc20Contracts: Record<string, ERC20Record>;
@@ -20,9 +23,9 @@ export type EVMChainConfig = {
 
 export enum ChainNames {
   KAVA_COSMOS = 'Kava Cosmos',
-
   KAVA_EVM = 'Kava EVM',
   ETH = 'Ethereum',
+  BSC = 'Binance Smart Chain',
   KAVA_EVM_INTERNAL_TESTNET = 'Kava EVM Internal Testnet',
 }
 
@@ -31,17 +34,12 @@ export type CosmosChainConfig = {
   name: string;
   rpcUrls: string[];
   blockExplorerUrls: string[];
-
   chainID: string;
   evmChainName?: ChainNames;
-
   denoms: Record<string, CoinRecord>;
-
   bech32Prefix: string;
-
   nativeToken: string;
   nativeTokenDecimals: number;
-
   defaultGasWanted: string;
 };
 
@@ -55,11 +53,10 @@ export const chainRegistry: ChainRegistry = {
       chainType: ChainType.EVM,
       name: ChainNames.KAVA_EVM,
       rpcUrls: ['https://evm.kava-rpc.com'],
-      chainID: 2222,
+      chainID: '2222',
       nativeToken: 'KAVA',
       nativeTokenDecimals: 18,
       blockExplorerUrls: ['https://kavascan.com/'],
-
       erc20Contracts: {
         WHARD: {
           contractAddress: '0x25e9171C98Fc1924Fa9415CF50750274F0664764',
@@ -127,15 +124,11 @@ export const chainRegistry: ChainRegistry = {
       chainType: ChainType.EVM,
       name: ChainNames.KAVA_EVM_INTERNAL_TESTNET,
       rpcUrls: ['https://evm.data.internal.testnet.us-east.production.kava.io'],
-      chainID: 2221,
+      chainID: '2221',
       nativeToken: 'TKAVA',
       nativeTokenDecimals: 18,
       blockExplorerUrls: ['https://kavascan.com/'],
       erc20Contracts: {
-        WHARD: {
-          contractAddress: '0x25e9171C98Fc1924Fa9415CF50750274F0664764',
-          displayName: 'wHARD',
-        },
         USDT: {
           contractAddress: '0xaCF81e57CBd9aF95FaBbe53678FcB70B1dD1b7A1',
           displayName: 'USD₮',
@@ -155,10 +148,6 @@ export const chainRegistry: ChainRegistry = {
         AXLUSDC: {
           contractAddress: '0x7a5DBf8e6ac1F6aCCF14f5B4E88b21EAA04c983d',
           displayName: 'axlUSDC',
-        },
-        AXLDAI: {
-          contractAddress: '0xAa03872057AD496Bd6f3eE85b85e1e4DABdb1a5d',
-          displayName: 'axlDAI',
         },
         AXLUSDT: {
           contractAddress: '0xA637F4CECbA91Ad19075bA3d330cd95f694B1707',
@@ -188,33 +177,66 @@ export const chainRegistry: ChainRegistry = {
           contractAddress: '0x4ef4e7b4281e813Bf0FED39728E025D01c3e76AC',
           displayName: 'wBTC',
         },
-        MBTC: {
-          contractAddress: '0x59889b7021243dB5B1e065385F918316cD90D46c',
-          displayName: 'mBTC',
-        },
       },
     },
-    [ChainNames.ETH]: {
+    //  todo - find better public RPC
+    // [ChainNames.ETH]: {
+    //   chainType: ChainType.EVM,
+    //   name: ChainNames.ETH,
+    //   chainID: 1,
+    //   nativeToken: 'ETH',
+    //   nativeTokenDecimals: 18,
+    //   rpcUrls: ['https://eth.drpc.org'],
+    //   blockExplorerUrls: ['https://etherscan.io/'],
+    //   erc20Contracts: {
+    //     USDT: {
+    //       contractAddress: '0xdAC17F958D2ee523a2206206994597C13D831ec7',
+    //       displayName: 'USDT',
+    //       decimals: 6,
+    //     },
+    //     USDC: {
+    //       contractAddress: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
+    //       displayName: 'USDC',
+    //       decimals: 6,
+    //     },
+    //     DAI: {
+    //       contractAddress: '0x6B175474E89094C44Da98b954EedeAC495271d0F',
+    //       displayName: 'DAI',
+    //       decimals: 18,
+    //     },
+    //     WETH: {
+    //       contractAddress: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2',
+    //       displayName: 'WETH',
+    //       decimals: 18,
+    //     },
+    //     WBTC: {
+    //       contractAddress: '0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599',
+    //       displayName: 'WBTC',
+    //       decimals: 8,
+    //     },
+    //   },
+    // },
+    [ChainNames.BSC]: {
       chainType: ChainType.EVM,
-      name: ChainNames.ETH,
-      chainID: 1,
-      nativeToken: 'ETH',
+      name: ChainNames.BSC,
+      chainID: '56',
+      nativeToken: 'BNB',
       nativeTokenDecimals: 18,
-      rpcUrls: ['https://eth.drpc.org'],
-      blockExplorerUrls: ['https://etherscan.io/'],
+      rpcUrls: ['https://bsc-dataseed.binance.org'],
+      blockExplorerUrls: ['https://bscscan.com/'],
       erc20Contracts: {
-        // USDT: {
-        //   contractAddress: '0xdAC17F958D2ee523a2206206994597C13D831ec7',
-        //   displayName: 'USD₮',
-        // },
-        // USDC: {
-        //   contractAddress: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
-        //   displayName: 'USDC',
-        // },
-        // DAI: {
-        //   contractAddress: '0x6B175474E89094C44Da98b954EedeAC495271d0F',
-        //   displayName: 'DAI',
-        // }
+        WETH: {
+          contractAddress: '0x2170Ed0880ac9A755fd29B2688956BD959F933F8',
+          displayName: 'WETH',
+        },
+        WBTC: {
+          contractAddress: '0x7130d2A12B9BCbFAe4f2634d864A1Ee1Ce3Ead9c',
+          displayName: 'WBTC',
+        },
+        USDT: {
+          contractAddress: '0x55d398326f99059fF775485246999027B3197955',
+          displayName: 'USDT',
+        },
       },
     },
   },
@@ -226,13 +248,10 @@ export const chainRegistry: ChainRegistry = {
       blockExplorerUrls: ['https://www.mintscan.io/kava/'],
       chainID: 'kava_2222-10',
       evmChainName: ChainNames.KAVA_EVM, // reference to the evm chain config, needed for eip712 signing
-
       nativeToken: 'ukava',
       nativeTokenDecimals: 6,
-
       bech32Prefix: 'kava',
       defaultGasWanted: '1000000',
-
       denoms: {
         WHARD: {
           denom: 'whard',

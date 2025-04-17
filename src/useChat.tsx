@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { MessageHistoryStore } from './stores/messageHistoryStore';
 import {
   ActiveChat,
@@ -6,6 +6,7 @@ import {
   ConversationHistories,
   ConversationHistory,
   SearchableChatHistories,
+  WalletInfo,
   WalletProviderDetail,
 } from './types';
 import {
@@ -31,8 +32,19 @@ import {
 } from './stores/walletStore';
 import { defaultSystemPrompt } from './toolcalls/chain/prompts';
 import { useWalletStore } from './stores/walletStore/useWalletStore';
+import {
+  formatWalletBalancesForPrompt,
+  getChainAccounts,
+} from './utils/wallet';
 
 const activeChats: Record<string, ActiveChat> = {};
+
+interface WalletUpdateRef {
+  isProcessing: boolean;
+  previousAddress: string;
+  previousChainId: string;
+  pendingWalletMessage: ChatMessage | null;
+}
 
 export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
   const [client] = useState(() => {
@@ -75,22 +87,159 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
   const [isWalletModalOpen, setIsWalletModalOpen] = useState(false);
   const [isWalletConnecting, setIsWalletConnecting] = useState(false);
 
+  //  Ref to track async wallet switching and store pending wallet message
+  const walletUpdateRef = useRef<WalletUpdateRef>({
+    isProcessing: false,
+    previousAddress: '',
+    previousChainId: '',
+    pendingWalletMessage: null,
+  });
+
+  const getCurrentWalletInfoForPrompt = useCallback(async () => {
+    const walletConnection = walletStore.getSnapshot();
+
+    const walletInfo: WalletInfo = {
+      isConnected: walletConnection.isWalletConnected,
+      address: walletConnection.walletAddress,
+      chainId: walletConnection.walletChainId,
+      balancesPrompt: '',
+    };
+
+    if (walletInfo.isConnected && walletConnection.provider) {
+      const balances = await getChainAccounts(walletConnection.provider);
+      walletInfo.balancesPrompt = formatWalletBalancesForPrompt(
+        balances,
+        walletConnection.walletChainId,
+      );
+    }
+
+    return walletInfo;
+  }, []);
+
+  const addWalletSystemMessage = useCallback(
+    async (walletInfo?: WalletInfo) => {
+      try {
+        let messageContent = '';
+
+        //  If no wallet info was provided, then we have been disconnected,
+        //  Reset the ref
+        if (!walletInfo) {
+          messageContent =
+            'Wallet has been disconnected. All previous wallet information is no longer valid.';
+          walletUpdateRef.current.previousAddress = '';
+          walletUpdateRef.current.previousChainId = '';
+        } else if (
+          walletInfo.address === walletUpdateRef.current.previousAddress &&
+          walletInfo.chainId === walletUpdateRef.current.previousChainId
+        ) {
+          return;
+        } else {
+          messageContent = `Wallet account changed. New address: ${walletInfo.address} on chain ID: ${walletInfo.chainId}. Keep previous wallet information in context, but recognize that it is not current. ${walletInfo.balancesPrompt}`;
+          walletUpdateRef.current.previousAddress = walletInfo.address;
+          walletUpdateRef.current.previousChainId = walletInfo.chainId;
+        }
+
+        const walletMessage: ChatMessage = {
+          role: 'system',
+          content: messageContent,
+        };
+
+        //  If the conversation has already started, add the wallet message
+        if (activeChat.messageHistoryStore.getSnapshot().length > 0) {
+          activeChat.messageHistoryStore.addMessage(walletMessage);
+        } else {
+          //  Otherwise, store it in the ref to be added during handleChatCompletion
+          //  after the initial system prompt (so as not to override it)
+          walletUpdateRef.current.pendingWalletMessage = walletMessage;
+        }
+      } catch (error) {
+        console.error('Failed to add wallet system message:', error);
+      }
+    },
+    [activeChat],
+  );
+
   const connectEIP6963Provider = useCallback(
     async (providerId: string, chainId?: string) => {
+      if (walletUpdateRef.current.isProcessing) return;
+      walletUpdateRef.current.isProcessing = true;
+
       try {
         await walletStore.connectWallet({
           chainId,
           walletType: WalletTypes.EIP6963,
           providerId,
         });
+
+        const walletInfo = await getCurrentWalletInfoForPrompt();
+
+        //  Add a message if connection was successful
+        if (walletInfo.isConnected && walletInfo.address) {
+          await addWalletSystemMessage(walletInfo);
+        }
       } catch (error) {
-        console.error('Failed to connect to wallet provider:', error);
+        console.error('Failed to connect wallet:', error);
         throw error;
+      } finally {
+        walletUpdateRef.current.isProcessing = false;
       }
     },
-    [],
+    [getCurrentWalletInfoForPrompt, addWalletSystemMessage],
   );
 
+  //  Subscribe to wallet connection changes and update system prompt accordingly
+  useEffect(() => {
+    //  Only proceed if we're not already processing an update
+    if (walletUpdateRef.current.isProcessing) {
+      return;
+    }
+
+    //  Set up subscription for wallet changes
+    const unsubscribe = walletStore.subscribe(async () => {
+      const currentState = walletStore.getSnapshot();
+
+      //  Only process if we're not already handling a wallet update
+      if (walletUpdateRef.current.isProcessing) {
+        return;
+      }
+
+      try {
+        if (
+          walletUpdateRef.current.previousAddress ||
+          walletUpdateRef.current.previousChainId
+        ) {
+          if (currentState.isWalletConnected && currentState.provider) {
+            const addressChanged =
+              currentState.walletAddress !==
+              walletUpdateRef.current.previousAddress;
+            const chainChanged =
+              currentState.walletChainId !==
+              walletUpdateRef.current.previousChainId;
+
+            if (addressChanged || chainChanged) {
+              walletUpdateRef.current.isProcessing = true;
+              const walletInfo = await getCurrentWalletInfoForPrompt();
+              await addWalletSystemMessage(walletInfo);
+            }
+          }
+          // Wallet was disconnected from outside our UI and disconnectWallet()
+          // wasn't called (which would have set isProcessing=true)
+          else if (
+            !currentState.isWalletConnected &&
+            walletUpdateRef.current.previousAddress.length > 0
+          ) {
+            walletUpdateRef.current.isProcessing = true;
+            await addWalletSystemMessage();
+          }
+        }
+      } finally {
+        walletUpdateRef.current.isProcessing = false;
+      }
+    });
+
+    //  Clean up subscription
+    return () => unsubscribe();
+  }, [getCurrentWalletInfoForPrompt, addWalletSystemMessage]);
   const refreshProviders = useCallback(() => {
     setAvailableProviders(walletStore.getProviders());
   }, []);
@@ -100,9 +249,14 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
     setIsWalletModalOpen(true);
   }, [refreshProviders, setIsWalletModalOpen]);
 
-  const disconnectWallet = useCallback(() => {
+  const disconnectWallet = useCallback(async () => {
+    walletUpdateRef.current.isProcessing = true;
+
     walletStore.disconnectWallet();
-  }, []);
+    await addWalletSystemMessage();
+
+    walletUpdateRef.current.isProcessing = false;
+  }, [addWalletSystemMessage]);
 
   const handleProviderSelect = useCallback(
     async (provider: EIP6963ProviderDetail) => {
@@ -177,16 +331,30 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
         isConversationStarted: true,
         abortController: new AbortController(),
       };
-      if (newActiveChat.messageHistoryStore.getSnapshot().length === 0) {
+
+      // Update isRequesting state and create a new abortController
+      setActiveChat(newActiveChat);
+      activeChats[activeChat.id] = newActiveChat;
+
+      const messages = newActiveChat.messageHistoryStore.getSnapshot();
+
+      // Initialize with system message if needed
+      if (messages.length === 0) {
         newActiveChat.messageHistoryStore.addMessage({
           role: 'system',
           content: defaultSystemPrompt,
         });
+
+        // Add the pending wallet message if it exists
+        if (walletUpdateRef.current.pendingWalletMessage) {
+          newActiveChat.messageHistoryStore.addMessage(
+            walletUpdateRef.current.pendingWalletMessage,
+          );
+          walletUpdateRef.current.pendingWalletMessage = null;
+        }
       }
-      // update isRequesting state and create a new abortController
-      setActiveChat(newActiveChat);
-      activeChats[activeChat.id] = newActiveChat;
-      // add new messages to history
+
+      // Add new messages to history
       newActiveChat.messageHistoryStore.setMessages([
         ...newActiveChat.messageHistoryStore.getSnapshot(),
         ...newMessages,
@@ -256,10 +424,11 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
     setActiveChat((prev) => ({ ...prev, isRequesting: false }));
   }, [activeChat]);
 
-  //  handler specific to the New Chat button
-  const handleNewChat = useCallback(() => {
-    setActiveChat({
-      id: uuidv4(),
+  // handler specific to the New Chat button
+  const handleNewChat = useCallback(async () => {
+    const newChatId = uuidv4();
+    const newChat = {
+      id: newChatId,
       isRequesting: false,
       isConversationStarted: false,
       isOperationValidated: false,
@@ -270,8 +439,40 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
       messageHistoryStore: new MessageHistoryStore(),
       messageStore: new TextStreamStore(),
       errorStore: new TextStreamStore(),
+    };
+
+    // Add the default system prompt
+    newChat.messageHistoryStore.addMessage({
+      role: 'system',
+      content: defaultSystemPrompt,
     });
-  }, [initModel, client]);
+
+    setActiveChat(newChat);
+
+    // If wallet is connected, add the info as a separate system message
+    try {
+      walletUpdateRef.current.isProcessing = true;
+
+      const walletInfo = await getCurrentWalletInfoForPrompt();
+
+      if (walletInfo.isConnected && walletInfo.address) {
+        const walletInfoMessage: ChatMessage = {
+          role: 'system',
+          content: `Current wallet information: Address: ${walletInfo.address}... on chain ID: ${walletInfo.chainId}. ${walletInfo.balancesPrompt}`,
+        };
+
+        newChat.messageHistoryStore.addMessage(walletInfoMessage);
+
+        //  Update ref with current wallet info
+        walletUpdateRef.current.previousAddress = walletInfo.address;
+        walletUpdateRef.current.previousChainId = walletInfo.chainId;
+      }
+    } catch (error) {
+      console.error('Failed to add wallet info to new chat:', error);
+    } finally {
+      walletUpdateRef.current.isProcessing = false;
+    }
+  }, [initModel, client, getCurrentWalletInfoForPrompt]);
 
   const onSelectConversation = useCallback(
     async (id: string) => {
@@ -312,7 +513,7 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
       await deleteConversation(id);
       delete activeChats[id];
       if (id === activeChat.id) {
-        handleNewChat();
+        await handleNewChat();
       }
     },
     [activeChat, handleNewChat],

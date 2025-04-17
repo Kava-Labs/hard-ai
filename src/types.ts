@@ -63,3 +63,10 @@ export interface PromotedWallet {
 }
 
 export type WalletProviderDetail = EIP6963ProviderDetail;
+
+export interface WalletInfo {
+  isConnected: boolean;
+  address: string;
+  chainId: string;
+  balancesPrompt: string;
+}

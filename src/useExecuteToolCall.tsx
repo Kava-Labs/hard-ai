@@ -73,7 +73,7 @@ export const useExecuteToolCall = (
             ] as CosmosChainConfig;
             if (evmChainName) {
               if (
-                `0x${chainRegistry[ChainType.EVM][evmChainName].chainID.toString(16)}` !==
+                `0x${Number(chainRegistry[ChainType.EVM][evmChainName].chainID).toString(16)}` !==
                 walletStore.getSnapshot().walletChainId
               ) {
                 await walletStore.switchNetwork(evmChainName);
