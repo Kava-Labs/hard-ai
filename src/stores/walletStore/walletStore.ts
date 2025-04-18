@@ -210,6 +210,9 @@ export class WalletStore {
         method: 'wallet_switchEthereumChain',
         params: [{ chainId: hexChainId }],
       });
+
+      await this.refreshCurrentConnection();
+      return;
     } catch (switchError: unknown) {
       // This error code indicates that the chain has not been added to the wallet
       if (
@@ -218,28 +221,65 @@ export class WalletStore {
         'code' in switchError &&
         switchError.code === 4902
       ) {
-        await connection.provider.request({
-          method: 'wallet_addEthereumChain',
-          params: [
-            {
+        try {
+          if (chainName === ChainNames.KAVA_EVM) {
+            const kavaEVMParams = {
               chainId: hexChainId,
-              chainName: name === ChainNames.KAVA_EVM ? 'Kava' : name,
-              rpcUrls: rpcUrls,
-              blockExplorerUrls,
+              chainName: 'Kava EVM',
+              rpcUrls: Array.isArray(rpcUrls) ? rpcUrls : [rpcUrls],
+              blockExplorerUrls: blockExplorerUrls,
+              nativeCurrency: {
+                name: 'KAVA',
+                symbol: 'KAVA',
+                decimals: 18,
+              },
+            };
+
+            await connection.provider.request({
+              method: 'wallet_addEthereumChain',
+              params: [kavaEVMParams],
+            });
+          } else {
+            //  For other chains, use the standard format
+            const addChainParams = {
+              chainId: hexChainId,
+              chainName: name,
+              rpcUrls: Array.isArray(rpcUrls) ? rpcUrls : [rpcUrls],
               nativeCurrency: {
                 name: nativeToken,
                 symbol: nativeToken,
-                decimals: nativeTokenDecimals,
+                decimals: nativeTokenDecimals || 18,
               },
-            },
-          ],
-        });
+            };
+
+            await connection.provider.request({
+              method: 'wallet_addEthereumChain',
+              params: [addChainParams],
+            });
+          }
+
+          await this.refreshCurrentConnection();
+          return;
+        } catch {
+          await this.refreshCurrentConnection();
+          const updatedConnection = this.getSnapshot();
+
+          if (
+            updatedConnection.walletChainId.toLowerCase() ===
+            hexChainId.toLowerCase()
+          ) {
+            //  MetaMask throws an error here, but if the chain is successfully added,
+            //  it can be ignored
+            return;
+          }
+
+          throw new Error(`Failed to add chain: ${chainName}`);
+        }
       } else {
-        throw switchError;
+        throw new Error(`Failed to switch to chain: ${chainName}`);
       }
     }
   }
-
   public disconnectWallet() {
     this.currentValue = {
       walletAddress: '',

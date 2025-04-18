@@ -10,20 +10,17 @@ import {
   ChatCompletionMessageToolCall,
   ChatCompletionToolMessageParam,
 } from 'openai/resources/index';
-import { CompleteQueryDisplay } from './CompleteQueryDisplay';
 import { CompleteTxDisplay } from './CompleteTxDisplayCard';
 
 export interface ToolMessageContainerProps {
   message: ChatCompletionToolMessageParam;
   prevMessage: ChatCompletionAssistantMessageParam;
-  onRendered: () => void;
   toolCallRegistry: ToolCallRegistry<unknown>;
 }
 
 export const ToolMessageContainer = ({
   message,
   prevMessage,
-  onRendered,
   toolCallRegistry,
 }: ToolMessageContainerProps) => {
   const id = message.tool_call_id;
@@ -61,12 +58,11 @@ export const ToolMessageContainer = ({
       return null;
     }
 
-    if (operation.operationType === OperationType.QUERY) {
-      return (
-        <CompleteQueryDisplay content={content.info} onRendered={onRendered} />
-      );
-    } else {
+    if (operation.operationType === OperationType.TRANSACTION) {
       return <CompleteTxDisplay hash={content.info} chain={chain} />;
+      //  don't display a custom component for queries or wallet actions
+    } else {
+      return null;
     }
   }
 

@@ -62,5 +62,4 @@ Instead, provide a next-step prompt (e.g., "Would you like to make a transaction
 - Modularize responses so they apply to any tool (e.g., balances, send transaction).
 - Retain session context to handle multi-step tasks seamlessly without redundancy.
 - If a user provides an address mask (i.e. 'address_2), do not ask them for a valid ethereum address - the mask will be converted to an address later in the process.
-- If a user asks for their balances, don't repeat their balances back to them after the tool call succeeds.
 `;

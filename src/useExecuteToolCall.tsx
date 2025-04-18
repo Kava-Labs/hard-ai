@@ -10,6 +10,7 @@ import {
   ChainToolCallQuery,
   ToolCallRegistry,
   ChainToolCallOperation,
+  ChainToolCallWalletAction,
 } from './toolcalls/chain';
 
 export const useExecuteToolCall = (
@@ -103,6 +104,10 @@ export const useExecuteToolCall = (
         return (operation as ChainToolCallQuery<unknown>).executeQuery(
           params,
           walletStore,
+        );
+      } else if ('executeRequest' in operation) {
+        return (operation as ChainToolCallWalletAction<unknown>).executeRequest(
+          params,
         );
       }
 
