@@ -75,7 +75,6 @@ export class EvmTransferMessage
       chainName: string;
     },
     address: string,
-    // walletStore: WalletStore,
   ): Promise<boolean> {
     const { denom, amount, chainName } = params;
 
@@ -96,7 +95,6 @@ export class EvmTransferMessage
         rawBalance,
         nativeTokenDecimals,
       );
-      console.log(formattedBalance, amount);
       return Number(formattedBalance) >= Number(amount);
     }
 
@@ -114,8 +112,6 @@ export class EvmTransferMessage
     const decimals = await contract.decimals();
     const rawBalance = await contract.balanceOf(address);
     const formattedBalance = ethers.formatUnits(rawBalance, decimals);
-
-    console.log(formattedBalance, amount);
 
     return Number(formattedBalance) >= Number(amount);
   }

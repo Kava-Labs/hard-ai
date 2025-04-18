@@ -2,7 +2,6 @@ import {
   OperationType,
   ChainType,
   chainNameToolCallParam,
-  chainRegistry,
   ChainToolCallWalletAction,
 } from './chain';
 import { WalletProvider, walletStore } from '../stores/walletStore/walletStore';
@@ -43,21 +42,7 @@ export class EvmChainSwitchMessage
     try {
       await walletStore.switchNetwork(params.chainName);
 
-      const currentChainHex = await window.ethereum.request({
-        method: 'eth_chainId',
-      });
-      const currentChainId = parseInt(currentChainHex, 16).toString();
-
-      const expectedChainId =
-        chainRegistry[ChainType.EVM][params.chainName].chainID;
-
-      if (currentChainId !== expectedChainId) {
-        throw new Error(
-          `Switched to the wrong chain: expected ${expectedChainId}, got ${currentChainId}`,
-        );
-      }
-
-      return `Switched to chain ${currentChainId}`;
+      return `Switched to chain ${params.chainName}`;
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
       throw new Error(`Failed to switch chain: ${message}`);
