@@ -12,7 +12,8 @@ export class EvmBalancesQuery
   implements ChainToolCallQuery<EvmBalanceQueryParams>
 {
   name = 'evm-balances';
-  description = 'Returns the erc20 token balances for a given address';
+  description =
+    'Helps a user connect a supported wallet when they query information about their chain balances';
   parameters = [chainNameToolCallParam];
   operationType = OperationType.QUERY;
   chainType = ChainType.EVM;
