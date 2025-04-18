@@ -3,11 +3,9 @@ import { useState } from 'react';
 import { useChat } from './useChat';
 import { ChatInterface } from './ChatInterface';
 import { useIsMobileLayout, SearchHistoryModal, SideBar } from 'lib-kava-ai';
-import hardAILogo from './assets/hardAILogo.svg';
 import WalletModal from './WalletModal';
 import { PROMOTED_WALLETS } from './utils/wallet';
-
-const sideBarLogo = <img src={hardAILogo} alt="Hard AI logo" height={18} />;
+import KavaAILogo from './kavaAILogo';
 
 export const App = () => {
   const [isMobileSideBarOpen, setIsMobileSideBarOpen] = useState(false);
@@ -70,7 +68,7 @@ export const App = () => {
         onSelectConversation={onSelectConversation}
         onUpdateConversationTitle={onUpdateConversationTitle}
         isSideBarOpen={isSideBarOpen}
-        SideBarLogo={sideBarLogo}
+        SideBarLogo={<KavaAILogo height={20} name="kava-ai-sidebar-logo" />}
         styles={styles}
       />
       <ChatInterface

@@ -53,13 +53,11 @@ describe('ChatInterface', () => {
   it('renders correctly with inactive conversation', () => {
     render(<ChatInterface {...mockProps} />);
 
-    const hardAILogo = screen.getByRole('img', {
-      name: 'Hard AI logo',
-    });
+    const logo = screen.getByTestId('kava-ai-logo');
     const welcomeText = screen.getByText('How can I help you with Web3?');
     const input = screen.getByPlaceholderText('Ask anything...');
 
-    expect(hardAILogo).toBeInTheDocument();
+    expect(logo).toBeInTheDocument();
     expect(welcomeText).toBeInTheDocument();
     expect(input).toBeInTheDocument();
   });
