@@ -229,10 +229,18 @@ export async function getChainAccounts(
 }
 
 /**
- * Format wallet balances as a string for inclusion in system prompt
- * With tokens displayed as a bulleted list on their own lines
+ * Format wallet balances as a markdown table for inclusion in system prompt
+ * Displays user balances across all chains and wallets
  * Explicitly marks the first account across all chains as the global active account
  * Indicates which chain the user is currently connected to
+ */
+/**
+ * Format wallet balances as HTML table
+ * Displays user balances across all chains and wallets
+ */
+/**
+ * Format wallet balances as HTML with separate tables for each chain
+ * Displays user balances across all chains and wallets
  */
 export function formatWalletBalancesForPrompt(
   balances: WalletResult[],
@@ -240,16 +248,14 @@ export function formatWalletBalancesForPrompt(
 ): string {
   if (!balances || balances.length === 0) return '';
 
-  let formattedText =
-    '\n\nFormat the following information as a table\n\nWallet Balance Information:';
-
-  // Find active account address and current chain name
+  // Find active account address and current chain info
   let activeAccountAddress = null;
   let currentChainName = '';
   const currentChainWallet = currentChainId
     ? balances.find((w) => w.chainId === currentChainId)
     : null;
 
+  // Find the active account (first account across all wallets)
   for (const wallet of balances) {
     if (wallet.accounts && wallet.accounts.length > 0) {
       activeAccountAddress = wallet.accounts[0].address;
@@ -258,47 +264,85 @@ export function formatWalletBalancesForPrompt(
         currentChainName = String(parseInt(currentChainId, 16));
       }
 
-      formattedText += `\n- Active Account: ${activeAccountAddress} connected to ${currentChainName}`;
       break;
     }
   }
 
-  if (currentChainId) {
-    if (currentChainWallet) {
-      formattedText += `\n- Currently Connected to: ${currentChainWallet.chain} (Chain ID: ${String(parseInt(currentChainId, 16))})`;
-    } else {
-      formattedText += `\n- Currently Connected to Chain ID: ${String(parseInt(currentChainId, 16))}`;
+  // Start building the content
+  let formattedText = '<h3>Here are your balances across all wallets:</h3>';
+
+  // Add active account info if available
+  if (activeAccountAddress) {
+    formattedText += `<p><strong>Active Account:</strong> ${activeAccountAddress}`;
+
+    if (currentChainName) {
+      formattedText += ` connected to ${currentChainName}`;
     }
+
+    formattedText += '</p>';
   }
 
+  // Add current chain connection info
+  if (currentChainId && currentChainWallet) {
+    formattedText += `<p><strong>Currently Connected to:</strong> ${currentChainWallet.chain} (Chain ID: ${String(parseInt(currentChainId, 16))})</p>`;
+  } else if (currentChainId) {
+    formattedText += `<p><strong>Currently Connected to Chain ID:</strong> ${String(parseInt(currentChainId, 16))}</p>`;
+  }
+
+  // Create separate tables for each chain
   balances.forEach((wallet) => {
-    formattedText += `\n- ${wallet.chain} (${wallet.chainId}):`;
+    const chainName = wallet.chain;
+    const chainId = wallet.chainId;
 
     if (wallet.error) {
-      formattedText += `\n  - Error: ${wallet.error}`;
+      formattedText += `<h4>${chainName} (${chainId}):</h4>`;
+      formattedText += `<p>Error: ${wallet.error}</p>`;
       return;
     }
 
     if (wallet.accounts.length === 0) {
-      formattedText += '\n  - No accounts found';
+      formattedText += `<h4>${chainName} (${chainId}):</h4>`;
+      formattedText += `<p>No accounts found</p>`;
       return;
     }
 
-    wallet.accounts.forEach((account) => {
-      formattedText += `\n  - Account: ${account.address}`;
-      formattedText += `\n    - Native: ${account.nativeToken.symbol}: ${account.nativeToken.displayBalance}`;
+    // Only create table if there are accounts with tokens
+    formattedText += `<h4>${chainName} (${chainId}):</h4>`;
+    formattedText += `
+      <table>
+        <thead>
+          <tr>
+            <th>Token</th>
+            <th>Balance</th>
+          </tr>
+        </thead>
+        <tbody>`;
 
+    wallet.accounts.forEach((account) => {
+      // For native token
+      formattedText += `
+        <tr>
+          <td>${account.nativeToken.symbol} (Native)</td>
+          <td>${account.nativeToken.displayBalance}</td>
+        </tr>`;
+
+      // For other tokens with non-zero balance
       const nonZeroTokens = Object.entries(account.tokens).filter(
         ([_, balance]) => Number(balance.displayBalance) !== 0,
       );
 
-      if (nonZeroTokens.length > 0) {
-        formattedText += '\n    - Tokens:';
-        nonZeroTokens.forEach(([symbol, balance]) => {
-          formattedText += `\n      • ${symbol}: ${balance.displayBalance}`;
-        });
-      }
+      nonZeroTokens.forEach(([symbol, balance]) => {
+        formattedText += `
+        <tr>
+          <td>${symbol}</td>
+          <td>${balance.displayBalance}</td>
+        </tr>`;
+      });
     });
+
+    formattedText += `
+        </tbody>
+      </table>`;
   });
 
   return formattedText;

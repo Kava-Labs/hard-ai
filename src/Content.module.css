@@ -52,7 +52,7 @@
 }
 
 .content h1 {
-  font-size: 3rem;
+  font-size: 2rem;
   font-weight: 700;
   letter-spacing: -0.04rem;
   line-height: 1.1111111;
@@ -61,14 +61,14 @@
 
 .content h2 {
   line-height: 1.3333333;
-  font-size: 2.75rem;
+  font-size: 1.75rem;
   font-weight: 600;
   margin-bottom: 1rem;
   margin-top: 2rem;
 }
 
 .content h3 {
-  font-size: 2.5rem;
+  font-size: 1.5rem;
   font-weight: 600;
   margin-bottom: 0.5rem;
   margin-top: 1rem;
@@ -76,7 +76,7 @@
 }
 
 .content h4 {
-  font-size: 2rem;
+  font-size: 1.25rem;
   font-weight: 600;
   margin-bottom: 0.5rem;
   margin-top: 1rem;
@@ -84,7 +84,7 @@
 }
 
 .content h5 {
-  font-size: 1.75rem;
+  font-size: 1.1rem;
   font-weight: 600;
 }
 
@@ -93,34 +93,87 @@
   font-weight: inherit;
 }
 
+/* Enhanced wallet table styling with better width */
 .content table {
-  background-color: transparent;
-  border-collapse: collapse;
+  width: 100%;
+  min-width: auto;
+  border-collapse: separate;
   border-spacing: 0;
+  margin: 1.5rem 0;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  background-color: var(--colors-bgSecondary, #2a2a2a);
 }
 
-.content td,
-th {
-  border-right: 0.1rem solid var(--colors-borderSecondary);
-  padding: 0.8rem 1.2rem;
+.content table thead tr {
+  background-color: var(--colors-bgTertiary, #333333);
 }
 
-.content td {
-  border-top: 0.1rem solid var(--colors-borderSecondary);
+.content table th {
+  color: var(--colors-textSecondary, #f0f0f0);
+  font-weight: 600;
+  text-align: left;
+  padding: 0.7rem 0.9rem;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-right: none;
 }
 
-.content td:last-child,
-th:last-child {
-  border-right: 0;
+.content table th:last-child {
+  text-align: right;
+}
+
+.content table tbody tr {
+  transition: background-color 0.15s ease;
+}
+
+/* Removed hover effect on table rows as requested */
+
+.content table td {
+  padding: 0.7rem 0.9rem;
+  border-top: 1px solid var(--colors-borderSecondary, #3a3a3a);
+  border-right: none;
+  color: var(--colors-textPrimary, #ffffff);
+  font-size: 0.85rem;
+}
+
+.content table td:last-child {
+  text-align: right;
+  font-family: 'SF Mono', 'Consolas', monospace;
+  font-weight: 500;
+}
+
+/* Styling for chain headers (h3 elements before tables) */
+.content h3 {
+  margin-top: 2rem;
+  margin-bottom: 0.75rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+/* Style the first h3 differently (main title) */
+.content h3:first-of-type {
+  font-size: 1.3rem;
+  margin-top: 1.5rem;
+}
+
+/* For chain headers using h4 */
+.content h4 {
+  padding: 1rem 0 0.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--colors-textPrimary, #ffffff);
+  margin-bottom: 0.5rem;
 }
 
 .content hr {
   border-color: var(--colors-borderSecondary);
   border-top-width: 0.1rem;
-  margin-bottom: 3rem;
-  margin-top: 3rem;
+  margin-bottom: 2rem;
+  margin-top: 2rem;
 }
-
 
 @keyframes dots {
   0%,
@@ -178,5 +231,51 @@ li {
   }
   100% {
     opacity: 0.6;
+  }
+}
+
+/* Desktop styles - moved from inline to here for mobile-first approach */
+@media (min-width: 769px) {
+  .content h1 {
+    font-size: 3rem;
+  }
+
+  .content h2 {
+    font-size: 2.75rem;
+  }
+
+  .content h3 {
+    font-size: 2.5rem;
+    margin-top: 2.5rem;
+  }
+
+  .content h3:first-of-type {
+    font-size: 1.5rem;
+  }
+
+  .content h4 {
+    font-size: 2rem;
+    padding: 1.25rem 0 0.5rem;
+  }
+
+  .content h5 {
+    font-size: 1.75rem;
+  }
+
+  .content table {
+    width: auto;
+    min-width: 300px;
+    max-width: 100%;
+  }
+
+  .content table th,
+  .content table td {
+    padding: 0.85rem 1.2rem;
+    font-size: 0.95rem;
+  }
+
+  .content hr {
+    margin-bottom: 3rem;
+    margin-top: 3rem;
   }
 }

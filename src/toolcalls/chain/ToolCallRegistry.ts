@@ -10,7 +10,6 @@ import {
   defaultIntroText,
   defaultSystemPrompt,
 } from './prompts';
-import { EvmBalancesQuery } from '../evmBalances';
 import { EvmTransferMessage } from '../evmTransfer';
 import { ERC20ConversionMessage } from '../erc20Conversion';
 import { EvmChainSwitchMessage } from '../switchNetwork';
@@ -136,7 +135,6 @@ export class ToolCallRegistry<T> {
 export function initializeToolCallRegistry(): ToolCallRegistry<unknown> {
   const registry = new ToolCallRegistry();
   registry.register(new EvmTransferMessage());
-  registry.register(new EvmBalancesQuery());
   registry.register(new ERC20ConversionMessage());
   registry.register(new EvmChainSwitchMessage());
 

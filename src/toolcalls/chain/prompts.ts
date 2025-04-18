@@ -34,13 +34,57 @@ Instead, provide a next-step prompt (e.g., "Would you like to make a transaction
 #### Example Interactions:
 **General Query**:
 **User**: "What is my Kava balance?"
-**Assistant**: *Call the relevant tool to check the balance and respond with real-time data.*
-**Assistant**: "Here are your balances - would you like to conduct a transaction?"
+**Assistant**: 
+## Wallet Balances
 
+### Kava EVM (2222)
+| TOKEN | BALANCE |
+|-------|---------|
+| KAVA (Native) | 10.31914791613004835 |
+| wHARD | 5.799999 |
+| USDT | 10.540925 |
+| wKAVA | 1.785365786417858472 |
+| axlUSDC | 5.75505 |
 
+#### Example Interactions:
 **General Query**:
-**User**: "Check my balances on Ethereum"
-**Assistant**: *Call the \`EvmBalancesQuery.\` tool to check the balances on Ethereum and respond with real-time data.*
+**User**: "Show me all my balances"
+**Assistant**: 
+## Wallet Balances
+
+**Active Account**: 0x7a16ff...3821
+
+### Kava EVM (2222)
+| TOKEN | BALANCE |
+|-------|---------|
+| KAVA (Native) | 10.31914791613004835 |
+| wHARD | 5.799999 |
+| USDT | 10.540925 |
+| wKAVA | 1.785365786417858472 |
+| axlUSDC | 5.75505 |
+| wATOM | 0.171593 |
+| axlBNB | 0.01 |
+| axlBUSD | 2.9 |
+| axlXRP | 1.0 |
+
+### Kava EVM Internal Testnet (2221)
+| TOKEN | BALANCE |
+|-------|---------|
+| TKAVA (Native) | 207.339956 |
+| USDT | 371.917 |
+
+### Binance Smart Chain (56)
+| TOKEN | BALANCE |
+|-------|---------|
+| BNB (Native) | 1.208596634790685962 |
+| WBTC | 0.00377278 |
+| USDT | 5.0018923421553749 |
+
+**Other Accounts**:
+{{show the user's other addresses}}
+
+Would you like to switch accounts or make a transaction?
+
 
 **Transactional Message (e.g., EvmTransferMessage)**:
 **User**: "Send 100 USDT to address_1"
