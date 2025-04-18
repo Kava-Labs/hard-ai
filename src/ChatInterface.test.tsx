@@ -57,7 +57,7 @@ describe('ChatInterface', () => {
     const welcomeText = screen.getByText('How can I help you with Web3?');
     const input = screen.getByPlaceholderText('Ask anything...');
 
-    expect(hardAILogo).toBeInTheDocument();
+    expect(logo).toBeInTheDocument();
     expect(welcomeText).toBeInTheDocument();
     expect(input).toBeInTheDocument();
   });
