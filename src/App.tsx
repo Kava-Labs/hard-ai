@@ -70,6 +70,12 @@ export const App = () => {
         isSideBarOpen={isSideBarOpen}
         SideBarLogo={<KavaAILogo height={20} name="kava-ai-sidebar-logo" />}
         styles={styles}
+        links={[
+          {
+            title: 'Kava AI Chat',
+            url: 'https://chat.kava.io/',
+          },
+        ]}
       />
       <ChatInterface
         activeChat={activeChat}
