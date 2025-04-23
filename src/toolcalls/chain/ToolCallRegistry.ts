@@ -136,8 +136,8 @@ export class ToolCallRegistry<T> {
 export function initializeToolCallRegistry(): ToolCallRegistry<unknown> {
   const registry = new ToolCallRegistry();
   registry.register(new EvmTransferMessage());
-  registry.register(new ERC20ConversionMessage());
   registry.register(new EvmBalancesQuery());
+  registry.register(new ERC20ConversionMessage());
   registry.register(new EvmChainSwitchMessage());
 
   return registry;

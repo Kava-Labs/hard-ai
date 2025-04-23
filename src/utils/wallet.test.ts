@@ -72,7 +72,9 @@ describe('formatWalletBalancesForPrompt', () => {
 
     const result = formatWalletBalancesForPrompt(mockBalances, '0x1');
 
-    expect(result).toContain('Ethereum (Chain ID: 1)');
+    expect(result).toContain(
+      '<strong>Currently Connected to:</strong> Ethereum (Chain ID: 1)',
+    );
   });
 
   it('should handle error in wallet', () => {
