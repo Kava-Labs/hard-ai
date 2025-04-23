@@ -171,6 +171,8 @@
   display: flex;
   flex-direction: column;
   position: relative;
+  margin-bottom: 1.6rem;
+  font-size: 1.33333rem;
 }
 
 .sidebarLinkContainer:hover {
