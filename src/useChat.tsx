@@ -136,8 +136,8 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
           return;
         } else {
           messageContent = `Wallet account changed. New address: ${walletInfo.address} on chain ID: ${walletInfo.chainId}. 
-          Wallet type: ${walletInfo.walletType}. 
-          Keep previous wallet information in context, but recognize that it is not current. ${walletInfo.balancesPrompt}`;
+        Wallet type: ${walletInfo.walletType}. 
+        Keep previous wallet information in context, but recognize that it is not current. ${walletInfo.balancesPrompt}`;
 
           walletUpdateRef.current.previousAddress = walletInfo.address;
           walletUpdateRef.current.previousChainId = walletInfo.chainId;
@@ -162,7 +162,6 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
     },
     [activeChat],
   );
-
   const connectEIP6963Provider = useCallback(
     async (providerId: string, chainId?: string) => {
       if (walletUpdateRef.current.isProcessing) return;

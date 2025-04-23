@@ -229,8 +229,8 @@ export async function getChainAccounts(
 }
 
 /**
- * Format wallet balances as a string for inclusion in system prompt
- * With tokens displayed as a bulleted list on their own lines
+ * Format wallet balances as a markdown table for inclusion in system prompt
+ * Displays user balances across all chains and wallets
  * Explicitly marks the first account across all chains as the global active account
  * Indicates which chain the user is currently connected to
  */
@@ -240,10 +240,6 @@ export function formatWalletBalancesForPrompt(
 ): string {
   if (!balances || balances.length === 0) return '';
 
-  let formattedText =
-    '\n\nFormat the following information as a table\n\nWallet Balance Information:';
-
-  // Find active account address and current chain name
   let activeAccountAddress = null;
   let currentChainName = '';
   const currentChainWallet = currentChainId
@@ -258,47 +254,79 @@ export function formatWalletBalancesForPrompt(
         currentChainName = String(parseInt(currentChainId, 16));
       }
 
-      formattedText += `\n- Active Account: ${activeAccountAddress} connected to ${currentChainName}`;
       break;
     }
   }
 
-  if (currentChainId) {
-    if (currentChainWallet) {
-      formattedText += `\n- Currently Connected to: ${currentChainWallet.chain} (Chain ID: ${String(parseInt(currentChainId, 16))})`;
-    } else {
-      formattedText += `\n- Currently Connected to Chain ID: ${String(parseInt(currentChainId, 16))}`;
+  let formattedText = '<h3>Here are your balances across all wallets:</h3>';
+
+  if (activeAccountAddress) {
+    formattedText += `<p><strong>Active Account:</strong> ${activeAccountAddress}`;
+
+    if (currentChainName) {
+      formattedText += ` connected to ${currentChainName}`;
     }
+
+    formattedText += '</p>';
   }
 
+  if (currentChainId && currentChainWallet) {
+    formattedText += `<p><strong>Currently Connected to:</strong> ${currentChainWallet.chain} (Chain ID: ${String(parseInt(currentChainId, 16))})</p>`;
+  } else if (currentChainId) {
+    formattedText += `<p><strong>Currently Connected to Chain ID:</strong> ${String(parseInt(currentChainId, 16))}</p>`;
+  }
+
+  //  Create separate tables for each chain
   balances.forEach((wallet) => {
-    formattedText += `\n- ${wallet.chain} (${wallet.chainId}):`;
+    const chainName = wallet.chain;
+    const chainId = wallet.chainId;
 
     if (wallet.error) {
-      formattedText += `\n  - Error: ${wallet.error}`;
+      formattedText += `<h4>${chainName} (${chainId}):</h4>`;
+      formattedText += `<p>Error: ${wallet.error}</p>`;
       return;
     }
 
     if (wallet.accounts.length === 0) {
-      formattedText += '\n  - No accounts found';
+      formattedText += `<h4>${chainName} (${chainId}):</h4>`;
+      formattedText += `<p>No accounts found</p>`;
       return;
     }
 
+    formattedText += `<h4>${chainName} (${chainId}):</h4>`;
+    formattedText += `
+      <table>
+        <thead>
+          <tr>
+            <th>Token</th>
+            <th>Balance</th>
+          </tr>
+        </thead>
+        <tbody>`;
+
     wallet.accounts.forEach((account) => {
-      formattedText += `\n  - Account: ${account.address}`;
-      formattedText += `\n    - Native: ${account.nativeToken.symbol}: ${account.nativeToken.displayBalance}`;
+      formattedText += `
+        <tr>
+          <td>${account.nativeToken.symbol} (Native)</td>
+          <td>${account.nativeToken.displayBalance}</td>
+        </tr>`;
 
       const nonZeroTokens = Object.entries(account.tokens).filter(
         ([_, balance]) => Number(balance.displayBalance) !== 0,
       );
 
-      if (nonZeroTokens.length > 0) {
-        formattedText += '\n    - Tokens:';
-        nonZeroTokens.forEach(([symbol, balance]) => {
-          formattedText += `\n      • ${symbol}: ${balance.displayBalance}`;
-        });
-      }
+      nonZeroTokens.forEach(([symbol, balance]) => {
+        formattedText += `
+        <tr>
+          <td>${symbol}</td>
+          <td>${balance.displayBalance}</td>
+        </tr>`;
+      });
     });
+
+    formattedText += `
+        </tbody>
+      </table>`;
   });
 
   return formattedText;
