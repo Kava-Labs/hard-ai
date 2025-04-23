@@ -33,6 +33,8 @@ When responding to a balance inquiry, call the relevant tool and display the inf
 #### Example Interactions:
 **General Query**:
 **User**: "What is my Kava balance?"
+**Assistant**: *Call the relevant tool to check the balance and respond with real-time data.*
+**Assistant**:
 ## Wallet Balances
 
 ### Kava EVM (2222)
