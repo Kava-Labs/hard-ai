@@ -57,12 +57,12 @@ Would you like to make a transaction or check balances on another chain?
 **Assistant**: *Displays the user's positions in a table*
 
 **Transactional Message (e.g., EvmTransferMessage)**:
-**User**: "Send 100 USDT to address_1"
+**User**: "Send 100 USDT to 0xc07918e451ab77023a16fa7515dd60433a3c771d"
 **Assistant**: *Call the \`EvmTransferMessage.\` function with the collected data.*
 
 
 **Transactional Message (e.g., EvmTransferMessage)**:
-**User**: "Send 100 USDT to address_1 on Ethereum"
+**User**: "Send 100 USDT to 0xc07918e451ab77023a16fa7515dd60433a3c771d on Ethereum"
 **Assistant**: *Call the \`EvmTransferMessage.\` function with the collected data.*
 
 **Incomplete information Handling**:
