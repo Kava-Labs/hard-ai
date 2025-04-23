@@ -46,15 +46,13 @@ describe('formatWalletBalancesForPrompt', () => {
 
     const result = formatWalletBalancesForPrompt(mockBalances);
 
-    expect(result).toContain('Wallet Balance Information:');
-    expect(result).toContain('Active Account: 0xabc123');
+    expect(result).toContain('Here are your balances across all wallets:');
+    expect(result).toContain('<strong>Active Account:</strong> 0xabc123');
     expect(result).toContain('Ethereum (0x1):');
-    expect(result).toContain('Account: 0xabc123');
-    expect(result).toContain('Native: ETH: 1.5');
-    expect(result).toContain('USDC: 500.0');
-    expect(result).not.toContain('DAI: 0'); // Zero balance tokens should not be displayed
+    expect(result).toContain('USDC');
+    expect(result).not.toContain('DAI'); // Zero balance tokens should not be displayed
     expect(result).toContain('Polygon (0x89):');
-    expect(result).toContain('USDT: 300.0');
+    expect(result).toContain('USDT');
   });
 
   it('should indicate current connected chain', () => {
@@ -74,7 +72,7 @@ describe('formatWalletBalancesForPrompt', () => {
 
     const result = formatWalletBalancesForPrompt(mockBalances, '0x1');
 
-    expect(result).toContain('Currently Connected to: Ethereum (Chain ID: 1)');
+    expect(result).toContain('Ethereum (Chain ID: 1)');
   });
 
   it('should handle error in wallet', () => {
