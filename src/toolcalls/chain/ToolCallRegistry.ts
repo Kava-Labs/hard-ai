@@ -10,10 +10,10 @@ import {
   defaultIntroText,
   defaultSystemPrompt,
 } from './prompts';
+import { EvmBalancesQuery } from '../evmBalances';
 import { EvmTransferMessage } from '../evmTransfer';
 import { ERC20ConversionMessage } from '../erc20Conversion';
 import { EvmChainSwitchMessage } from '../switchNetwork';
-import { EvmBalancesQuery } from '../evmBalances';
 /**
  * Central registry for all chain operations (messages and queries).
  * Manages the registration and retrieval of operations, and generates

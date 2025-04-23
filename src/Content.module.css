@@ -129,13 +129,11 @@
   transition: background-color 0.15s ease;
 }
 
-/* Removed hover effect on table rows as requested */
-
 .content table td {
   padding: 0.7rem 0.9rem;
-  border-top: 1px solid var(--colors-borderSecondary, #3a3a3a);
+  border-top: 1px solid var(--colors-borderSecondary);
   border-right: none;
-  color: var(--colors-textPrimary, #ffffff);
+  color: var(--colors-textPrimary);
   font-size: 0.85rem;
 }
 
@@ -145,7 +143,6 @@
   font-weight: 500;
 }
 
-/* Styling for chain headers (h3 elements before tables) */
 .content h3 {
   margin-top: 2rem;
   margin-bottom: 0.75rem;
@@ -159,12 +156,11 @@
   margin-top: 1.5rem;
 }
 
-/* For chain headers using h4 */
 .content h4 {
   padding: 1rem 0 0.5rem;
   font-size: 1rem;
   font-weight: 600;
-  color: var(--colors-textPrimary, #ffffff);
+  color: var(--colors-textPrimary);
   margin-bottom: 0.5rem;
 }
 
@@ -234,8 +230,7 @@ li {
   }
 }
 
-/* Desktop styles - moved from inline to here for mobile-first approach */
-@media (min-width: 769px) {
+@media (min-width: 768px) {
   .content h1 {
     font-size: 3rem;
   }

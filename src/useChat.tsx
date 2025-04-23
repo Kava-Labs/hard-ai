@@ -135,7 +135,6 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
         ) {
           return;
         } else {
-          // The only change is that balancesPrompt now contains a markdown table instead of a bulleted list
           messageContent = `Wallet account changed. New address: ${walletInfo.address} on chain ID: ${walletInfo.chainId}. 
         Wallet type: ${walletInfo.walletType}. 
         Keep previous wallet information in context, but recognize that it is not current. ${walletInfo.balancesPrompt}`;
