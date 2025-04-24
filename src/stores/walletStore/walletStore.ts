@@ -7,7 +7,6 @@ import {
 
 type Listener = () => void;
 
-// Define the local storage key constant
 const WALLET_TYPE_STORAGE_KEY = 'walletType';
 
 export enum WalletProvider {
