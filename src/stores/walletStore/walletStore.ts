@@ -7,6 +7,9 @@ import {
 
 type Listener = () => void;
 
+// Define the local storage key constant
+const WALLET_TYPE_STORAGE_KEY = 'walletType';
+
 export enum WalletProvider {
   EIP6963 = 'EIP6963',
   NONE = 'NONE',
@@ -103,6 +106,18 @@ export class WalletStore {
   constructor() {
     this.setupEIP6963Listeners();
     this.setupChangeListeners();
+  }
+
+  private saveWalletTypeToStorage(walletType: string) {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(WALLET_TYPE_STORAGE_KEY, walletType);
+    }
+  }
+
+  private clearWalletTypeFromStorage() {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(WALLET_TYPE_STORAGE_KEY, '');
+    }
   }
 
   private setupEIP6963Listeners() {
@@ -280,7 +295,9 @@ export class WalletStore {
       }
     }
   }
+
   public disconnectWallet() {
+    this.clearWalletTypeFromStorage();
     this.currentValue = {
       walletAddress: '',
       walletChainId: '',
@@ -356,6 +373,8 @@ export class WalletStore {
           provider,
           info: { rdns, name },
         } = providerDetail;
+
+        this.saveWalletTypeToStorage(name);
 
         this.currentValue = {
           walletAddress: accounts[0],
