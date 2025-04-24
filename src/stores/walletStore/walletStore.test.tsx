@@ -327,7 +327,7 @@ describe('walletStore', () => {
       }),
     );
   });
-  test('should save wallet type to localStorage when connecting', async () => {
+  test('should save wallet uuid to localStorage when connecting', async () => {
     announceProvider(metamask);
 
     await walletStore.connectWallet({
@@ -341,7 +341,7 @@ describe('walletStore', () => {
     );
   });
 
-  test('should clear wallet type in localStorage when disconnecting', async () => {
+  test('should clear wallet uuid in localStorage when disconnecting', async () => {
     announceProvider(metamask);
 
     await walletStore.connectWallet({
@@ -357,7 +357,7 @@ describe('walletStore', () => {
     expect(localStorageMock.setItem).toHaveBeenCalledWith('walletType', '');
   });
 
-  test('should update wallet type in localStorage when switching wallets', async () => {
+  test('should update wallet uuid in localStorage when switching wallets', async () => {
     announceProvider(metamask);
 
     await walletStore.connectWallet({
@@ -392,7 +392,7 @@ describe('walletStore', () => {
     );
   });
 
-  test('should not update wallet type in localStorage when only accounts change', async () => {
+  test('should not update wallet uuid in localStorage when only accounts change', async () => {
     announceProvider(metamask);
 
     await walletStore.connectWallet({
