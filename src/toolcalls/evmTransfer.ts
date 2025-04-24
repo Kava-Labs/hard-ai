@@ -74,7 +74,7 @@ export class EvmTransferMessage
       amount: string;
       chainName: string;
     },
-    walletStore: WalletStore,
+    address: string,
   ): Promise<boolean> {
     const { denom, amount, chainName } = params;
 
@@ -88,7 +88,6 @@ export class EvmTransferMessage
     const { ethers } = await import('ethers');
 
     const rpcProvider = new ethers.JsonRpcProvider(rpcUrls[0]);
-    const address = walletStore.getSnapshot().walletAddress;
 
     if (denom.toUpperCase() === nativeToken) {
       const rawBalance = await rpcProvider.getBalance(address);
@@ -159,7 +158,9 @@ export class EvmTransferMessage
       throw new Error(`failed to find contract address for ${denom}`);
     }
 
-    if (!(await this.validateBalance(params, walletStore))) {
+    const addressFrom = fromAddress ?? walletStore.getSnapshot().walletAddress;
+
+    if (!(await this.validateBalance(params, addressFrom))) {
       throw new Error('Invalid balances for transaction');
     }
 
