@@ -107,9 +107,9 @@ export class WalletStore {
     this.setupChangeListeners();
   }
 
-  private saveWalletTypeToStorage(walletType: string) {
+  private saveWalletTypeToStorage(uuid: string) {
     if (typeof window !== 'undefined') {
-      localStorage.setItem(WALLET_TYPE_STORAGE_KEY, walletType);
+      localStorage.setItem(WALLET_TYPE_STORAGE_KEY, uuid);
     }
   }
 
@@ -370,10 +370,10 @@ export class WalletStore {
 
         const {
           provider,
-          info: { rdns, name },
+          info: { rdns, name, uuid },
         } = providerDetail;
 
-        this.saveWalletTypeToStorage(name);
+        this.saveWalletTypeToStorage(uuid);
 
         this.currentValue = {
           walletAddress: accounts[0],

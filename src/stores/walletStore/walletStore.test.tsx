@@ -337,7 +337,7 @@ describe('walletStore', () => {
 
     expect(localStorageMock.setItem).toHaveBeenCalledWith(
       'walletType',
-      'MetaMask',
+      'metamask-uuid',
     );
   });
 
@@ -367,7 +367,7 @@ describe('walletStore', () => {
 
     expect(localStorageMock.setItem).toHaveBeenCalledWith(
       'walletType',
-      'MetaMask',
+      'metamask-uuid',
     );
 
     localStorageMock.setItem.mockClear();
@@ -388,7 +388,7 @@ describe('walletStore', () => {
 
     expect(localStorageMock.setItem).toHaveBeenCalledWith(
       'walletType',
-      'Keplr',
+      'keplr-uuid',
     );
   });
 
@@ -403,7 +403,7 @@ describe('walletStore', () => {
     expect(localStorageMock.setItem.mock.calls.length).toBe(1);
     expect(localStorageMock.setItem).toHaveBeenCalledWith(
       'walletType',
-      'MetaMask',
+      'metamask-uuid',
     );
 
     //  Change accounts but keep the same wallet
