@@ -106,11 +106,37 @@ async function simulateChainChanged(
   );
 }
 
+const localStorageMock = (() => {
+  let store: Record<string, string> = {};
+  return {
+    getItem: vi.fn((key: string) => store[key] || null),
+    setItem: vi.fn((key: string, value: string) => {
+      store[key] = value;
+    }),
+    clear: vi.fn(() => {
+      store = {};
+    }),
+    removeItem: vi.fn((key: string) => {
+      delete store[key];
+    }),
+    getAll: () => store,
+  };
+})();
+
+Object.defineProperty(window, 'localStorage', { value: localStorageMock });
+
 describe('walletStore', () => {
+  let metamask: EIP6963ProviderDetail;
+
   beforeEach(() => {
     walletStore.disconnectWallet();
     vi.useFakeTimers();
     vi.clearAllMocks();
+    localStorageMock.clear();
+    metamask = mockEIP6963Provider({
+      name: 'MetaMask',
+      uuid: 'metamask-uuid',
+    });
   });
 
   afterEach(() => {
@@ -300,5 +326,94 @@ describe('walletStore', () => {
         method: 'eth_chainId',
       }),
     );
+  });
+  test('should save wallet uuid to localStorage when connecting', async () => {
+    announceProvider(metamask);
+
+    await walletStore.connectWallet({
+      walletProvider: WalletProvider.EIP6963,
+      providerId: 'metamask-uuid',
+    });
+
+    expect(localStorageMock.setItem).toHaveBeenCalledWith(
+      'walletType',
+      'metamask-uuid',
+    );
+  });
+
+  test('should clear wallet uuid in localStorage when disconnecting', async () => {
+    announceProvider(metamask);
+
+    await walletStore.connectWallet({
+      walletProvider: WalletProvider.EIP6963,
+      providerId: 'metamask-uuid',
+    });
+
+    //  Clear mock call history after connect
+    localStorageMock.setItem.mockClear();
+
+    walletStore.disconnectWallet();
+
+    expect(localStorageMock.setItem).toHaveBeenCalledWith('walletType', '');
+  });
+
+  test('should update wallet uuid in localStorage when switching wallets', async () => {
+    announceProvider(metamask);
+
+    await walletStore.connectWallet({
+      walletProvider: WalletProvider.EIP6963,
+      providerId: 'metamask-uuid',
+    });
+
+    expect(localStorageMock.setItem).toHaveBeenCalledWith(
+      'walletType',
+      'metamask-uuid',
+    );
+
+    localStorageMock.setItem.mockClear();
+
+    //  Connect to a different wallet
+    const keplr = mockEIP6963Provider({
+      name: 'Keplr',
+      uuid: 'keplr-uuid',
+      rdns: 'io.keplr',
+    });
+
+    announceProvider(keplr);
+
+    await walletStore.connectWallet({
+      walletProvider: WalletProvider.EIP6963,
+      providerId: 'keplr-uuid',
+    });
+
+    expect(localStorageMock.setItem).toHaveBeenCalledWith(
+      'walletType',
+      'keplr-uuid',
+    );
+  });
+
+  test('should not update wallet uuid in localStorage when only accounts change', async () => {
+    announceProvider(metamask);
+
+    await walletStore.connectWallet({
+      walletProvider: WalletProvider.EIP6963,
+      providerId: 'metamask-uuid',
+    });
+
+    expect(localStorageMock.setItem.mock.calls.length).toBe(1);
+    expect(localStorageMock.setItem).toHaveBeenCalledWith(
+      'walletType',
+      'metamask-uuid',
+    );
+
+    //  Change accounts but keep the same wallet
+    await simulateAccountsChanged(metamask.provider, [
+      '0x70997970c51812dc3a010c7d01b50e0d17dc79c8',
+    ]);
+
+    await vi.advanceTimersByTimeAsync(100);
+
+    //  setItem is not called again since it's the same wallet type
+    expect(localStorageMock.setItem.mock.calls.length).toBe(1);
   });
 });
