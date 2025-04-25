@@ -85,7 +85,7 @@ export const ChatInput = ({
         </div>
       </div>
       <div className={styles.importantInfo}>
-        <span>Kava AI can make mistakes. Check important info.</span>
+        <span>KavaAI can make mistakes. Check important info.</span>
       </div>
     </>
   );
