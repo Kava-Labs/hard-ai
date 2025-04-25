@@ -72,7 +72,7 @@ export const App = () => {
         styles={styles}
         links={[
           {
-            title: 'Kava AI Chat',
+            title: 'KavaAI Chat',
             url: 'https://chat.kava.io/',
           },
         ]}
