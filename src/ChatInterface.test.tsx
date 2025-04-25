@@ -21,6 +21,12 @@ vi.mock('lib-kava-ai', async () => {
         <button aria-label="Open Menu">Menu</button>
       </div>
     ),
+    LandingContent: () => (
+      <>
+        <img alt="Kava AI logo" />
+        <div>How can I help you?</div>
+      </>
+    ),
   };
 });
 
@@ -53,8 +59,8 @@ describe('ChatInterface', () => {
   it('renders correctly with inactive conversation', () => {
     render(<ChatInterface {...mockProps} />);
 
-    const logo = screen.getByTestId('kava-ai-logo');
-    const welcomeText = screen.getByText('How can I help you with Web3?');
+    const logo = screen.getByAltText('Kava AI logo');
+    const welcomeText = screen.getByText('How can I help you?');
     const input = screen.getByPlaceholderText('Ask anything...');
 
     expect(logo).toBeInTheDocument();

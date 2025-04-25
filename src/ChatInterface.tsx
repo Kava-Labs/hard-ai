@@ -1,6 +1,5 @@
-import { LandingContent } from './LandingContent';
 import { ChatInput } from './ChatInput';
-import { NavBar } from 'lib-kava-ai';
+import { NavBar, LandingContent } from 'lib-kava-ai';
 import { ConversationWrapper } from './ConversationWrapper';
 import { ActiveChat, ChatMessage, DisplayedWalletProviderInfo } from './types';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -123,7 +122,9 @@ export const ChatInterface = ({
             <div
               className={`${styles.controlsContainer} ${isConversationStarted ? styles.positionSticky : ''}`}
             >
-              {!isConversationStarted && <LandingContent />}
+              {!isConversationStarted && (
+                <LandingContent introText={'How can I help you with Web3?'} />
+              )}
               <ChatInput
                 handleChatCompletion={handleChatCompletion}
                 onCancelClick={handleCancel}

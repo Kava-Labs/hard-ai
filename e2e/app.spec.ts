@@ -10,11 +10,8 @@ test('renders the page with correct displayed & meta title', async ({
 
   //  Welcome text and top left icon
   const kavaAISidebarLogo = page.getByTestId('kava-ai-sidebar-logo');
-  const kavaAILandingContentLogo = page.getByTestId('kava-ai-logo');
-
   const welcomeText = page.getByText('How can I help you with Web3?');
 
   await expect(kavaAISidebarLogo).toBeVisible();
-  await expect(kavaAILandingContentLogo).toBeVisible();
   await expect(welcomeText).toBeVisible();
 });
