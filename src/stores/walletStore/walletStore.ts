@@ -107,9 +107,9 @@ export class WalletStore {
     this.setupChangeListeners();
   }
 
-  private saveWalletTypeToStorage(uuid: string) {
+  private saveWalletTypeToStorage(rdns: string) {
     if (typeof window !== 'undefined') {
-      localStorage.setItem(WALLET_TYPE_STORAGE_KEY, uuid);
+      localStorage.setItem(WALLET_TYPE_STORAGE_KEY, rdns);
     }
   }
 
@@ -179,12 +179,12 @@ export class WalletStore {
   public async connectWallet(opts: {
     chainId?: string;
     walletProvider: WalletProvider;
-    providerId?: string;
+    rdns?: string;
   }) {
     switch (opts.walletProvider) {
       case WalletProvider.EIP6963: {
-        if (opts.providerId) {
-          await this.connectEIP6963Provider(opts.providerId);
+        if (opts.rdns) {
+          await this.connectEIP6963Provider(opts.rdns);
         }
         break;
       }
@@ -346,12 +346,22 @@ export class WalletStore {
     };
   };
 
-  private async connectEIP6963Provider(providerId: string) {
-    const providerDetail = this.providers.get(providerId);
+  private findProviderByRdns(rdns: string): EIP6963ProviderDetail | undefined {
+    console.log(this.providers);
+    for (const [_, providerDetail] of this.providers) {
+      if (providerDetail.info.rdns === rdns) {
+        return providerDetail;
+      }
+    }
+    return undefined;
+  }
+
+  private async connectEIP6963Provider(rdns: string) {
+    const providerDetail = this.findProviderByRdns(rdns);
 
     if (!providerDetail) {
-      console.error(`Provider with UUID ${providerId} not found`);
-      throw new Error(`Provider with UUID ${providerId} not found`);
+      console.error(`Provider with rdns ${rdns} not found`);
+      throw new Error(`Provider with rdns ${rdns} not found`);
     }
 
     try {
@@ -370,10 +380,10 @@ export class WalletStore {
 
         const {
           provider,
-          info: { rdns, name, uuid },
+          info: { rdns, name },
         } = providerDetail;
 
-        this.saveWalletTypeToStorage(uuid);
+        this.saveWalletTypeToStorage(rdns);
 
         this.currentValue = {
           walletAddress: accounts[0],
