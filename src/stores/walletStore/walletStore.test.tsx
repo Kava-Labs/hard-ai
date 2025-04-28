@@ -15,9 +15,9 @@ function mockEIP6963Provider(
   options: MockProviderOptions = {},
 ): EIP6963ProviderDetail {
   const {
-    name = 'Mock Wallet',
+    name = 'MetaMask',
     uuid = 'mock-uuid',
-    rdns = 'com.mock.wallet',
+    rdns = 'io.metamask',
     icon = 'data:image/svg+xml,mock-icon',
     accounts = ['0x123456789abcdef0123456789abcdef01234567'],
     chainId = '0x8ae',
@@ -167,26 +167,20 @@ describe('walletStore', () => {
   });
 
   test('should connect to a selected provider', async () => {
-    const metamask = mockEIP6963Provider({
-      name: 'MetaMask',
-      uuid: 'metamask-uuid',
-      accounts: ['0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266'],
-    });
-
     announceProvider(metamask);
 
     await walletStore.connectWallet({
       walletProvider: WalletProvider.EIP6963,
-      providerId: 'metamask-uuid',
+      rdns: 'io.metamask',
       chainId: '0x8ae', // Chain ID 2222
     });
 
     const state = walletStore.getSnapshot();
     expect(state.isWalletConnected).toBe(true);
     expect(state.walletAddress).toBe(
-      '0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266',
+      '0x123456789abcdef0123456789abcdef01234567',
     );
-    expect(state.rdns).toBe('com.mock.wallet');
+    expect(state.rdns).toBe('io.metamask');
 
     expect(metamask.provider.request).toHaveBeenCalledWith({
       method: 'eth_requestAccounts',
@@ -194,21 +188,15 @@ describe('walletStore', () => {
   });
 
   test('should handle account changes from wallet', async () => {
-    const metamask = mockEIP6963Provider({
-      name: 'MetaMask',
-      uuid: 'metamask-uuid',
-      accounts: ['0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266'],
-    });
-
     announceProvider(metamask);
 
     await walletStore.connectWallet({
       walletProvider: WalletProvider.EIP6963,
-      providerId: 'metamask-uuid',
+      rdns: 'io.metamask',
     });
 
     expect(walletStore.getSnapshot().walletAddress).toBe(
-      '0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266',
+      '0x123456789abcdef0123456789abcdef01234567',
     );
 
     expect(metamask.provider.on).toHaveBeenCalledWith(
@@ -225,17 +213,11 @@ describe('walletStore', () => {
   });
 
   test('should handle chain changes from wallet', async () => {
-    const metamask = mockEIP6963Provider({
-      name: 'MetaMask',
-      uuid: 'metamask-uuid',
-      chainId: '0x8ae', // Chain ID 2222
-    });
-
     announceProvider(metamask);
 
     await walletStore.connectWallet({
       walletProvider: WalletProvider.EIP6963,
-      providerId: 'metamask-uuid',
+      rdns: 'io.metamask',
     });
 
     expect(walletStore.getSnapshot().walletChainId).toBe('0x8ae');
@@ -254,16 +236,11 @@ describe('walletStore', () => {
   });
 
   test('should disconnect wallet', async () => {
-    const metamask = mockEIP6963Provider({
-      name: 'MetaMask',
-      uuid: 'metamask-uuid',
-    });
-
     announceProvider(metamask);
 
     await walletStore.connectWallet({
       walletProvider: WalletProvider.EIP6963,
-      providerId: 'metamask-uuid',
+      rdns: 'io.metamask',
     });
 
     expect(walletStore.getSnapshot().isWalletConnected).toBe(true);
@@ -278,7 +255,7 @@ describe('walletStore', () => {
   test('should handle connection rejection', async () => {
     const rejectingProvider = mockEIP6963Provider({
       name: 'Rejecting Wallet',
-      uuid: 'rejecting-wallet',
+      rdns: 'io.blub',
     });
 
     rejectingProvider.provider.request = vi
@@ -295,7 +272,7 @@ describe('walletStore', () => {
     await expect(
       walletStore.connectWallet({
         walletProvider: WalletProvider.EIP6963,
-        providerId: 'rejecting-wallet',
+        rdns: 'io.blub',
       }),
     ).rejects.toThrow('User rejected the request');
 
@@ -307,7 +284,7 @@ describe('walletStore', () => {
   test('should handle chain switching', async () => {
     const wrongChainProvider = mockEIP6963Provider({
       name: 'Wrong Chain Wallet',
-      uuid: 'wrong-chain-wallet',
+      rdns: 'io.new-wallet',
       chainId: '0x1', // Ethereum mainnet
     });
 
@@ -317,7 +294,7 @@ describe('walletStore', () => {
 
     await walletStore.connectWallet({
       walletProvider: WalletProvider.EIP6963,
-      providerId: 'wrong-chain-wallet',
+      rdns: 'io.new-wallet',
       chainId: '0x8ae', // Chain ID 2222
     });
 
@@ -332,12 +309,12 @@ describe('walletStore', () => {
 
     await walletStore.connectWallet({
       walletProvider: WalletProvider.EIP6963,
-      providerId: 'metamask-uuid',
+      rdns: 'io.metamask',
     });
 
     expect(localStorageMock.setItem).toHaveBeenCalledWith(
       'walletType',
-      'metamask-uuid',
+      'io.metamask',
     );
   });
 
@@ -346,7 +323,7 @@ describe('walletStore', () => {
 
     await walletStore.connectWallet({
       walletProvider: WalletProvider.EIP6963,
-      providerId: 'metamask-uuid',
+      rdns: 'io.metamask',
     });
 
     //  Clear mock call history after connect
@@ -362,12 +339,12 @@ describe('walletStore', () => {
 
     await walletStore.connectWallet({
       walletProvider: WalletProvider.EIP6963,
-      providerId: 'metamask-uuid',
+      rdns: 'io.metamask',
     });
 
     expect(localStorageMock.setItem).toHaveBeenCalledWith(
       'walletType',
-      'metamask-uuid',
+      'io.metamask',
     );
 
     localStorageMock.setItem.mockClear();
@@ -383,12 +360,12 @@ describe('walletStore', () => {
 
     await walletStore.connectWallet({
       walletProvider: WalletProvider.EIP6963,
-      providerId: 'keplr-uuid',
+      rdns: 'io.keplr',
     });
 
     expect(localStorageMock.setItem).toHaveBeenCalledWith(
       'walletType',
-      'keplr-uuid',
+      'io.keplr',
     );
   });
 
@@ -397,13 +374,13 @@ describe('walletStore', () => {
 
     await walletStore.connectWallet({
       walletProvider: WalletProvider.EIP6963,
-      providerId: 'metamask-uuid',
+      rdns: 'io.metamask',
     });
 
     expect(localStorageMock.setItem.mock.calls.length).toBe(1);
     expect(localStorageMock.setItem).toHaveBeenCalledWith(
       'walletType',
-      'metamask-uuid',
+      'io.metamask',
     );
 
     //  Change accounts but keep the same wallet

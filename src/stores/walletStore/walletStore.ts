@@ -347,6 +347,7 @@ export class WalletStore {
   };
 
   private findProviderByRdns(rdns: string): EIP6963ProviderDetail | undefined {
+    console.log(this.providers);
     for (const [_, providerDetail] of this.providers) {
       if (providerDetail.info.rdns === rdns) {
         return providerDetail;
