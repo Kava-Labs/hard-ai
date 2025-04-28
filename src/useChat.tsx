@@ -162,8 +162,9 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
     },
     [activeChat],
   );
+
   const connectEIP6963Provider = useCallback(
-    async (providerId: string, chainId?: string) => {
+    async (rdns: string, chainId?: string) => {
       if (walletUpdateRef.current.isProcessing) return;
       walletUpdateRef.current.isProcessing = true;
 
@@ -171,7 +172,7 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
         await walletStore.connectWallet({
           chainId,
           walletProvider: WalletProvider.EIP6963,
-          providerId,
+          rdns,
         });
 
         const walletInfo = await getCurrentWalletInfoForPrompt();
@@ -266,7 +267,7 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
     async (provider: EIP6963ProviderDetail) => {
       try {
         await connectEIP6963Provider(
-          provider.info.uuid,
+          provider.info.rdns,
           `0x${Number(2222).toString(16)}`,
         );
       } catch (err) {
