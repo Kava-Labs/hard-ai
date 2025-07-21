@@ -5,6 +5,8 @@ import { ActiveChat, ChatMessage, DisplayedWalletProviderInfo } from './types';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { ToolCallRegistry } from './toolcalls/chain';
 import ConnectWalletButton from './ConnectWalletButton';
+import { ModelId } from './types/index.ts';
+import { ModelSelector } from './ModelSelector';
 
 const showWalletConnect =
   import.meta.env['VITE_FEAT_WALLET_CONNECT'] === 'true';
@@ -23,6 +25,7 @@ export interface ChatInterfaceProps {
   onConnectWalletClick: () => void;
   disconnectWallet: () => void;
   availableProviderCount: number;
+  changeModel: (model: ModelId) => void;
 }
 
 export const ChatInterface = ({
@@ -39,6 +42,7 @@ export const ChatInterface = ({
   onConnectWalletClick,
   disconnectWallet,
   availableProviderCount,
+  changeModel,
 }: ChatInterfaceProps) => {
   const { isConversationStarted, isRequesting } = activeChat;
   const containerRef = useRef<HTMLDivElement>(null);
@@ -94,16 +98,23 @@ export const ChatInterface = ({
               isSideBarOpen={isSideBarOpen}
               onNewChatClick={handleNewChat}
               primaryControlComponent={
-                showWalletConnect && (
-                  <ConnectWalletButton
-                    walletAddress={walletAddress}
-                    handleConnectClick={onConnectWalletClick}
-                    disconnectWallet={disconnectWallet}
-                    icon={walletProviderInfo?.icon}
-                    walletName={walletProviderInfo?.name}
-                    showSwitchWallet={availableProviderCount > 1}
+                <>
+                  <ModelSelector
+                    handleModelChange={changeModel}
+                    currentModel={activeChat.model as ModelId}
+                    isDisabled={isConversationStarted}
                   />
-                )
+                  {showWalletConnect && (
+                    <ConnectWalletButton
+                      walletAddress={walletAddress}
+                      handleConnectClick={onConnectWalletClick}
+                      disconnectWallet={disconnectWallet}
+                      icon={walletProviderInfo?.icon}
+                      walletName={walletProviderInfo?.name}
+                      showSwitchWallet={availableProviderCount > 1}
+                    />
+                  )}
+                </>
               }
             />
           </div>
