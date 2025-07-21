@@ -143,14 +143,14 @@ export const generateConversationTitle = async (
                         // only keep user/assistant messages
                         if (msg.role !== 'user' && msg.role !== 'assistant')
                           return;
-                        return `Role: ${msg.role} 
+                        return `Role: ${msg.role}
                                     ${msg.content}
                       `;
                       })}
                     `,
         },
       ],
-      model: 'gpt-4o-mini',
+      model: 'gpt-4o',
     });
 
     title = data.choices[0].message.content ?? 'New Chat';
