@@ -25,7 +25,7 @@ export interface ChatInterfaceProps {
   onConnectWalletClick: () => void;
   disconnectWallet: () => void;
   availableProviderCount: number;
-  changeModel: (model: ModelId) => void;
+  changeModel?: (model: ModelId) => void;
 }
 
 export const ChatInterface = ({
@@ -99,11 +99,13 @@ export const ChatInterface = ({
               onNewChatClick={handleNewChat}
               primaryControlComponent={
                 <>
-                  <ModelSelector
-                    handleModelChange={changeModel}
-                    currentModel={activeChat.model as ModelId}
-                    isDisabled={isConversationStarted}
-                  />
+                  {changeModel && (
+                    <ModelSelector
+                      handleModelChange={changeModel}
+                      currentModel={activeChat.model as ModelId}
+                      isDisabled={isConversationStarted}
+                    />
+                  )}
                   {showWalletConnect && (
                     <ConnectWalletButton
                       walletAddress={walletAddress}
