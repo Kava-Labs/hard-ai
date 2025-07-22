@@ -17,7 +17,7 @@ export const doChat = async (
         model: activeChat.model,
         messages: activeChat.messageHistoryStore.getSnapshot(),
         stream: true,
-        tools: toolCallRegistry.getToolDefinitions(),
+        tools: toolCallRegistry.getToolDefinitions(true),
       },
       {
         signal: activeChat.abortController.signal,
@@ -52,12 +52,46 @@ export const doChat = async (
     }
 
     if (activeChat.toolCallStreamStore.getSnapShot().length > 0) {
-      // do the tool calls
-      await callTools(
-        activeChat.toolCallStreamStore,
-        activeChat.messageHistoryStore,
-        executeOperation,
-      );
+      console.log('tool calls', activeChat.toolCallStreamStore);
+      if (
+        activeChat.toolCallStreamStore.getSnapShot()[0].function?.name ===
+        'web_search'
+      ) {
+        const toolCall = activeChat.toolCallStreamStore.getSnapShot()[0];
+        console.log('web_search', toolCall);
+        const content: string = await activeChat.client.responses
+          .create({
+            model: activeChat.model,
+            input: toolCall.function.arguments.query as string,
+            tools: [{ type: 'web_search_preview' }],
+          })
+          .then((res) => res.output_text)
+          .catch((err) => err.message);
+
+        activeChat.messageHistoryStore.addMessage({
+          role: 'assistant' as const,
+          function_call: null,
+          content: null,
+          tool_calls: [
+            activeChat.toolCallStreamStore.toChatCompletionMessageToolCall(
+              toolCall,
+            ),
+          ],
+        });
+        activeChat.toolCallStreamStore.deleteToolCallById(toolCall.id);
+        activeChat.messageHistoryStore.addMessage({
+          role: 'tool' as const,
+          tool_call_id: toolCall.id,
+          content,
+        });
+      } else {
+        // do the tool calls
+        await callTools(
+          activeChat.toolCallStreamStore,
+          activeChat.messageHistoryStore,
+          executeOperation,
+        );
+      }
 
       // inform the model of the tool call responses
       await doChat(activeChat, toolCallRegistry, executeOperation);
@@ -143,7 +177,7 @@ export const generateConversationTitle = async (
                         // only keep user/assistant messages
                         if (msg.role !== 'user' && msg.role !== 'assistant')
                           return;
-                        return `Role: ${msg.role} 
+                        return `Role: ${msg.role}
                                     ${msg.content}
                       `;
                       })}
