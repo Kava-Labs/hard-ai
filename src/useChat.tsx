@@ -75,6 +75,8 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
   const [conversationHistories, setConversationHistories] =
     useState<ConversationHistories | null>(null);
 
+  const [webSearchEnabled, setWebSearchEnabled] = useState(true);
+
   // **********
   const [activeChat, setActiveChat] = useState<ActiveChat>({
     id: uuidv4(), // add uuid v4 for conversation id
@@ -410,7 +412,12 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
 
       // no need to catch
       // doChat won't throw and automatically sets errors in the activeChat's errorStore
-      await doChat(newActiveChat, toolCallRegistry, executeOperation);
+      await doChat(
+        newActiveChat,
+        toolCallRegistry,
+        executeOperation,
+        webSearchEnabled,
+      );
       setActiveChat((prev) => ({
         ...prev,
         isRequesting: false,
@@ -437,7 +444,13 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
           delete activeChats[activeChat.id];
         });
     },
-    [activeChat, conversationHistories, toolCallRegistry, executeOperation],
+    [
+      activeChat,
+      conversationHistories,
+      toolCallRegistry,
+      executeOperation,
+      webSearchEnabled,
+    ],
   );
 
   const handleCancel = useCallback(() => {
@@ -576,6 +589,10 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
     setActiveChat((prev) => ({ ...prev, model }));
   }, []);
 
+  const toggleWebSearch = useCallback((enabled: boolean) => {
+    setWebSearchEnabled(enabled);
+  }, []);
+
   return useMemo(() => {
     const walletProviderInfo =
       walletConnection.isWalletConnected && walletConnection.rdns
@@ -605,6 +622,8 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
       closeWalletConnectModal,
       onProviderSelect,
       changeModel,
+      webSearchEnabled,
+      toggleWebSearch,
     };
   }, [
     walletConnection.isWalletConnected,
@@ -628,5 +647,7 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
     closeWalletConnectModal,
     onProviderSelect,
     changeModel,
+    webSearchEnabled,
+    toggleWebSearch,
   ]);
 };

@@ -56,6 +56,8 @@ export const App = () => {
     isWalletModalOpen,
     onProviderSelect,
     changeModel,
+    webSearchEnabled,
+    toggleWebSearch,
   } = useChat();
 
   return (
@@ -93,6 +95,8 @@ export const App = () => {
         disconnectWallet={disconnectWallet}
         availableProviderCount={availableProviders.length}
         changeModel={changeModel}
+        webSearchEnabled={webSearchEnabled}
+        onWebSearchToggle={toggleWebSearch}
       />
       {isSearchHistoryOpen && searchableHistory && (
         <SearchHistoryModal

@@ -1,0 +1,100 @@
+.toggleWrapper {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  margin-right: var(--spacing-md);
+}
+
+.label {
+  font-size: 14px;
+  font-weight: var(--typography-fontWeightRegular);
+  color: var(--colors-textSecondary);
+  user-select: none;
+}
+
+.toggle {
+  position: relative;
+  display: inline-block;
+  background: var(--colors-bgTertiary);
+  border: none;
+  border-radius: 16px;
+  cursor: pointer;
+  outline: none;
+  transition: all 0.3s ease;
+  padding: 0;
+}
+
+.toggle:focus-visible {
+  box-shadow: 0 0 0 2px var(--colors-accent);
+}
+
+.toggle:hover:not(.disabled) {
+  background: var(--colors-bgSecondary);
+}
+
+.toggle.toggled {
+  background: var(--colors-accent);
+}
+
+.toggle.toggled:hover:not(.disabled) {
+  background: var(--colors-accent);
+  opacity: 0.9;
+}
+
+.toggle.disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.slider {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  background: white;
+  border-radius: 50%;
+  transition: transform 0.3s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* Size variants */
+.small {
+  width: 32px;
+  height: 18px;
+}
+
+.small .slider {
+  width: 14px;
+  height: 14px;
+}
+
+.small.toggled .slider {
+  transform: translateX(14px);
+}
+
+.medium {
+  width: 44px;
+  height: 24px;
+}
+
+.medium .slider {
+  width: 20px;
+  height: 20px;
+}
+
+.medium.toggled .slider {
+  transform: translateX(20px);
+}
+
+.large {
+  width: 56px;
+  height: 30px;
+}
+
+.large .slider {
+  width: 26px;
+  height: 26px;
+}
+
+.large.toggled .slider {
+  transform: translateX(26px);
+}

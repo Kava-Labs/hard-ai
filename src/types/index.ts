@@ -20,7 +20,7 @@ export const MODELS = [
   {
     id: 'qwen3-235b-a22b-07-25' as const,
     displayName: 'Qwen3 235B',
-    description: "Qwen's updated non-thinking model"
+    description: "Qwen's updated non-thinking model",
   },
   {
     id: 'kimi-k2' as const,

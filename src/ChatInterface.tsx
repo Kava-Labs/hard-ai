@@ -7,6 +7,7 @@ import { ToolCallRegistry } from './toolcalls/chain';
 import ConnectWalletButton from './ConnectWalletButton';
 import { ModelId } from './types/index.ts';
 import { ModelSelector } from './ModelSelector';
+import { Toggle } from './Toggle';
 
 const showWalletConnect =
   import.meta.env['VITE_FEAT_WALLET_CONNECT'] === 'true';
@@ -26,6 +27,8 @@ export interface ChatInterfaceProps {
   disconnectWallet: () => void;
   availableProviderCount: number;
   changeModel?: (model: ModelId) => void;
+  webSearchEnabled?: boolean;
+  onWebSearchToggle?: (enabled: boolean) => void;
 }
 
 export const ChatInterface = ({
@@ -43,6 +46,8 @@ export const ChatInterface = ({
   disconnectWallet,
   availableProviderCount,
   changeModel,
+  webSearchEnabled,
+  onWebSearchToggle,
 }: ChatInterfaceProps) => {
   const { isConversationStarted, isRequesting } = activeChat;
   const containerRef = useRef<HTMLDivElement>(null);
@@ -99,6 +104,14 @@ export const ChatInterface = ({
               onNewChatClick={handleNewChat}
               primaryControlComponent={
                 <>
+                  {onWebSearchToggle && (
+                    <Toggle
+                      isToggled={webSearchEnabled || false}
+                      onToggle={onWebSearchToggle}
+                      label="Web Search"
+                      size="small"
+                    />
+                  )}
                   {changeModel && (
                     <ModelSelector
                       handleModelChange={changeModel}
