@@ -96,40 +96,64 @@ export class ToolCallRegistry<T> {
    * These definitions are used to create function-calling tools in the AI model.
    * @returns Array of tool definitions in OpenAI format
    */
-  getToolDefinitions(): ChatCompletionTool[] {
-    return this.getAllOperations().map((operation) => ({
-      type: 'function',
-      function: {
-        name: operation.name,
-        description: operation.description,
-        parameters: {
-          type: 'object',
-          properties: Object.fromEntries(
-            operation.parameters.map((param) => {
-              const p = [
-                param.name,
-                {
-                  type: param.type,
-                  description: param.description,
-                },
-              ];
+  getToolDefinitions(withSearch: boolean = false): ChatCompletionTool[] {
+    console.log('getToolDefinitions', withSearch);
+    const tools = this.getAllOperations().map(
+      (operation): ChatCompletionTool => ({
+        type: 'function',
+        function: {
+          name: operation.name,
+          description: operation.description,
+          parameters: {
+            type: 'object',
+            properties: Object.fromEntries(
+              operation.parameters.map((param) => {
+                const p = [
+                  param.name,
+                  {
+                    type: param.type,
+                    description: param.description,
+                  },
+                ];
 
-              if (param.enum) {
-                // @ts-expect-error better types needed
-                p[1].enum = param.enum;
-              }
+                if (param.enum) {
+                  // @ts-expect-error better types needed
+                  p[1].enum = param.enum;
+                }
 
-              return p;
-            }),
-          ),
-          required: operation.parameters
-            .filter((param) => param.required)
-            .map((param) => param.name),
-          strict: true,
-          additionalProperties: false,
+                return p;
+              }),
+            ),
+            required: operation.parameters
+              .filter((param) => param.required)
+              .map((param) => param.name),
+            strict: true,
+            additionalProperties: false,
+          },
         },
-      },
-    }));
+      }),
+    );
+
+    if (withSearch) {
+      tools.push({
+        type: 'function',
+        function: {
+          name: 'web_search',
+          description: 'Search the web for information',
+          parameters: {
+            type: 'object',
+            properties: {
+              query: {
+                type: 'string',
+                description: 'The query to search the web for',
+              },
+            },
+          },
+        },
+      });
+    }
+
+    return tools;
   }
 }
 
