@@ -96,8 +96,7 @@ export class ToolCallRegistry<T> {
    * These definitions are used to create function-calling tools in the AI model.
    * @returns Array of tool definitions in OpenAI format
    */
-  getToolDefinitions(withSearch: boolean = false): ChatCompletionTool[] {
-    console.log('getToolDefinitions', withSearch);
+  getToolDefinitions(): ChatCompletionTool[] {
     const tools = this.getAllOperations().map(
       (operation): ChatCompletionTool => ({
         type: 'function',
@@ -133,25 +132,6 @@ export class ToolCallRegistry<T> {
         },
       }),
     );
-
-    if (withSearch) {
-      tools.push({
-        type: 'function',
-        function: {
-          name: 'web_search',
-          description: 'Search the web for information',
-          parameters: {
-            type: 'object',
-            properties: {
-              query: {
-                type: 'string',
-                description: 'The query to search the web for',
-              },
-            },
-          },
-        },
-      });
-    }
 
     return tools;
   }

@@ -5,6 +5,7 @@ import { formatConversationTitle } from 'lib-kava-ai';
 import { ToolCallRegistry } from '../toolcalls/chain/ToolCallRegistry';
 import { ToolCallStreamStore } from '../stores/toolCallStreamStore';
 import { MessageHistoryStore } from '../stores/messageHistoryStore';
+import { MODELS } from '../types/';
 
 export const doChat = async (
   activeChat: ActiveChat,
@@ -13,12 +14,21 @@ export const doChat = async (
   webSearchEnabled: boolean,
 ) => {
   try {
+    const currentModel = MODELS.find((m) => m.id === activeChat.model);
+    const shouldUsePlugins =
+      webSearchEnabled && currentModel?.searchType === 'openrouter';
+
+    console.log(
+      `Using model ${activeChat.model} with plugins: ${shouldUsePlugins}`,
+    );
+
     const stream = await activeChat.client.chat.completions.create(
       {
         model: activeChat.model,
         messages: activeChat.messageHistoryStore.getSnapshot(),
         stream: true,
-        tools: toolCallRegistry.getToolDefinitions(webSearchEnabled),
+        tools: toolCallRegistry.getToolDefinitions(),
+        ...(shouldUsePlugins && { plugins: [{ id: 'web' }] }),
       },
       {
         signal: activeChat.abortController.signal,
@@ -54,45 +64,12 @@ export const doChat = async (
 
     if (activeChat.toolCallStreamStore.getSnapShot().length > 0) {
       console.log('tool calls', activeChat.toolCallStreamStore);
-      if (
-        activeChat.toolCallStreamStore.getSnapShot()[0].function?.name ===
-        'web_search'
-      ) {
-        const toolCall = activeChat.toolCallStreamStore.getSnapShot()[0];
-        console.log('web_search', toolCall);
-        const content: string = await activeChat.client.responses
-          .create({
-            model: activeChat.model,
-            input: toolCall.function.arguments.query as string,
-            tools: [{ type: 'web_search_preview' }],
-          })
-          .then((res) => res.output_text)
-          .catch((err) => err.message);
-
-        activeChat.messageHistoryStore.addMessage({
-          role: 'assistant' as const,
-          function_call: null,
-          content: null,
-          tool_calls: [
-            activeChat.toolCallStreamStore.toChatCompletionMessageToolCall(
-              toolCall,
-            ),
-          ],
-        });
-        activeChat.toolCallStreamStore.deleteToolCallById(toolCall.id);
-        activeChat.messageHistoryStore.addMessage({
-          role: 'tool' as const,
-          tool_call_id: toolCall.id,
-          content,
-        });
-      } else {
-        // do the tool calls
-        await callTools(
-          activeChat.toolCallStreamStore,
-          activeChat.messageHistoryStore,
-          executeOperation,
-        );
-      }
+      // do the tool calls
+      await callTools(
+        activeChat.toolCallStreamStore,
+        activeChat.messageHistoryStore,
+        executeOperation,
+      );
 
       // inform the model of the tool call responses
       await doChat(
