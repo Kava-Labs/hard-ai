@@ -467,7 +467,7 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
       isRequesting: false,
       isConversationStarted: false,
       isOperationValidated: false,
-      model: initModel ? initModel : 'gpt-4o',
+      model: initModel ? initModel : 'openrouter-gpt-4o',
       abortController: new AbortController(),
       client: client,
       toolCallStreamStore: new ToolCallStreamStore(),
