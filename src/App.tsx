@@ -6,6 +6,7 @@ import { useIsMobileLayout, SearchHistoryModal, SideBar } from 'lib-kava-ai';
 import WalletModal from './WalletModal';
 import { PROMOTED_WALLETS } from './utils/wallet';
 import KavaAILogo from './kavaAILogo';
+import { useWalletState } from './stores/walletStore/useWalletState';
 
 export const App = () => {
   const [isMobileSideBarOpen, setIsMobileSideBarOpen] = useState(false);
@@ -48,7 +49,6 @@ export const App = () => {
     fetchSearchHistory,
     toolCallRegistry,
     walletAddress,
-    disconnectWallet,
     availableProviders,
     walletProviderInfo,
     openWalletConnectModal,
@@ -57,6 +57,8 @@ export const App = () => {
     onProviderSelect,
     changeModel,
   } = useChat();
+
+  const { disconnectWallet } = useWalletState();
 
   return (
     <div className={styles.app}>

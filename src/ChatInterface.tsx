@@ -7,6 +7,8 @@ import { ToolCallRegistry } from './toolcalls/chain';
 import ConnectWalletButton from './ConnectWalletButton';
 import { ModelId } from './types/index.ts';
 import { ModelSelector } from './ModelSelector';
+import { useWalletState } from './stores/walletStore/useWalletState.ts';
+
 
 const showWalletConnect =
   import.meta.env['VITE_FEAT_WALLET_CONNECT'] === 'true';
@@ -40,7 +42,7 @@ export const ChatInterface = ({
   walletAddress,
   walletProviderInfo,
   onConnectWalletClick,
-  disconnectWallet,
+  // disconnectWallet,
   availableProviderCount,
   changeModel,
 }: ChatInterfaceProps) => {
@@ -48,6 +50,8 @@ export const ChatInterface = ({
   const containerRef = useRef<HTMLDivElement>(null);
   // Track if we should auto-scroll
   const [shouldAutoScroll, setShouldAutoScroll] = useState(true);
+
+  const { disconnectWallet } = useWalletState();
 
   // Handle scroll events
   const handleScroll = useCallback(() => {

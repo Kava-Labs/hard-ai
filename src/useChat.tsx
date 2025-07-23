@@ -271,15 +271,6 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
     setIsWalletModalOpen(true);
   }, [refreshProviders, setIsWalletModalOpen]);
 
-  const disconnectWallet = useCallback(async () => {
-    walletUpdateRef.current.isProcessing = true;
-
-    walletStore.disconnectWallet();
-    await addWalletSystemMessage();
-
-    walletUpdateRef.current.isProcessing = false;
-  }, [addWalletSystemMessage]);
-
   const handleProviderSelect = useCallback(
     async (provider: EIP6963ProviderDetail) => {
       try {
@@ -597,7 +588,6 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
       toolCallRegistry,
       walletAddress,
       handleProviderSelect,
-      disconnectWallet,
       availableProviders,
       walletProviderInfo,
       isWalletModalOpen,
@@ -622,7 +612,6 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
     toolCallRegistry,
     walletAddress,
     handleProviderSelect,
-    disconnectWallet,
     isWalletModalOpen,
     openWalletConnectModal,
     closeWalletConnectModal,
