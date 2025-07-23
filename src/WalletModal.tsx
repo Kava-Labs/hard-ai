@@ -11,8 +11,7 @@ interface WalletModalProps {
 }
 
 const WalletModal: React.FC<WalletModalProps> = ({ onClose }) => {
-  const { availableProviders, handleProviderSelect, refreshProviders } =
-    useWalletState();
+  const { availableProviders, handleProviderSelect } = useWalletState();
   const hasProviders = availableProviders.length > 0;
   const modalRef = useRef<HTMLDivElement>(null);
 
@@ -29,10 +28,6 @@ const WalletModal: React.FC<WalletModalProps> = ({ onClose }) => {
     handleProviderSelect(provider);
     onClose();
   };
-
-  React.useEffect(() => {
-    refreshProviders();
-  }, [refreshProviders]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {

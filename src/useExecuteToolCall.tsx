@@ -18,9 +18,9 @@ export const useExecuteToolCall = (
   walletStore: WalletStore,
   isOperationValidated: boolean,
   setIsOperationValidated: (isOperationValidated: boolean) => void,
-  openWalletConnectModal: () => void,
-  isWalletConnecting: boolean,
-  setIsWalletConnecting: (isWalletConnecting: boolean) => void,
+  // openWalletConnectModal: () => void,
+  // isWalletConnecting: boolean,
+  // setIsWalletConnecting: (isWalletConnecting: boolean) => void,
 ) => {
   //  Reference to track connection promise state
   const connectionRef = useRef<{
@@ -31,22 +31,22 @@ export const useExecuteToolCall = (
     cleanupFn: null,
   });
 
-  const handleModalClose = useCallback(() => {
-    //  Only reject if we're in the connecting state and have a rejection function
-    if (isWalletConnecting && connectionRef.current.pendingReject) {
-      if (connectionRef.current.cleanupFn) {
-        connectionRef.current.cleanupFn();
-        connectionRef.current.cleanupFn = null;
-      }
+  // const handleModalClose = useCallback(() => {
+  //   //  Only reject if we're in the connecting state and have a rejection function
+  //   if (isWalletConnecting && connectionRef.current.pendingReject) {
+  //     if (connectionRef.current.cleanupFn) {
+  //       connectionRef.current.cleanupFn();
+  //       connectionRef.current.cleanupFn = null;
+  //     }
 
-      connectionRef.current.pendingReject(
-        new Error('Wallet connection rejected by user'),
-      );
-      connectionRef.current.pendingReject = null;
+  //     connectionRef.current.pendingReject(
+  //       new Error('Wallet connection rejected by user'),
+  //     );
+  //     connectionRef.current.pendingReject = null;
 
-      setIsWalletConnecting(false);
-    }
-  }, [isWalletConnecting, setIsWalletConnecting]);
+  //     setIsWalletConnecting(false);
+  //   }
+  // }, [isWalletConnecting, setIsWalletConnecting]);
 
   /**
    * Helper function to complete the operation after wallet connection is established
@@ -155,7 +155,7 @@ export const useExecuteToolCall = (
 
           reject(new Error('Wallet connection timed out'));
 
-          setIsWalletConnecting(false);
+          // setIsWalletConnecting(false);
         }, 300000);
 
         connectionRef.current.cleanupFn = () => {
@@ -164,7 +164,7 @@ export const useExecuteToolCall = (
         };
       });
     },
-    [walletStore, setIsWalletConnecting],
+    [walletStore],
   );
 
   /**
@@ -207,24 +207,25 @@ export const useExecuteToolCall = (
           walletStore.getSnapshot().walletProvider,
         )
       ) {
-        setIsWalletConnecting(true);
-        openWalletConnectModal();
+        throw new Error('wallet not connected');
+        // setIsWalletConnecting(true);
+        // openWalletConnectModal();
 
-        try {
-          await waitForWalletConnection(operation);
+        // try {
+        //   await waitForWalletConnection(operation);
 
-          return await completeOperation(
-            operation,
-            params,
-            chainName,
-            chainId,
-            walletStore,
-          );
-        } catch {
-          throw new Error('Error connecting wallet');
-        } finally {
-          setIsWalletConnecting(false);
-        }
+        //   return await completeOperation(
+        //     operation,
+        //     params,
+        //     chainName,
+        //     chainId,
+        //     walletStore,
+        //   );
+        // } catch {
+        //   throw new Error('Error connecting wallet');
+        // } finally {
+        //   setIsWalletConnecting(false);
+        // }
       }
 
       //  If the wallet is already connected, proceed
@@ -236,21 +237,13 @@ export const useExecuteToolCall = (
         walletStore,
       );
     },
-    [
-      setIsOperationValidated,
-      registry,
-      walletStore,
-      completeOperation,
-      setIsWalletConnecting,
-      openWalletConnectModal,
-      waitForWalletConnection,
-    ],
+    [setIsOperationValidated, registry, walletStore, completeOperation],
   );
 
   return {
     executeOperation,
     isOperationValidated,
-    isWalletConnecting,
-    handleModalClose,
+    // isWalletConnecting,
+    // handleModalClose,
   };
 };

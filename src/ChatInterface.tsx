@@ -1,14 +1,12 @@
 import { ChatInput } from './ChatInput';
 import { NavBar, LandingContent } from 'lib-kava-ai';
 import { ConversationWrapper } from './ConversationWrapper';
-import { ActiveChat, ChatMessage, DisplayedWalletProviderInfo } from './types';
+import { ActiveChat, ChatMessage } from './types';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { ToolCallRegistry } from './toolcalls/chain';
 import ConnectWalletButton from './ConnectWalletButton';
 import { ModelId } from './types/index.ts';
 import { ModelSelector } from './ModelSelector';
-import { useWalletState } from './stores/walletStore/useWalletState.ts';
-
 
 const showWalletConnect =
   import.meta.env['VITE_FEAT_WALLET_CONNECT'] === 'true';
@@ -22,11 +20,6 @@ export interface ChatInterfaceProps {
   isSideBarOpen: boolean;
   onMenuClick: () => void;
   styles: Record<string, string>;
-  walletAddress: string;
-  walletProviderInfo?: DisplayedWalletProviderInfo;
-  onConnectWalletClick: () => void;
-  disconnectWallet: () => void;
-  availableProviderCount: number;
   changeModel?: (model: ModelId) => void;
 }
 
@@ -39,19 +32,12 @@ export const ChatInterface = ({
   isSideBarOpen,
   onMenuClick,
   styles,
-  walletAddress,
-  walletProviderInfo,
-  onConnectWalletClick,
-  // disconnectWallet,
-  availableProviderCount,
   changeModel,
 }: ChatInterfaceProps) => {
   const { isConversationStarted, isRequesting } = activeChat;
   const containerRef = useRef<HTMLDivElement>(null);
   // Track if we should auto-scroll
   const [shouldAutoScroll, setShouldAutoScroll] = useState(true);
-
-  const { disconnectWallet } = useWalletState();
 
   // Handle scroll events
   const handleScroll = useCallback(() => {
@@ -110,16 +96,7 @@ export const ChatInterface = ({
                       isDisabled={isConversationStarted}
                     />
                   )}
-                  {showWalletConnect && (
-                    <ConnectWalletButton
-                      walletAddress={walletAddress}
-                      handleConnectClick={onConnectWalletClick}
-                      disconnectWallet={disconnectWallet}
-                      icon={walletProviderInfo?.icon}
-                      walletName={walletProviderInfo?.name}
-                      showSwitchWallet={availableProviderCount > 1}
-                    />
-                  )}
+                  {showWalletConnect && <ConnectWalletButton />}
                 </>
               }
             />
