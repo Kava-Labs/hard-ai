@@ -11,6 +11,7 @@ export const doChat = async (
   toolCallRegistry: ToolCallRegistry<unknown>,
   executeOperation: ExecuteToolCall,
   webSearchEnabled: boolean,
+  forceWebSearchPlugin = false,
 ) => {
   try {
     const stream = await activeChat.client.chat.completions.create(
@@ -18,8 +19,12 @@ export const doChat = async (
         model: activeChat.model,
         messages: activeChat.messageHistoryStore.getSnapshot(),
         stream: true,
-        tools: toolCallRegistry.getToolDefinitions(),
-        ...(webSearchEnabled && { plugins: [{ id: 'web' }] }),
+        tools: toolCallRegistry.getToolDefinitions(
+          // Exclude web_search tool if we enabled web search plugin usage to not
+          // cause it try searching again
+          webSearchEnabled && !forceWebSearchPlugin,
+        ),
+        ...(forceWebSearchPlugin && { plugins: [{ id: 'web' }] }),
       },
       {
         signal: activeChat.abortController.signal,
@@ -56,19 +61,26 @@ export const doChat = async (
     if (activeChat.toolCallStreamStore.getSnapShot().length > 0) {
       console.log('tool calls', activeChat.toolCallStreamStore);
       // do the tool calls
-      await callTools(
+      const wasWebSearchHandled = await callTools(
         activeChat.toolCallStreamStore,
         activeChat.messageHistoryStore,
         executeOperation,
-      );
-
-      // inform the model of the tool call responses
-      await doChat(
         activeChat,
         toolCallRegistry,
-        executeOperation,
         webSearchEnabled,
       );
+
+      // If web search was handled, don't continue with the normal flow
+      // as doChat was already called recursively with web search enabled
+      if (!wasWebSearchHandled) {
+        // inform the model of the tool call responses
+        await doChat(
+          activeChat,
+          toolCallRegistry,
+          executeOperation,
+          webSearchEnabled,
+        );
+      }
     }
   } catch (e) {
     console.error(`An error occurred: ${e} `);
@@ -183,7 +195,37 @@ export async function callTools(
   toolCallStreamStore: ToolCallStreamStore,
   messageHistoryStore: MessageHistoryStore,
   executeOperation: ExecuteToolCall,
-): Promise<void> {
+  activeChat?: ActiveChat,
+  toolCallRegistry?: ToolCallRegistry<unknown>,
+  webSearchEnabled?: boolean,
+): Promise<boolean> {
+  // Check if any tool calls are web_search - if so, handle specially
+  const webSearchToolCalls = toolCallStreamStore
+    .getSnapShot()
+    .filter((toolCall) => toolCall.function?.name === 'web_search');
+
+  if (webSearchToolCalls.length > 0 && activeChat && toolCallRegistry) {
+    // Remove all web_search tool calls from the stream and history
+    for (const webSearchCall of webSearchToolCalls) {
+      toolCallStreamStore.deleteToolCallById(webSearchCall.id);
+    }
+
+    // Clear any partial assistant message and re-execute with web search enabled
+    activeChat.messageStore.setText('');
+
+    // Re-execute the chat with web search plugin enabled
+    await doChat(
+      activeChat,
+      toolCallRegistry,
+      executeOperation,
+      webSearchEnabled ?? true,
+      true,
+    );
+
+    return true; // Indicate that we handled web search and re-executed
+  }
+
+  // Process regular tool calls
   for (const toolCall of toolCallStreamStore.getSnapShot()) {
     const name = toolCall.function?.name;
 
@@ -222,4 +264,6 @@ export async function callTools(
       });
     }
   }
+
+  return false; // Indicate normal tool processing
 }

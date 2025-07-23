@@ -14,6 +14,8 @@ import { EvmBalancesQuery } from '../evmBalances';
 import { EvmTransferMessage } from '../evmTransfer';
 import { ERC20ConversionMessage } from '../erc20Conversion';
 import { EvmChainSwitchMessage } from '../switchNetwork';
+// cspell:ignore websearch
+import { WebSearchOperation } from '../websearch/WebSearchOperation';
 /**
  * Central registry for all chain operations (messages and queries).
  * Manages the registration and retrieval of operations, and generates
@@ -94,10 +96,15 @@ export class ToolCallRegistry<T> {
   /**
    * Generates OpenAI tool definitions for all registered operations.
    * These definitions are used to create function-calling tools in the AI model.
+   * @param webSearchEnabled - Whether to include the web_search tool
    * @returns Array of tool definitions in OpenAI format
    */
-  getToolDefinitions(): ChatCompletionTool[] {
-    const tools = this.getAllOperations().map(
+  getToolDefinitions(webSearchEnabled = true): ChatCompletionTool[] {
+    const operations = webSearchEnabled
+      ? this.getAllOperations()
+      : this.getAllOperations().filter((op) => op.name !== 'web_search');
+
+    const tools = operations.map(
       (operation): ChatCompletionTool => ({
         type: 'function',
         function: {
@@ -143,6 +150,7 @@ export function initializeToolCallRegistry(): ToolCallRegistry<unknown> {
   registry.register(new EvmBalancesQuery());
   registry.register(new ERC20ConversionMessage());
   registry.register(new EvmChainSwitchMessage());
+  registry.register(new WebSearchOperation());
 
   return registry;
 }
