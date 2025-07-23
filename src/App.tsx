@@ -103,15 +103,6 @@ export const App = () => {
           onCloseSearchHistory={onCloseSearchHistory}
         />
       )}
-
-      {isWalletModalOpen && (
-        <WalletModal
-          onClose={closeWalletConnectModal}
-          availableProviders={availableProviders}
-          onSelectProvider={onProviderSelect}
-          promotedWallets={PROMOTED_WALLETS}
-        />
-      )}
     </div>
   );
 };

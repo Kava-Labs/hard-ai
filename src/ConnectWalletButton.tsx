@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import styles from './ConnectWalletButton.module.css';
 import { formatWalletAddress } from './utils/helpers';
+import WalletModal from './WalletModal';
 
 interface ConnectWalletButtonProps {
   walletAddress: string;
@@ -19,6 +20,7 @@ const ConnectWalletButton = ({
   walletName,
   showSwitchWallet,
 }: ConnectWalletButtonProps) => {
+  const [isWalletModalOpen, setIsWalletModalOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   const displayedButtonText = walletAddress
@@ -42,7 +44,7 @@ const ConnectWalletButton = ({
 
   const onConnectClick = () => {
     if (!walletAddress) {
-      handleConnectClick();
+      setIsWalletModalOpen(true);
     }
   };
 
@@ -79,6 +81,10 @@ const ConnectWalletButton = ({
             Disconnect
           </div>
         </div>
+      )}
+
+      {isWalletModalOpen && (
+        <WalletModal onClose={() => setIsWalletModalOpen(false)} />
       )}
     </div>
   );
