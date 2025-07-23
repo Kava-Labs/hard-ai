@@ -36,6 +36,23 @@ import {
   formatWalletBalancesForPrompt,
   getChainAccounts,
 } from './utils/wallet';
+import { ModelId } from './types/index.ts';
+
+export const USE_LITELLM_TOKEN =
+  import.meta.env.VITE_FEAT_USE_LITELLM_TOKEN === 'true';
+
+export function getToken() {
+  if (USE_LITELLM_TOKEN) {
+    // using LiteLLM service account token here is no different from a security standpoint
+    // form having an unauthenticated endpoint. the benefit here is we could rotate the key
+    // on deployment. When the need arises, we can implement custom auth middleware and fetch
+    // the token here.
+    return import.meta.env.VITE_LITELLM_API_KEY;
+  }
+  const clientToken = uuidv4();
+  const sessionToken = uuidv4();
+  return `kavachat:${clientToken}:${sessionToken}`;
+}
 
 const activeChats: Record<string, ActiveChat> = {};
 
@@ -50,7 +67,7 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
   const [client] = useState(() => {
     return new OpenAI({
       baseURL: import.meta.env['VITE_OPENAI_BASE_URL'],
-      apiKey: `kavachat:${uuidv4()}:${uuidv4()}`,
+      apiKey: getToken(),
       dangerouslyAllowBrowser: true,
     });
   });
@@ -135,8 +152,8 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
         ) {
           return;
         } else {
-          messageContent = `Wallet account changed. New address: ${walletInfo.address} on chain ID: ${walletInfo.chainId}. 
-        Wallet type: ${walletInfo.walletType}. 
+          messageContent = `Wallet account changed. New address: ${walletInfo.address} on chain ID: ${walletInfo.chainId}.
+        Wallet type: ${walletInfo.walletType}.
         Keep previous wallet information in context, but recognize that it is not current. ${walletInfo.balancesPrompt}`;
 
           walletUpdateRef.current.previousAddress = walletInfo.address;
@@ -463,8 +480,8 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
       if (walletInfo.isConnected && walletInfo.address) {
         const walletInfoMessage: ChatMessage = {
           role: 'system',
-          content: `Current wallet information: Address: ${walletInfo.address} on chain ID: ${walletInfo.chainId}. 
-          Wallet type: ${walletInfo.walletType || 'Unknown'}. 
+          content: `Current wallet information: Address: ${walletInfo.address} on chain ID: ${walletInfo.chainId}.
+          Wallet type: ${walletInfo.walletType || 'Unknown'}.
           ${walletInfo.balancesPrompt}`,
         };
 
@@ -555,6 +572,10 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
     });
   }, [fetchConversations]);
 
+  const changeModel = useCallback((model: ModelId) => {
+    setActiveChat((prev) => ({ ...prev, model }));
+  }, []);
+
   return useMemo(() => {
     const walletProviderInfo =
       walletConnection.isWalletConnected && walletConnection.rdns
@@ -583,6 +604,7 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
       openWalletConnectModal,
       closeWalletConnectModal,
       onProviderSelect,
+      changeModel,
     };
   }, [
     walletConnection.isWalletConnected,
@@ -605,5 +627,6 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
     openWalletConnectModal,
     closeWalletConnectModal,
     onProviderSelect,
+    changeModel,
   ]);
 };

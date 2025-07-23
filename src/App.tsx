@@ -55,6 +55,7 @@ export const App = () => {
     closeWalletConnectModal,
     isWalletModalOpen,
     onProviderSelect,
+    changeModel,
   } = useChat();
 
   return (
@@ -91,6 +92,7 @@ export const App = () => {
         onConnectWalletClick={openWalletConnectModal}
         disconnectWallet={disconnectWallet}
         availableProviderCount={availableProviders.length}
+        changeModel={changeModel}
       />
       {isSearchHistoryOpen && searchableHistory && (
         <SearchHistoryModal
