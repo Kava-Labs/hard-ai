@@ -82,7 +82,7 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
     id: uuidv4(), // add uuid v4 for conversation id
     isRequesting: false,
     isConversationStarted: false,
-    model: initModel ? initModel : 'gpt-4o',
+    model: initModel ? initModel : 'openrouter-gpt-4o',
     abortController: new AbortController(),
     client: client,
     isOperationValidated: false,

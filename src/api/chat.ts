@@ -5,7 +5,6 @@ import { formatConversationTitle } from 'lib-kava-ai';
 import { ToolCallRegistry } from '../toolcalls/chain/ToolCallRegistry';
 import { ToolCallStreamStore } from '../stores/toolCallStreamStore';
 import { MessageHistoryStore } from '../stores/messageHistoryStore';
-import { MODELS } from '../types/';
 
 export const doChat = async (
   activeChat: ActiveChat,
@@ -14,21 +13,13 @@ export const doChat = async (
   webSearchEnabled: boolean,
 ) => {
   try {
-    const currentModel = MODELS.find((m) => m.id === activeChat.model);
-    const shouldUsePlugins =
-      webSearchEnabled && currentModel?.searchType === 'openrouter';
-
-    console.log(
-      `Using model ${activeChat.model} with plugins: ${shouldUsePlugins}`,
-    );
-
     const stream = await activeChat.client.chat.completions.create(
       {
         model: activeChat.model,
         messages: activeChat.messageHistoryStore.getSnapshot(),
         stream: true,
         tools: toolCallRegistry.getToolDefinitions(),
-        ...(shouldUsePlugins && { plugins: [{ id: 'web' }] }),
+        ...(webSearchEnabled && { plugins: [{ id: 'web' }] }),
       },
       {
         signal: activeChat.abortController.signal,
