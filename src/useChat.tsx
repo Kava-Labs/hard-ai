@@ -28,6 +28,7 @@ import { defaultSystemPrompt } from './toolcalls/chain/prompts';
 
 import { ModelId } from './types/index.ts';
 
+const DEFAULT_MODEL = 'gpt-4o';
 export const USE_LITELLM_TOKEN =
   import.meta.env.VITE_FEAT_USE_LITELLM_TOKEN === 'true';
 
@@ -46,7 +47,7 @@ export function getToken() {
 
 const activeChats: Record<string, ActiveChat> = {};
 
-export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
+export const useChat = () => {
   const [client] = useState(() => {
     return new OpenAI({
       baseURL: import.meta.env['VITE_OPENAI_BASE_URL'],
@@ -63,12 +64,12 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
     id: uuidv4(), // add uuid v4 for conversation id
     isRequesting: false,
     isConversationStarted: false,
-    model: initModel ? initModel : 'gpt-4o',
+    model: DEFAULT_MODEL,
     abortController: new AbortController(),
     client: client,
     isOperationValidated: false,
     toolCallStreamStore: new ToolCallStreamStore(),
-    messageHistoryStore: new MessageHistoryStore(initValues),
+    messageHistoryStore: new MessageHistoryStore(),
     messageStore: new TextStreamStore(),
     errorStore: new TextStreamStore(),
   });
@@ -222,7 +223,7 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
       isRequesting: false,
       isConversationStarted: false,
       isOperationValidated: false,
-      model: initModel ? initModel : 'gpt-4o',
+      model: DEFAULT_MODEL,
       abortController: new AbortController(),
       client: client,
       toolCallStreamStore: new ToolCallStreamStore(),
