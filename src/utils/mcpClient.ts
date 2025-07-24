@@ -1,6 +1,5 @@
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js';
-import { SSEClientTransport } from '@modelcontextprotocol/sdk/client/sse.js';
 import type { Tool, CallToolResult } from '@modelcontextprotocol/sdk/types.js';
 
 export interface MCPToolDefinition {
@@ -14,81 +13,54 @@ export interface MCPToolDefinition {
 }
 
 export class MCPClient {
-  private client: Client | undefined = undefined;
-  private isConnected = false;
-  private tools: Tool[] = [];
-  private readonly mcpUrl: string;
-  private readonly apiKey: string;
+  private client: Client | null = null;
+  public tools: Tool[] = [];
+  public readonly isAvailable: boolean;
 
-  constructor() {
-    this.mcpUrl = import.meta.env.VITE_MCP_URL || '';
-    this.apiKey = import.meta.env.VITE_LITELLM_API_KEY || '';
+  constructor(
+    private readonly mcpUrl: string = import.meta.env.VITE_MCP_URL || '',
+    private readonly apiKey: string = import.meta.env.VITE_LITELLM_API_KEY ||
+      '',
+  ) {
+    this.isAvailable = !!(this.mcpUrl && this.apiKey);
 
-    if (!this.mcpUrl) {
-      console.warn(
-        'VITE_MCP_URL not configured, MCP client will not be available',
-      );
-    }
-    if (!this.apiKey) {
-      console.warn(
-        'VITE_LITELLM_API_KEY not configured, MCP client authentication may fail',
-      );
+    if (!this.isAvailable) {
+      console.warn('MCP client not configured - missing URL or API key');
     }
   }
 
+  get isConnected(): boolean {
+    return !!this.client;
+  }
+
   async connect(): Promise<boolean> {
-    if (this.isConnected || !this.mcpUrl) {
+    if (this.isConnected || !this.isAvailable) {
       return this.isConnected;
     }
 
     try {
-      const baseUrl = new URL(this.mcpUrl);
+      this.client = new Client({
+        name: 'hard-ai-client',
+        version: '1.0.0',
+      });
 
-      // Try Streamable HTTP transport first
-      try {
-        this.client = new Client({
-          name: 'hard-ai-streamable-http-client',
-          version: '1.0.0',
-        });
-
-        const transport = new StreamableHTTPClientTransport(baseUrl, {
+      const transport = new StreamableHTTPClientTransport(
+        new URL(this.mcpUrl),
+        {
           requestInit: {
             headers: {
               Authorization: `Bearer ${this.apiKey}`,
             },
           },
-        });
-        await this.client.connect(transport);
-        console.log('Connected to MCP server using Streamable HTTP transport');
-        this.isConnected = true;
-        return true;
-      } catch (error) {
-        console.log(
-          'Streamable HTTP connection failed, falling back to SSE transport',
-          error,
-        );
+        },
+      );
 
-        // Fallback to SSE transport
-        this.client = new Client({
-          name: 'hard-ai-sse-client',
-          version: '1.0.0',
-        });
-
-        const sseTransport = new SSEClientTransport(baseUrl, {
-          requestInit: {
-            headers: {
-              Authorization: `Bearer ${this.apiKey}`,
-            },
-          },
-        });
-        await this.client.connect(sseTransport);
-        console.log('Connected to MCP server using SSE transport');
-        this.isConnected = true;
-        return true;
-      }
+      await this.client.connect(transport);
+      console.log('Connected to MCP server');
+      return true;
     } catch (error) {
       console.error('Failed to connect to MCP server:', error);
-      this.isConnected = false;
+      this.client = null;
       return false;
     }
   }
@@ -100,18 +72,15 @@ export class MCPClient {
       } catch (error) {
         console.error('Error disconnecting from MCP server:', error);
       }
-      this.client = undefined;
-      this.isConnected = false;
+      this.client = null;
       this.tools = [];
     }
   }
 
   async listTools(): Promise<Tool[]> {
-    if (!this.isConnected || !this.client) {
+    if (!this.isConnected) {
       const connected = await this.connect();
-      if (!connected) {
-        return [];
-      }
+      if (!connected) return [];
     }
 
     try {
@@ -125,14 +94,12 @@ export class MCPClient {
   }
 
   async callTool(name: string, arguments_: unknown): Promise<CallToolResult> {
-    if (!this.isConnected || !this.client) {
+    if (!this.isConnected) {
       throw new Error('MCP client not connected');
     }
 
-    console.log(`Calling MCP tool: ${name} with arguments:`, arguments_);
-
     try {
-      const result = await this.client.callTool({
+      const result = await this.client!.callTool({
         name,
         arguments: (arguments_ as Record<string, unknown>) || {},
       });
@@ -143,19 +110,6 @@ export class MCPClient {
     }
   }
 
-  getTools(): Tool[] {
-    return this.tools;
-  }
-
-  isAvailable(): boolean {
-    return !!this.mcpUrl && !!this.apiKey;
-  }
-
-  getConnectionStatus(): boolean {
-    return this.isConnected;
-  }
-
-  // Convert MCP tools to the format expected by the ToolCallRegistry
   convertToToolDefinitions(): MCPToolDefinition[] {
     return this.tools.map((tool) => ({
       name: tool.name,
@@ -169,8 +123,6 @@ export class MCPClient {
   }
 }
 
-// Singleton instance, as it's expensive to create a new client each time
-// and we want to maintain state across the application
 let mcpClientInstance: MCPClient | null = null;
 
 export function getMCPClient(): MCPClient {
@@ -183,14 +135,13 @@ export function getMCPClient(): MCPClient {
 
 export async function initializeMCPClient(): Promise<MCPClient> {
   const client = getMCPClient();
-  if (client.isAvailable()) {
+  if (client.isAvailable) {
     try {
       await client.connect();
       await client.listTools();
       console.log('MCP client initialized successfully');
     } catch (error) {
       console.warn('MCP client initialization failed:', error);
-      // Continue without MCP - graceful degradation
     }
   } else {
     console.info('MCP client not configured - running with local tools only');

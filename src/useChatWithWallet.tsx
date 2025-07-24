@@ -23,7 +23,6 @@ interface UseChatWithWalletOptions {
 export const useChatWithWallet = ({
   toolCallRegistry,
   initialMessages = [],
-  webSearchEnabled = true,
 }: UseChatWithWalletOptions) => {
   const [walletInfo, setWalletInfo] = useState<WalletInfo | null>(null);
   const [currentInitialMessages, setCurrentInitialMessages] =
@@ -45,14 +44,12 @@ export const useChatWithWallet = ({
   } = useChat({
     initialMessages: currentInitialMessages,
     toolCallRegistry,
-    webSearchEnabled,
     executeToolCall: async (operationName, params) => {
       return await toolCallRegistry.executeToolCall(
         operationName,
         params,
         walletInfo,
         walletStore,
-        webSearchEnabled,
       );
     },
   });

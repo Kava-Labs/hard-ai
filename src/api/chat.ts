@@ -10,7 +10,6 @@ export const doChat = async (
   activeChat: ActiveChat,
   toolCallRegistry: ToolCallRegistry<unknown>,
   executeOperation: ExecuteToolCall,
-  webSearchEnabled = true,
 ) => {
   try {
     const stream = await activeChat.client.chat.completions.create(
@@ -18,7 +17,7 @@ export const doChat = async (
         model: activeChat.model,
         messages: activeChat.messageHistoryStore.getSnapshot(),
         stream: true,
-        tools: await toolCallRegistry.getToolDefinitions(webSearchEnabled),
+        tools: toolCallRegistry.getToolDefinitions(),
       },
       {
         signal: activeChat.abortController.signal,
@@ -65,7 +64,6 @@ export const doChat = async (
         activeChat,
         toolCallRegistry,
         executeOperation,
-        webSearchEnabled,
       );
     }
   } catch (e) {

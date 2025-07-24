@@ -6,6 +6,10 @@ import KavaAILogo from './kavaAILogo';
 import { initializeToolCallRegistry } from './toolcalls/chain';
 import { useChatWithWallet } from './useChatWithWallet';
 import { initializeMCPClient } from './utils/mcpClient';
+import {
+  deregisterMcpToolsFromRegistry,
+  registerMcpToolsWithRegistry,
+} from './toolcalls/chain/MCPToolCallOperation';
 
 const toolCallRegistry = initializeToolCallRegistry();
 
@@ -44,6 +48,14 @@ export const App = () => {
     initializeMCPClient().catch(console.error);
   }, []);
 
+  useEffect(() => {
+    if (webSearchEnabled) {
+      registerMcpToolsWithRegistry(toolCallRegistry).catch(console.error);
+    } else {
+      deregisterMcpToolsFromRegistry(toolCallRegistry);
+    }
+  }, [webSearchEnabled]);
+
   const {
     activeChat,
     conversationHistories,
@@ -56,7 +68,7 @@ export const App = () => {
     searchableHistory,
     fetchSearchHistory,
     changeModel,
-  } = useChatWithWallet({ toolCallRegistry, webSearchEnabled });
+  } = useChatWithWallet({ toolCallRegistry });
 
   return (
     <div className={styles.app}>
