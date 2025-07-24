@@ -43,11 +43,6 @@ export const App = () => {
 
   const [webSearchEnabled, setWebSearchEnabled] = useState(true);
 
-  // Initialize MCP client on app start
-  useEffect(() => {
-    initializeMCPClient().catch(console.error);
-  }, []);
-
   useEffect(() => {
     if (webSearchEnabled) {
       registerMcpToolsWithRegistry(toolCallRegistry).catch(console.error);
