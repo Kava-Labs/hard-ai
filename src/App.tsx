@@ -8,8 +8,9 @@ import { useState } from 'react';
 import styles from './App.module.css';
 import { ChatInterface } from './ChatInterface';
 import KavaAILogo from './kavaAILogo';
+import { walletStore } from './stores/walletStore';
 import { useWalletState } from './stores/walletStore/useWalletState';
-import { ToolCallRegistry } from './toolcalls/chain';
+import { initializeToolCallRegistry } from './toolcalls/chain';
 import { WalletInfo } from './types';
 import { useChat } from './useChat';
 
@@ -21,6 +22,8 @@ const walletContextMessage = (walletInfo: WalletInfo): ChatMessage => {
           ${walletInfo.balancesPrompt}`,
   };
 };
+
+const toolCallRegistry = initializeToolCallRegistry();
 
 export const App = () => {
   const [isMobileSideBarOpen, setIsMobileSideBarOpen] = useState(false);
@@ -51,6 +54,7 @@ export const App = () => {
     : isDesktopSideBarOpen;
 
   const [initialMessages, setInitialMessages] = useState<ChatMessage[]>([]);
+  const [walletInfo, setWalletInfo] = useState<WalletInfo | null>(null);
 
   const {
     activeChat,
@@ -63,15 +67,18 @@ export const App = () => {
     updateConversationTitle: onUpdateConversationTitle,
     searchableHistory,
     fetchSearchHistory,
-    toolCallRegistry,
     changeModel,
     addPendingSystemMessage,
   } = useChat({
     initialMessages,
-    // TODO
-    toolCallRegistry: new ToolCallRegistry(),
+    toolCallRegistry,
     executeToolCall: async (operationName, params) => {
-      return '';
+      return await toolCallRegistry.executeToolCall(
+        operationName,
+        params,
+        walletInfo,
+        walletStore,
+      );
     },
   });
 
@@ -82,19 +89,22 @@ export const App = () => {
       addPendingSystemMessage(msg.content as string);
       // ensure new chats include wallet context
       setInitialMessages([msg]);
+      setWalletInfo(walletInfo);
     },
     onWalletDisconnect: () => {
       setInitialMessages([]);
       addPendingSystemMessage(
         'Wallet has been disconnected. All previous wallet information is no longer valid.',
       );
+      setWalletInfo(null);
     },
     onWalletChange: (prevInfo, walletInfo) => {
       const content = `Wallet account changed. New address: ${walletInfo.address} on chain ID: ${walletInfo.chainId}.
-        Wallet type: ${walletInfo.walletType}.
-        Keep previous wallet information in context, but recognize that it is not current. ${walletInfo.balancesPrompt}`;
+      Wallet type: ${walletInfo.walletType}.
+      Keep previous wallet information in context, but recognize that it is not current. ${walletInfo.balancesPrompt}`;
       addPendingSystemMessage(content);
       setInitialMessages([walletContextMessage(walletInfo)]);
+      setWalletInfo(walletInfo);
     },
   });
 

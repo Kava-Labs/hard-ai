@@ -89,13 +89,6 @@ export const ChatInterface = ({
               onNewChatClick={handleNewChat}
               primaryControlComponent={
                 <>
-                  <button
-                    onClick={() =>
-                      console.log(activeChat.messageHistoryStore.getSnapshot())
-                    }
-                  >
-                    debug
-                  </button>
                   {changeModel && (
                     <ModelSelector
                       handleModelChange={changeModel}

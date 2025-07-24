@@ -14,6 +14,9 @@ import { EvmBalancesQuery } from '../evmBalances';
 import { EvmTransferMessage } from '../evmTransfer';
 import { ERC20ConversionMessage } from '../erc20Conversion';
 import { EvmChainSwitchMessage } from '../switchNetwork';
+import { WalletInfo } from '../../types';
+import { WalletStore } from '../../stores/walletStore';
+
 /**
  * Central registry for all chain operations (messages and queries).
  * Manages the registration and retrieval of operations, and generates
@@ -130,6 +133,65 @@ export class ToolCallRegistry<T> {
         },
       },
     }));
+  }
+
+  /**
+   * Executes a tool call operation with the provided parameters and wallet info.
+   * This method handles the execution of both transaction and query operations
+   * without directly manipulating the wallet store state.
+   *
+   * @param operationName - The name of the operation to execute
+   * @param params - The parameters for the operation
+   * @param walletInfo - Current wallet information
+   * @param walletStore - The wallet store instance for operations that need it
+   * @returns Promise<string> - The result of the operation
+   */
+  async executeToolCall(
+    operationName: string,
+    params: unknown,
+    walletInfo: WalletInfo | null,
+    walletStore: WalletStore,
+  ): Promise<string> {
+    const operation = this.get(operationName);
+    if (!operation) {
+      throw new Error(`Unknown operation type: ${operationName}`);
+    }
+
+    // Check if operation needs wallet and if wallet is connected
+    if (operation.needsWallet && operation.needsWallet.length > 0) {
+      if (!walletInfo || !walletInfo.isConnected) {
+        throw new Error('Wallet is required but not connected');
+      }
+    }
+
+    // Validate the operation parameters using type assertion
+    const isValid = await (
+      operation as ChainToolCallOperation<unknown>
+    ).validate(params, walletStore);
+    if (!isValid) {
+      throw new Error('Invalid parameters for operation');
+    }
+
+    // Execute the operation based on its type
+    if ('buildTransaction' in operation) {
+      return (operation as ChainToolCallMessage<unknown>).buildTransaction(
+        params,
+        walletStore,
+      );
+    } else if ('executeQuery' in operation) {
+      return (operation as ChainToolCallQuery<unknown>).executeQuery(
+        params,
+        walletStore,
+      );
+    } else if ('executeRequest' in operation) {
+      return (
+        operation as ChainToolCallOperation<unknown> & {
+          executeRequest: (params: unknown) => Promise<string>;
+        }
+      ).executeRequest(params);
+    }
+
+    throw new Error('Invalid operation type');
   }
 }
 

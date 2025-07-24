@@ -107,8 +107,6 @@ export const useWalletState = (options: UseWalletStateOptions = {}) => {
   const connectEIP6963Provider = React.useCallback(
     async (rdns: string, chainId?: string) => {
       try {
-        const _previousWalletInfo = previousWalletInfoRef.current;
-
         await walletStore.connectWallet({
           chainId,
           walletProvider: WalletProvider.EIP6963,

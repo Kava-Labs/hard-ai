@@ -329,7 +329,6 @@ export const useChat = ({
     updateConversationTitle: updateConversationTitle,
     searchableHistory,
     fetchSearchHistory,
-    toolCallRegistry,
     changeModel,
     addPendingSystemMessage,
   };
