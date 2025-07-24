@@ -135,6 +135,7 @@ export function getMCPClient(): MCPClient {
 
 export async function initializeMCPClient(): Promise<MCPClient> {
   const client = getMCPClient();
+
   if (client.isAvailable) {
     try {
       await client.connect();

@@ -5,7 +5,6 @@ import { ChatInterface } from './ChatInterface';
 import KavaAILogo from './kavaAILogo';
 import { initializeToolCallRegistry } from './toolcalls/chain';
 import { useChatWithWallet } from './useChatWithWallet';
-import { initializeMCPClient } from './utils/mcpClient';
 import {
   deregisterMcpToolsFromRegistry,
   registerMcpToolsWithRegistry,

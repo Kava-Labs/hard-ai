@@ -158,11 +158,10 @@ export class McpToolCallOperation
  */
 export async function registerMcpToolsWithRegistry(
   registry: ToolCallRegistry<unknown>,
-  mcpClient?: ReturnType<typeof getMCPClient>,
 ): Promise<void> {
-  const client = mcpClient || (await initializeMCPClient());
-
   try {
+    const client = await initializeMCPClient();
+
     // Ensure client is connected and get available tools
     if (!client.isConnected) {
       await client.connect();
