@@ -7,6 +7,7 @@ import { ToolCallRegistry } from './toolcalls/chain';
 import ConnectWalletButton from './ConnectWalletButton';
 import { ModelId } from './types/index.ts';
 import { ModelSelector } from './ModelSelector';
+import { Toggle } from './Toggle.tsx';
 
 const showWalletConnect =
   import.meta.env['VITE_FEAT_WALLET_CONNECT'] === 'true';
@@ -21,6 +22,8 @@ export interface ChatInterfaceProps {
   onMenuClick: () => void;
   styles: Record<string, string>;
   changeModel?: (model: ModelId) => void;
+  webSearchEnabled?: boolean;
+  onWebSearchToggle?: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 export const ChatInterface = ({
@@ -33,6 +36,8 @@ export const ChatInterface = ({
   onMenuClick,
   styles,
   changeModel,
+  webSearchEnabled,
+  onWebSearchToggle,
 }: ChatInterfaceProps) => {
   const { isConversationStarted, isRequesting } = activeChat;
   const containerRef = useRef<HTMLDivElement>(null);
@@ -89,6 +94,14 @@ export const ChatInterface = ({
               onNewChatClick={handleNewChat}
               primaryControlComponent={
                 <>
+                  {onWebSearchToggle && (
+                    <Toggle
+                      isToggled={webSearchEnabled || false}
+                      onToggle={onWebSearchToggle}
+                      label="Web Search"
+                      size="small"
+                    />
+                  )}
                   {changeModel && (
                     <ModelSelector
                       handleModelChange={changeModel}
