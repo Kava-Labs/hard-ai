@@ -2,32 +2,32 @@ import React, { useEffect, useRef } from 'react';
 import styles from './WalletModal.module.css';
 import { ButtonIcon } from 'lib-kava-ai';
 import { X } from 'lucide-react';
-import { PromotedWallet, WalletProviderDetail } from './types';
+import { useWalletState } from './stores/walletStore/useWalletState';
+import { EIP6963ProviderDetail } from './stores/walletStore';
+import { PROMOTED_WALLETS } from './utils/wallet';
 
 interface WalletModalProps {
   onClose: () => void;
-  availableProviders: WalletProviderDetail[];
-  onSelectProvider: (provider: WalletProviderDetail) => void;
-  promotedWallets: PromotedWallet[];
 }
 
-const WalletModal: React.FC<WalletModalProps> = ({
-  onClose,
-  availableProviders,
-  onSelectProvider,
-  promotedWallets,
-}) => {
+const WalletModal: React.FC<WalletModalProps> = ({ onClose }) => {
+  const { availableProviders, handleProviderSelect } = useWalletState();
   const hasProviders = availableProviders.length > 0;
   const modalRef = useRef<HTMLDivElement>(null);
 
   //  If a user doesn't have one of the promoted wallets install, display it as a link
   //  so they can download if they want
-  const missingPromotedWallets = promotedWallets.filter(
+  const missingPromotedWallets = PROMOTED_WALLETS.filter(
     (promotedWallet) =>
       !availableProviders.some((provider) =>
         provider.info.name.includes(promotedWallet.name),
       ),
   );
+
+  const selectProvider = (provider: EIP6963ProviderDetail) => {
+    handleProviderSelect(provider);
+    onClose();
+  };
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -64,7 +64,7 @@ const WalletModal: React.FC<WalletModalProps> = ({
               <div
                 key={provider.info.uuid}
                 className={styles.walletOption}
-                onClick={() => onSelectProvider(provider)}
+                onClick={() => selectProvider(provider)}
               >
                 <div className={styles.walletOptionIcon}>
                   <img

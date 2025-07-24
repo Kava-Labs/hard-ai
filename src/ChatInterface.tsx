@@ -1,7 +1,7 @@
 import { ChatInput } from './ChatInput';
 import { NavBar, LandingContent } from 'lib-kava-ai';
 import { ConversationWrapper } from './ConversationWrapper';
-import { ActiveChat, ChatMessage, DisplayedWalletProviderInfo } from './types';
+import { ActiveChat, ChatMessage } from './types';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { ToolCallRegistry } from './toolcalls/chain';
 import ConnectWalletButton from './ConnectWalletButton';
@@ -20,11 +20,6 @@ export interface ChatInterfaceProps {
   isSideBarOpen: boolean;
   onMenuClick: () => void;
   styles: Record<string, string>;
-  walletAddress: string;
-  walletProviderInfo?: DisplayedWalletProviderInfo;
-  onConnectWalletClick: () => void;
-  disconnectWallet: () => void;
-  availableProviderCount: number;
   changeModel?: (model: ModelId) => void;
 }
 
@@ -37,11 +32,6 @@ export const ChatInterface = ({
   isSideBarOpen,
   onMenuClick,
   styles,
-  walletAddress,
-  walletProviderInfo,
-  onConnectWalletClick,
-  disconnectWallet,
-  availableProviderCount,
   changeModel,
 }: ChatInterfaceProps) => {
   const { isConversationStarted, isRequesting } = activeChat;
@@ -106,16 +96,7 @@ export const ChatInterface = ({
                       isDisabled={isConversationStarted}
                     />
                   )}
-                  {showWalletConnect && (
-                    <ConnectWalletButton
-                      walletAddress={walletAddress}
-                      handleConnectClick={onConnectWalletClick}
-                      disconnectWallet={disconnectWallet}
-                      icon={walletProviderInfo?.icon}
-                      walletName={walletProviderInfo?.name}
-                      showSwitchWallet={availableProviderCount > 1}
-                    />
-                  )}
+                  {showWalletConnect && <ConnectWalletButton />}
                 </>
               }
             />

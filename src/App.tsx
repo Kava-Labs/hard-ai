@@ -1,11 +1,12 @@
-import styles from './App.module.css';
+import { SearchHistoryModal, SideBar, useIsMobileLayout } from 'lib-kava-ai';
 import { useState } from 'react';
-import { useChat } from './useChat';
+import styles from './App.module.css';
 import { ChatInterface } from './ChatInterface';
-import { useIsMobileLayout, SearchHistoryModal, SideBar } from 'lib-kava-ai';
-import WalletModal from './WalletModal';
-import { PROMOTED_WALLETS } from './utils/wallet';
 import KavaAILogo from './kavaAILogo';
+import { initializeToolCallRegistry } from './toolcalls/chain';
+import { useChatWithWallet } from './useChatWithWallet';
+
+const toolCallRegistry = initializeToolCallRegistry();
 
 export const App = () => {
   const [isMobileSideBarOpen, setIsMobileSideBarOpen] = useState(false);
@@ -41,22 +42,13 @@ export const App = () => {
     handleChatCompletion,
     handleCancel,
     handleNewChat,
-    onSelectConversation,
-    onDeleteConversation,
-    onUpdateConversationTitle,
+    selectConversation,
+    deleteConversation,
+    updateConversationTitle,
     searchableHistory,
     fetchSearchHistory,
-    toolCallRegistry,
-    walletAddress,
-    disconnectWallet,
-    availableProviders,
-    walletProviderInfo,
-    openWalletConnectModal,
-    closeWalletConnectModal,
-    isWalletModalOpen,
-    onProviderSelect,
     changeModel,
-  } = useChat();
+  } = useChatWithWallet({ toolCallRegistry });
 
   return (
     <div className={styles.app}>
@@ -64,10 +56,10 @@ export const App = () => {
         activeConversationId={activeChat.id}
         conversationHistories={conversationHistories}
         onCloseClick={onCloseSideBar}
-        onDeleteConversation={onDeleteConversation}
+        onDeleteConversation={deleteConversation}
         onOpenSearchModal={onOpenSearchModal}
-        onSelectConversation={onSelectConversation}
-        onUpdateConversationTitle={onUpdateConversationTitle}
+        onSelectConversation={selectConversation}
+        onUpdateConversationTitle={updateConversationTitle}
         isSideBarOpen={isSideBarOpen}
         SideBarLogo={<KavaAILogo height={20} name="kava-ai-sidebar-logo" />}
         styles={styles}
@@ -87,27 +79,13 @@ export const App = () => {
         onMenuClick={onOpenSideBar}
         isSideBarOpen={isSideBarOpen}
         styles={styles}
-        walletAddress={walletAddress}
-        walletProviderInfo={walletProviderInfo}
-        onConnectWalletClick={openWalletConnectModal}
-        disconnectWallet={disconnectWallet}
-        availableProviderCount={availableProviders.length}
         changeModel={changeModel}
       />
       {isSearchHistoryOpen && searchableHistory && (
         <SearchHistoryModal
           searchableHistory={searchableHistory}
-          onSelectConversation={onSelectConversation}
+          onSelectConversation={selectConversation}
           onCloseSearchHistory={onCloseSearchHistory}
-        />
-      )}
-
-      {isWalletModalOpen && (
-        <WalletModal
-          onClose={closeWalletConnectModal}
-          availableProviders={availableProviders}
-          onSelectProvider={onProviderSelect}
-          promotedWallets={PROMOTED_WALLETS}
         />
       )}
     </div>

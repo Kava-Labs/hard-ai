@@ -1,50 +1,38 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { MessageHistoryStore } from './stores/messageHistoryStore';
 import {
-  ActiveChat,
-  ChatMessage,
-  ConversationHistories,
-  ConversationHistory,
-  SearchableChatHistories,
-  WalletInfo,
-  WalletProviderDetail,
-} from './types';
-import {
-  deleteConversation,
+  deleteConversation as doDeleteConversation,
   getAllConversations,
   getConversationMessages,
   getSearchableHistory,
   idbEventTarget,
-  saveConversation,
+  saveConversation as doSaveConversation,
   TextStreamStore,
   updateConversation,
 } from 'lib-kava-ai';
-import { v4 as uuidv4 } from 'uuid';
 import OpenAI from 'openai/index';
+import { useCallback, useEffect, useState } from 'react';
+import { v4 as uuidv4 } from 'uuid';
 import { doChat, generateConversationTitle } from './api/chat';
-import { initializeToolCallRegistry } from './toolcalls/chain';
+import { MessageHistoryStore } from './stores/messageHistoryStore';
 import { ToolCallStreamStore } from './stores/toolCallStreamStore';
-import { useExecuteToolCall } from './useExecuteToolCall';
-import {
-  WalletProvider,
-  EIP6963ProviderDetail,
-  walletStore,
-} from './stores/walletStore';
+import { ToolCallRegistry } from './toolcalls/chain';
 import { defaultSystemPrompt } from './toolcalls/chain/prompts';
-import { useWalletStore } from './stores/walletStore/useWalletStore';
 import {
-  formatWalletBalancesForPrompt,
-  getChainAccounts,
-} from './utils/wallet';
+  ChatMessage,
+  ConversationHistories,
+  ConversationHistory,
+  SearchableChatHistories,
+} from './types';
+import { ActiveChat } from './types.ts';
 import { ModelId } from './types/index.ts';
 
 export const USE_LITELLM_TOKEN =
   import.meta.env.VITE_FEAT_USE_LITELLM_TOKEN === 'true';
+export const DEFAULT_MODEL = 'gpt-4o';
 
 export function getToken() {
   if (USE_LITELLM_TOKEN) {
     // using LiteLLM service account token here is no different from a security standpoint
-    // form having an unauthenticated endpoint. the benefit here is we could rotate the key
+    // from having an unauthenticated endpoint. the benefit here is we could rotate the key
     // on deployment. When the need arises, we can implement custom auth middleware and fetch
     // the token here.
     return import.meta.env.VITE_LITELLM_API_KEY;
@@ -56,14 +44,18 @@ export function getToken() {
 
 const activeChats: Record<string, ActiveChat> = {};
 
-interface WalletUpdateRef {
-  isProcessing: boolean;
-  previousAddress: string;
-  previousChainId: string;
-  pendingWalletMessage: ChatMessage | null;
+interface UseChatOptions {
+  toolCallRegistry: ToolCallRegistry<unknown>;
+  executeToolCall: (operationName: string, params: unknown) => Promise<string>;
+  /** initial messages to add to the chat (after the system prompt) */
+  initialMessages?: ChatMessage[];
 }
 
-export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
+export const useChat = ({
+  toolCallRegistry,
+  executeToolCall,
+  initialMessages = [],
+}: UseChatOptions) => {
   const [client] = useState(() => {
     return new OpenAI({
       baseURL: import.meta.env['VITE_OPENAI_BASE_URL'],
@@ -75,261 +67,23 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
   const [conversationHistories, setConversationHistories] =
     useState<ConversationHistories | null>(null);
 
-  // **********
+  const [pendingSystemMessage, setPendingSystemMessage] = useState<
+    string | null
+  >(null);
+
   const [activeChat, setActiveChat] = useState<ActiveChat>({
     id: uuidv4(), // add uuid v4 for conversation id
     isRequesting: false,
     isConversationStarted: false,
-    model: initModel ? initModel : 'gpt-4o',
+    model: DEFAULT_MODEL,
     abortController: new AbortController(),
     client: client,
     isOperationValidated: false,
     toolCallStreamStore: new ToolCallStreamStore(),
-    messageHistoryStore: new MessageHistoryStore(initValues),
+    messageHistoryStore: new MessageHistoryStore(),
     messageStore: new TextStreamStore(),
     errorStore: new TextStreamStore(),
   });
-
-  // **********
-
-  const [toolCallRegistry] = useState(() => initializeToolCallRegistry());
-
-  const walletConnection = useWalletStore(walletStore);
-  const walletAddress = walletConnection.walletAddress;
-
-  const [availableProviders, setAvailableProviders] = useState<
-    WalletProviderDetail[]
-  >([]);
-
-  const [isWalletModalOpen, setIsWalletModalOpen] = useState(false);
-  const [isWalletConnecting, setIsWalletConnecting] = useState(false);
-
-  //  Ref to track async wallet switching and store pending wallet message
-  const walletUpdateRef = useRef<WalletUpdateRef>({
-    isProcessing: false,
-    previousAddress: '',
-    previousChainId: '',
-    pendingWalletMessage: null,
-  });
-
-  const getCurrentWalletInfoForPrompt = useCallback(async () => {
-    const walletConnection = walletStore.getSnapshot();
-
-    const walletInfo: WalletInfo = {
-      isConnected: walletConnection.isWalletConnected,
-      address: walletConnection.walletAddress,
-      chainId: walletConnection.walletChainId,
-      balancesPrompt: '',
-      walletType: walletConnection.walletType,
-    };
-
-    if (walletInfo.isConnected && walletConnection.provider) {
-      const balances = await getChainAccounts(walletConnection.provider);
-      walletInfo.balancesPrompt = formatWalletBalancesForPrompt(
-        balances,
-        walletConnection.walletChainId,
-      );
-    }
-
-    return walletInfo;
-  }, []);
-
-  const addWalletSystemMessage = useCallback(
-    async (walletInfo?: WalletInfo) => {
-      try {
-        let messageContent = '';
-
-        //  If no wallet info was provided, then we have been disconnected,
-        //  Reset the ref
-        if (!walletInfo) {
-          messageContent =
-            'Wallet has been disconnected. All previous wallet information is no longer valid.';
-          walletUpdateRef.current.previousAddress = '';
-          walletUpdateRef.current.previousChainId = '';
-        } else if (
-          walletInfo.address === walletUpdateRef.current.previousAddress &&
-          walletInfo.chainId === walletUpdateRef.current.previousChainId
-        ) {
-          return;
-        } else {
-          messageContent = `Wallet account changed. New address: ${walletInfo.address} on chain ID: ${walletInfo.chainId}.
-        Wallet type: ${walletInfo.walletType}.
-        Keep previous wallet information in context, but recognize that it is not current. ${walletInfo.balancesPrompt}`;
-
-          walletUpdateRef.current.previousAddress = walletInfo.address;
-          walletUpdateRef.current.previousChainId = walletInfo.chainId;
-        }
-
-        const walletMessage: ChatMessage = {
-          role: 'system',
-          content: messageContent,
-        };
-
-        //  If the conversation has already started, add the wallet message
-        if (activeChat.messageHistoryStore.getSnapshot().length > 0) {
-          activeChat.messageHistoryStore.addMessage(walletMessage);
-        } else {
-          //  Otherwise, store it in the ref to be added during handleChatCompletion
-          //  after the initial system prompt (so as not to override it)
-          walletUpdateRef.current.pendingWalletMessage = walletMessage;
-        }
-      } catch (error) {
-        console.error('Failed to add wallet system message:', error);
-      }
-    },
-    [activeChat],
-  );
-
-  const connectEIP6963Provider = useCallback(
-    async (rdns: string, chainId?: string) => {
-      if (walletUpdateRef.current.isProcessing) return;
-      walletUpdateRef.current.isProcessing = true;
-
-      try {
-        await walletStore.connectWallet({
-          chainId,
-          walletProvider: WalletProvider.EIP6963,
-          rdns,
-        });
-
-        const walletInfo = await getCurrentWalletInfoForPrompt();
-
-        //  Add a message if connection was successful
-        if (walletInfo.isConnected && walletInfo.address) {
-          await addWalletSystemMessage(walletInfo);
-        }
-      } catch (error) {
-        console.error('Failed to connect wallet:', error);
-        throw error;
-      } finally {
-        walletUpdateRef.current.isProcessing = false;
-      }
-    },
-    [getCurrentWalletInfoForPrompt, addWalletSystemMessage],
-  );
-
-  //  Subscribe to wallet connection changes and update system prompt accordingly
-  useEffect(() => {
-    //  Only proceed if we're not already processing an update
-    if (walletUpdateRef.current.isProcessing) {
-      return;
-    }
-
-    //  Set up subscription for wallet changes
-    const unsubscribe = walletStore.subscribe(async () => {
-      const currentState = walletStore.getSnapshot();
-
-      //  Only process if we're not already handling a wallet update
-      if (walletUpdateRef.current.isProcessing) {
-        return;
-      }
-
-      try {
-        if (
-          walletUpdateRef.current.previousAddress ||
-          walletUpdateRef.current.previousChainId
-        ) {
-          if (currentState.isWalletConnected && currentState.provider) {
-            const addressChanged =
-              currentState.walletAddress !==
-              walletUpdateRef.current.previousAddress;
-            const chainChanged =
-              currentState.walletChainId !==
-              walletUpdateRef.current.previousChainId;
-
-            if (addressChanged || chainChanged) {
-              walletUpdateRef.current.isProcessing = true;
-              const walletInfo = await getCurrentWalletInfoForPrompt();
-              await addWalletSystemMessage(walletInfo);
-            }
-          }
-          // Wallet was disconnected from outside our UI and disconnectWallet()
-          // wasn't called (which would have set isProcessing=true)
-          else if (
-            !currentState.isWalletConnected &&
-            walletUpdateRef.current.previousAddress.length > 0
-          ) {
-            walletUpdateRef.current.isProcessing = true;
-            await addWalletSystemMessage();
-          }
-        }
-      } finally {
-        walletUpdateRef.current.isProcessing = false;
-      }
-    });
-
-    //  Clean up subscription
-    return () => unsubscribe();
-  }, [getCurrentWalletInfoForPrompt, addWalletSystemMessage]);
-
-  const refreshProviders = useCallback(() => {
-    setAvailableProviders(walletStore.getProviders());
-  }, []);
-
-  const openWalletConnectModal = useCallback(() => {
-    refreshProviders();
-    setIsWalletModalOpen(true);
-  }, [refreshProviders, setIsWalletModalOpen]);
-
-  const disconnectWallet = useCallback(async () => {
-    walletUpdateRef.current.isProcessing = true;
-
-    walletStore.disconnectWallet();
-    await addWalletSystemMessage();
-
-    walletUpdateRef.current.isProcessing = false;
-  }, [addWalletSystemMessage]);
-
-  const handleProviderSelect = useCallback(
-    async (provider: EIP6963ProviderDetail) => {
-      try {
-        await connectEIP6963Provider(
-          provider.info.rdns,
-          `0x${Number(2222).toString(16)}`,
-        );
-      } catch (err) {
-        console.error(
-          `Failed to connect to ${provider.info.name}: ${(err as Error).message}`,
-        );
-      }
-    },
-    [connectEIP6963Provider],
-  );
-
-  const setIsOperationValidated = useCallback(
-    (isOperationValidated: boolean) => {
-      setActiveChat((prev) => {
-        activeChats[prev.id] = { ...prev, isOperationValidated };
-        return activeChats[prev.id];
-      });
-    },
-    [],
-  );
-
-  const { executeOperation, handleModalClose } = useExecuteToolCall(
-    toolCallRegistry,
-    walletStore,
-    activeChat.isOperationValidated,
-    setIsOperationValidated,
-    openWalletConnectModal,
-    isWalletConnecting,
-    setIsWalletConnecting,
-  );
-
-  const closeWalletConnectModal = useCallback(() => {
-    setIsWalletModalOpen(false);
-    if (handleModalClose) {
-      handleModalClose();
-    }
-  }, [handleModalClose]);
-
-  const onProviderSelect = useCallback(
-    async (provider: WalletProviderDetail) => {
-      await handleProviderSelect(provider);
-      closeWalletConnectModal();
-    },
-    [handleProviderSelect, closeWalletConnectModal],
-  );
 
   const fetchConversations = useCallback(() => {
     getAllConversations()
@@ -345,12 +99,17 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
     fetchConversations();
   }, [fetchConversations]);
 
+  const addPendingSystemMessage = useCallback((content: string) => {
+    setPendingSystemMessage(content);
+  }, []);
+
   const handleChatCompletion = useCallback(
     async (newMessages: ChatMessage[]) => {
       const newActiveChat: ActiveChat = {
         ...activeChat,
         isRequesting: true,
         isConversationStarted: true,
+        isOperationValidated: false,
         abortController: new AbortController(),
       };
 
@@ -360,20 +119,26 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
 
       const messages = newActiveChat.messageHistoryStore.getSnapshot();
 
-      // Initialize with system message if needed
+      // Initialize with system prompt and initial messages if needed
       if (messages.length === 0) {
+        // Add default system prompt
         newActiveChat.messageHistoryStore.addMessage({
           role: 'system',
           content: defaultSystemPrompt,
         });
 
-        // Add the pending wallet message if it exists
-        if (walletUpdateRef.current.pendingWalletMessage) {
-          newActiveChat.messageHistoryStore.addMessage(
-            walletUpdateRef.current.pendingWalletMessage,
-          );
-          walletUpdateRef.current.pendingWalletMessage = null;
+        // Add initial messages if provided
+        for (const message of initialMessages) {
+          newActiveChat.messageHistoryStore.addMessage(message);
         }
+        // if we're starting a new chat, we do not add the pending system message
+        setPendingSystemMessage(null);
+      } else if (pendingSystemMessage) {
+        newActiveChat.messageHistoryStore.addMessage({
+          role: 'system',
+          content: pendingSystemMessage,
+        });
+        setPendingSystemMessage(null);
       }
 
       // Add new messages to history
@@ -400,7 +165,7 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
       }
 
       try {
-        await saveConversation(
+        await doSaveConversation(
           conversation,
           newActiveChat.messageHistoryStore.getSnapshot(),
         );
@@ -410,7 +175,7 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
 
       // no need to catch
       // doChat won't throw and automatically sets errors in the activeChat's errorStore
-      await doChat(newActiveChat, toolCallRegistry, executeOperation);
+      await doChat(newActiveChat, toolCallRegistry, executeToolCall);
       setActiveChat((prev) => ({
         ...prev,
         isRequesting: false,
@@ -426,7 +191,7 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
         }
       }
 
-      saveConversation(
+      doSaveConversation(
         conversation,
         newActiveChat.messageHistoryStore.getSnapshot(),
       )
@@ -437,7 +202,14 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
           delete activeChats[activeChat.id];
         });
     },
-    [activeChat, conversationHistories, toolCallRegistry, executeOperation],
+    [
+      activeChat,
+      pendingSystemMessage,
+      conversationHistories,
+      toolCallRegistry,
+      executeToolCall,
+      initialMessages,
+    ],
   );
 
   const handleCancel = useCallback(() => {
@@ -454,7 +226,7 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
       isRequesting: false,
       isConversationStarted: false,
       isOperationValidated: false,
-      model: initModel ? initModel : 'gpt-4o',
+      model: DEFAULT_MODEL,
       abortController: new AbortController(),
       client: client,
       toolCallStreamStore: new ToolCallStreamStore(),
@@ -463,42 +235,12 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
       errorStore: new TextStreamStore(),
     };
 
-    // Add the default system prompt
-    newChat.messageHistoryStore.addMessage({
-      role: 'system',
-      content: defaultSystemPrompt,
-    });
+    // System prompt and any initial messages will be added once the first message is sent
 
     setActiveChat(newChat);
+  }, [client]);
 
-    // If wallet is connected, add the info as a separate system message
-    try {
-      walletUpdateRef.current.isProcessing = true;
-
-      const walletInfo = await getCurrentWalletInfoForPrompt();
-
-      if (walletInfo.isConnected && walletInfo.address) {
-        const walletInfoMessage: ChatMessage = {
-          role: 'system',
-          content: `Current wallet information: Address: ${walletInfo.address} on chain ID: ${walletInfo.chainId}.
-          Wallet type: ${walletInfo.walletType || 'Unknown'}.
-          ${walletInfo.balancesPrompt}`,
-        };
-
-        newChat.messageHistoryStore.addMessage(walletInfoMessage);
-
-        //  Update ref with current wallet info
-        walletUpdateRef.current.previousAddress = walletInfo.address;
-        walletUpdateRef.current.previousChainId = walletInfo.chainId;
-      }
-    } catch (error) {
-      console.error('Failed to add wallet info to new chat:', error);
-    } finally {
-      walletUpdateRef.current.isProcessing = false;
-    }
-  }, [initModel, client, getCurrentWalletInfoForPrompt]);
-
-  const onSelectConversation = useCallback(
+  const selectConversation = useCallback(
     async (id: string) => {
       // already selected
       if (id === activeChat.id || !conversationHistories) return;
@@ -512,8 +254,8 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
           const newActiveChat: ActiveChat = {
             id: selectedConversation.id,
             model: selectedConversation.model,
-            isOperationValidated: false,
             isRequesting: false,
+            isOperationValidated: false,
             isConversationStarted:
               Array.isArray(messages) &&
               messages.some((msg) => msg.role === 'assistant'),
@@ -532,9 +274,9 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
     [conversationHistories, activeChat],
   );
 
-  const onDeleteConversation = useCallback(
+  const deleteConversation = useCallback(
     async (id: string) => {
-      await deleteConversation(id);
+      await doDeleteConversation(id);
       delete activeChats[id];
       if (id === activeChat.id) {
         await handleNewChat();
@@ -543,7 +285,7 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
     [activeChat, handleNewChat],
   );
 
-  const onUpdateConversationTitle = useCallback(
+  const updateConversationTitle = useCallback(
     async (id: string, newTitle: string) => {
       await updateConversation(id, { title: newTitle });
     },
@@ -576,57 +318,18 @@ export const useChat = (initValues?: ChatMessage[], initModel?: string) => {
     setActiveChat((prev) => ({ ...prev, model }));
   }, []);
 
-  return useMemo(() => {
-    const walletProviderInfo =
-      walletConnection.isWalletConnected && walletConnection.rdns
-        ? availableProviders.find((p) => p.info.rdns === walletConnection.rdns)
-            ?.info
-        : undefined;
-
-    return {
-      activeChat,
-      conversationHistories,
-      handleNewChat,
-      handleChatCompletion,
-      handleCancel,
-      onSelectConversation,
-      onDeleteConversation,
-      onUpdateConversationTitle,
-      searchableHistory,
-      fetchSearchHistory,
-      toolCallRegistry,
-      walletAddress,
-      handleProviderSelect,
-      disconnectWallet,
-      availableProviders,
-      walletProviderInfo,
-      isWalletModalOpen,
-      openWalletConnectModal,
-      closeWalletConnectModal,
-      onProviderSelect,
-      changeModel,
-    };
-  }, [
-    walletConnection.isWalletConnected,
-    walletConnection.rdns,
-    availableProviders,
+  return {
     activeChat,
     conversationHistories,
     handleNewChat,
     handleChatCompletion,
     handleCancel,
-    onSelectConversation,
-    onDeleteConversation,
-    onUpdateConversationTitle,
+    selectConversation: selectConversation,
+    deleteConversation: deleteConversation,
+    updateConversationTitle: updateConversationTitle,
     searchableHistory,
-    toolCallRegistry,
-    walletAddress,
-    handleProviderSelect,
-    disconnectWallet,
-    isWalletModalOpen,
-    openWalletConnectModal,
-    closeWalletConnectModal,
-    onProviderSelect,
+    fetchSearchHistory,
     changeModel,
-  ]);
+    addPendingSystemMessage,
+  };
 };

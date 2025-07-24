@@ -1,25 +1,20 @@
-import { useState } from 'react';
+import React from 'react';
 import styles from './ConnectWalletButton.module.css';
 import { formatWalletAddress } from './utils/helpers';
+import WalletModal from './WalletModal';
+import { useWalletState } from './stores/walletStore/useWalletState';
 
-interface ConnectWalletButtonProps {
-  walletAddress: string;
-  handleConnectClick: () => void;
-  disconnectWallet: () => void;
-  icon?: string;
-  walletName?: string;
-  showSwitchWallet: boolean;
-}
-
-const ConnectWalletButton = ({
-  walletAddress,
-  handleConnectClick,
-  disconnectWallet,
-  icon,
-  walletName,
-  showSwitchWallet,
-}: ConnectWalletButtonProps) => {
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+const ConnectWalletButton = () => {
+  const {
+    walletAddress,
+    walletProviderInfo,
+    availableProviders,
+    refreshProviders,
+    disconnectWallet,
+  } = useWalletState();
+  const { icon, name: walletName } = walletProviderInfo || {};
+  const [isWalletModalOpen, setIsWalletModalOpen] = React.useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = React.useState(false);
 
   const displayedButtonText = walletAddress
     ? formatWalletAddress(walletAddress)
@@ -36,13 +31,14 @@ const ConnectWalletButton = ({
   };
 
   const onSwitchWalletClick = () => {
-    handleConnectClick();
+    setIsWalletModalOpen(true);
     setIsDropdownOpen(false);
   };
 
-  const onConnectClick = () => {
+  const onButtonClick = () => {
     if (!walletAddress) {
-      handleConnectClick();
+      refreshProviders();
+      setIsWalletModalOpen(true);
     }
   };
 
@@ -54,7 +50,7 @@ const ConnectWalletButton = ({
       onMouseEnter={() => walletAddress && setIsDropdownOpen(true)}
       onMouseLeave={() => setIsDropdownOpen(false)}
     >
-      <button onClick={onConnectClick} className={styles.walletButton}>
+      <button onClick={onButtonClick} className={styles.walletButton}>
         {showWalletIcon && (
           <img
             src={icon}
@@ -70,7 +66,7 @@ const ConnectWalletButton = ({
           <div className={styles.dropdownItem} onClick={copyAddressToClipboard}>
             Copy Address
           </div>
-          {showSwitchWallet && (
+          {availableProviders.length > 1 && (
             <div className={styles.dropdownItem} onClick={onSwitchWalletClick}>
               Switch Wallet
             </div>
@@ -79,6 +75,10 @@ const ConnectWalletButton = ({
             Disconnect
           </div>
         </div>
+      )}
+
+      {isWalletModalOpen && (
+        <WalletModal onClose={() => setIsWalletModalOpen(false)} />
       )}
     </div>
   );
