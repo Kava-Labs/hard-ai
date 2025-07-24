@@ -5,7 +5,7 @@ import { ChatInterface } from './ChatInterface';
 import KavaAILogo from './kavaAILogo';
 import { initializeToolCallRegistry } from './toolcalls/chain';
 import { useChatWithWallet } from './useChatWithWallet';
-import { WebSearchOperation } from './toolcalls/websearch/WebSearchOperation';
+import { initializeMCPClient } from './utils/mcpClient';
 
 const toolCallRegistry = initializeToolCallRegistry();
 
@@ -39,18 +39,10 @@ export const App = () => {
 
   const [webSearchEnabled, setWebSearchEnabled] = useState(true);
 
-  // Dynamically register/deregister web search operation based on toggle state
+  // Initialize MCP client on app start
   useEffect(() => {
-    const webSearchOperation = new WebSearchOperation();
-
-    if (webSearchEnabled) {
-      // Register the web search operation when enabled
-      toolCallRegistry.register(webSearchOperation);
-    } else {
-      // Deregister the web search operation when disabled
-      toolCallRegistry.deregister(webSearchOperation);
-    }
-  }, [webSearchEnabled]);
+    initializeMCPClient().catch(console.error);
+  }, []);
 
   const {
     activeChat,
@@ -64,7 +56,7 @@ export const App = () => {
     searchableHistory,
     fetchSearchHistory,
     changeModel,
-  } = useChatWithWallet({ toolCallRegistry });
+  } = useChatWithWallet({ toolCallRegistry, webSearchEnabled });
 
   return (
     <div className={styles.app}>

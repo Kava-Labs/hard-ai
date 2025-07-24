@@ -49,12 +49,15 @@ interface UseChatOptions {
   executeToolCall: (operationName: string, params: unknown) => Promise<string>;
   /** initial messages to add to the chat (after the system prompt) */
   initialMessages?: ChatMessage[];
+  /** whether web search is enabled */
+  webSearchEnabled?: boolean;
 }
 
 export const useChat = ({
   toolCallRegistry,
   executeToolCall,
   initialMessages = [],
+  webSearchEnabled = true,
 }: UseChatOptions) => {
   const [client] = useState(() => {
     return new OpenAI({
@@ -175,7 +178,12 @@ export const useChat = ({
 
       // no need to catch
       // doChat won't throw and automatically sets errors in the activeChat's errorStore
-      await doChat(newActiveChat, toolCallRegistry, executeToolCall);
+      await doChat(
+        newActiveChat,
+        toolCallRegistry,
+        executeToolCall,
+        webSearchEnabled,
+      );
       setActiveChat((prev) => ({
         ...prev,
         isRequesting: false,
@@ -209,6 +217,7 @@ export const useChat = ({
       toolCallRegistry,
       executeToolCall,
       initialMessages,
+      webSearchEnabled,
     ],
   );
 
