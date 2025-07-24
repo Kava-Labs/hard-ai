@@ -1,27 +1,10 @@
-import {
-  ChatMessage,
-  SearchHistoryModal,
-  SideBar,
-  useIsMobileLayout,
-} from 'lib-kava-ai';
+import { SearchHistoryModal, SideBar, useIsMobileLayout } from 'lib-kava-ai';
 import { useState } from 'react';
 import styles from './App.module.css';
 import { ChatInterface } from './ChatInterface';
 import KavaAILogo from './kavaAILogo';
-import { walletStore } from './stores/walletStore';
-import { useWalletState } from './stores/walletStore/useWalletState';
 import { initializeToolCallRegistry } from './toolcalls/chain';
-import { WalletInfo } from './types';
-import { useChat } from './useChat';
-
-const walletContextMessage = (walletInfo: WalletInfo): ChatMessage => {
-  return {
-    role: 'system',
-    content: `Current wallet information: Address: ${walletInfo.address} on chain ID: ${walletInfo.chainId}.
-          Wallet type: ${walletInfo.walletType || 'Unknown'}.
-          ${walletInfo.balancesPrompt}`,
-  };
-};
+import { useChatWithWallet } from './useChatWithWallet';
 
 const toolCallRegistry = initializeToolCallRegistry();
 
@@ -53,60 +36,19 @@ export const App = () => {
     ? isMobileSideBarOpen
     : isDesktopSideBarOpen;
 
-  const [initialMessages, setInitialMessages] = useState<ChatMessage[]>([]);
-  const [walletInfo, setWalletInfo] = useState<WalletInfo | null>(null);
-
   const {
     activeChat,
     conversationHistories,
     handleChatCompletion,
     handleCancel,
     handleNewChat,
-    selectConversation: onSelectConversation,
-    deleteConversation: onDeleteConversation,
-    updateConversationTitle: onUpdateConversationTitle,
+    selectConversation,
+    deleteConversation,
+    updateConversationTitle,
     searchableHistory,
     fetchSearchHistory,
     changeModel,
-    addPendingSystemMessage,
-  } = useChat({
-    initialMessages,
-    toolCallRegistry,
-    executeToolCall: async (operationName, params) => {
-      return await toolCallRegistry.executeToolCall(
-        operationName,
-        params,
-        walletInfo,
-        walletStore,
-      );
-    },
-  });
-
-  useWalletState({
-    onWalletConnect: (walletInfo) => {
-      const msg = walletContextMessage(walletInfo);
-      // add connected wallet context to existing chat
-      addPendingSystemMessage(msg.content as string);
-      // ensure new chats include wallet context
-      setInitialMessages([msg]);
-      setWalletInfo(walletInfo);
-    },
-    onWalletDisconnect: () => {
-      setInitialMessages([]);
-      addPendingSystemMessage(
-        'Wallet has been disconnected. All previous wallet information is no longer valid.',
-      );
-      setWalletInfo(null);
-    },
-    onWalletChange: (prevInfo, walletInfo) => {
-      const content = `Wallet account changed. New address: ${walletInfo.address} on chain ID: ${walletInfo.chainId}.
-      Wallet type: ${walletInfo.walletType}.
-      Keep previous wallet information in context, but recognize that it is not current. ${walletInfo.balancesPrompt}`;
-      addPendingSystemMessage(content);
-      setInitialMessages([walletContextMessage(walletInfo)]);
-      setWalletInfo(walletInfo);
-    },
-  });
+  } = useChatWithWallet({ toolCallRegistry });
 
   return (
     <div className={styles.app}>
@@ -114,10 +56,10 @@ export const App = () => {
         activeConversationId={activeChat.id}
         conversationHistories={conversationHistories}
         onCloseClick={onCloseSideBar}
-        onDeleteConversation={onDeleteConversation}
+        onDeleteConversation={deleteConversation}
         onOpenSearchModal={onOpenSearchModal}
-        onSelectConversation={onSelectConversation}
-        onUpdateConversationTitle={onUpdateConversationTitle}
+        onSelectConversation={selectConversation}
+        onUpdateConversationTitle={updateConversationTitle}
         isSideBarOpen={isSideBarOpen}
         SideBarLogo={<KavaAILogo height={20} name="kava-ai-sidebar-logo" />}
         styles={styles}
@@ -142,7 +84,7 @@ export const App = () => {
       {isSearchHistoryOpen && searchableHistory && (
         <SearchHistoryModal
           searchableHistory={searchableHistory}
-          onSelectConversation={onSelectConversation}
+          onSelectConversation={selectConversation}
           onCloseSearchHistory={onCloseSearchHistory}
         />
       )}
