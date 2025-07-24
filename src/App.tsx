@@ -1,9 +1,26 @@
-import styles from './App.module.css';
+import {
+  ChatMessage,
+  SearchHistoryModal,
+  SideBar,
+  useIsMobileLayout,
+} from 'lib-kava-ai';
 import { useState } from 'react';
-import { useChat } from './useChat';
+import styles from './App.module.css';
 import { ChatInterface } from './ChatInterface';
-import { useIsMobileLayout, SearchHistoryModal, SideBar } from 'lib-kava-ai';
 import KavaAILogo from './kavaAILogo';
+import { useWalletState } from './stores/walletStore/useWalletState';
+import { ToolCallRegistry } from './toolcalls/chain';
+import { WalletInfo } from './types';
+import { useChat } from './useChat';
+
+const walletContextMessage = (walletInfo: WalletInfo): ChatMessage => {
+  return {
+    role: 'system',
+    content: `Current wallet information: Address: ${walletInfo.address} on chain ID: ${walletInfo.chainId}.
+          Wallet type: ${walletInfo.walletType || 'Unknown'}.
+          ${walletInfo.balancesPrompt}`,
+  };
+};
 
 export const App = () => {
   const [isMobileSideBarOpen, setIsMobileSideBarOpen] = useState(false);
@@ -33,20 +50,53 @@ export const App = () => {
     ? isMobileSideBarOpen
     : isDesktopSideBarOpen;
 
+  const [initialMessages, setInitialMessages] = useState<ChatMessage[]>([]);
+
   const {
     activeChat,
     conversationHistories,
     handleChatCompletion,
     handleCancel,
     handleNewChat,
-    onSelectConversation,
-    onDeleteConversation,
-    onUpdateConversationTitle,
+    selectConversation: onSelectConversation,
+    deleteConversation: onDeleteConversation,
+    updateConversationTitle: onUpdateConversationTitle,
     searchableHistory,
     fetchSearchHistory,
     toolCallRegistry,
     changeModel,
-  } = useChat();
+    addPendingSystemMessage,
+  } = useChat({
+    initialMessages,
+    // TODO
+    toolCallRegistry: new ToolCallRegistry(),
+    executeToolCall: async (operationName, params) => {
+      return '';
+    },
+  });
+
+  useWalletState({
+    onWalletConnect: (walletInfo) => {
+      const msg = walletContextMessage(walletInfo);
+      // add connected wallet context to existing chat
+      addPendingSystemMessage(msg.content as string);
+      // ensure new chats include wallet context
+      setInitialMessages([msg]);
+    },
+    onWalletDisconnect: () => {
+      setInitialMessages([]);
+      addPendingSystemMessage(
+        'Wallet has been disconnected. All previous wallet information is no longer valid.',
+      );
+    },
+    onWalletChange: (prevInfo, walletInfo) => {
+      const content = `Wallet account changed. New address: ${walletInfo.address} on chain ID: ${walletInfo.chainId}.
+        Wallet type: ${walletInfo.walletType}.
+        Keep previous wallet information in context, but recognize that it is not current. ${walletInfo.balancesPrompt}`;
+      addPendingSystemMessage(content);
+      setInitialMessages([walletContextMessage(walletInfo)]);
+    },
+  });
 
   return (
     <div className={styles.app}>

@@ -1,41 +1,38 @@
-import { useCallback, useEffect, useState } from 'react';
-import { MessageHistoryStore } from './stores/messageHistoryStore';
 import {
-  ActiveChat,
+  deleteConversation as doDeleteConversation,
+  getAllConversations,
+  getConversationMessages,
+  getSearchableHistory,
+  idbEventTarget,
+  saveConversation as doSaveConversation,
+  TextStreamStore,
+  updateConversation,
+} from 'lib-kava-ai';
+import OpenAI from 'openai/index';
+import { useCallback, useEffect, useState } from 'react';
+import { v4 as uuidv4 } from 'uuid';
+import { doChat, generateConversationTitle } from './api/chat';
+import { MessageHistoryStore } from './stores/messageHistoryStore';
+import { ToolCallStreamStore } from './stores/toolCallStreamStore';
+import { ToolCallRegistry } from './toolcalls/chain';
+import { defaultSystemPrompt } from './toolcalls/chain/prompts';
+import {
   ChatMessage,
   ConversationHistories,
   ConversationHistory,
   SearchableChatHistories,
 } from './types';
-import {
-  deleteConversation,
-  getAllConversations,
-  getConversationMessages,
-  getSearchableHistory,
-  idbEventTarget,
-  saveConversation,
-  TextStreamStore,
-  updateConversation,
-} from 'lib-kava-ai';
-import { v4 as uuidv4 } from 'uuid';
-import OpenAI from 'openai/index';
-import { doChat, generateConversationTitle } from './api/chat';
-import { initializeToolCallRegistry } from './toolcalls/chain';
-import { ToolCallStreamStore } from './stores/toolCallStreamStore';
-import { useExecuteToolCall } from './useExecuteToolCall';
-import { walletStore } from './stores/walletStore';
-import { defaultSystemPrompt } from './toolcalls/chain/prompts';
-
+import { ActiveChat } from './types.ts';
 import { ModelId } from './types/index.ts';
 
-const DEFAULT_MODEL = 'gpt-4o';
 export const USE_LITELLM_TOKEN =
   import.meta.env.VITE_FEAT_USE_LITELLM_TOKEN === 'true';
+export const DEFAULT_MODEL = 'gpt-4o';
 
 export function getToken() {
   if (USE_LITELLM_TOKEN) {
     // using LiteLLM service account token here is no different from a security standpoint
-    // form having an unauthenticated endpoint. the benefit here is we could rotate the key
+    // from having an unauthenticated endpoint. the benefit here is we could rotate the key
     // on deployment. When the need arises, we can implement custom auth middleware and fetch
     // the token here.
     return import.meta.env.VITE_LITELLM_API_KEY;
@@ -47,7 +44,18 @@ export function getToken() {
 
 const activeChats: Record<string, ActiveChat> = {};
 
-export const useChat = () => {
+interface UseChatOptions {
+  toolCallRegistry: ToolCallRegistry<unknown>;
+  executeToolCall: (operationName: string, params: unknown) => Promise<string>;
+  /** initial messages to add to the chat (after the system prompt) */
+  initialMessages?: ChatMessage[];
+}
+
+export const useChat = ({
+  toolCallRegistry,
+  executeToolCall,
+  initialMessages = [],
+}: UseChatOptions) => {
   const [client] = useState(() => {
     return new OpenAI({
       baseURL: import.meta.env['VITE_OPENAI_BASE_URL'],
@@ -59,7 +67,10 @@ export const useChat = () => {
   const [conversationHistories, setConversationHistories] =
     useState<ConversationHistories | null>(null);
 
-  // **********
+  const [pendingSystemMessage, setPendingSystemMessage] = useState<
+    string | null
+  >(null);
+
   const [activeChat, setActiveChat] = useState<ActiveChat>({
     id: uuidv4(), // add uuid v4 for conversation id
     isRequesting: false,
@@ -73,31 +84,6 @@ export const useChat = () => {
     messageStore: new TextStreamStore(),
     errorStore: new TextStreamStore(),
   });
-
-  // **********
-
-  const [toolCallRegistry] = useState(() => initializeToolCallRegistry());
-
-  const setIsOperationValidated = useCallback(
-    (isOperationValidated: boolean) => {
-      setActiveChat((prev) => {
-        activeChats[prev.id] = { ...prev, isOperationValidated };
-        return activeChats[prev.id];
-      });
-    },
-    [],
-  );
-
-  const { executeOperation } = useExecuteToolCall(
-    toolCallRegistry,
-    walletStore,
-    activeChat.isOperationValidated,
-    setIsOperationValidated,
-    // TODO: Add these back in when we have a way to open the wallet connect modal
-    // openWalletConnectModal,
-    // isWalletConnecting,
-    // setIsWalletConnecting,
-  );
 
   const fetchConversations = useCallback(() => {
     getAllConversations()
@@ -113,12 +99,17 @@ export const useChat = () => {
     fetchConversations();
   }, [fetchConversations]);
 
+  const addPendingSystemMessage = useCallback((content: string) => {
+    setPendingSystemMessage(content);
+  }, []);
+
   const handleChatCompletion = useCallback(
     async (newMessages: ChatMessage[]) => {
       const newActiveChat: ActiveChat = {
         ...activeChat,
         isRequesting: true,
         isConversationStarted: true,
+        isOperationValidated: false,
         abortController: new AbortController(),
       };
 
@@ -128,21 +119,26 @@ export const useChat = () => {
 
       const messages = newActiveChat.messageHistoryStore.getSnapshot();
 
-      // Initialize with system message if needed
+      // Initialize with system prompt and initial messages if needed
       if (messages.length === 0) {
+        // Add default system prompt
         newActiveChat.messageHistoryStore.addMessage({
           role: 'system',
           content: defaultSystemPrompt,
         });
 
-        // TODO: handle wallet connect system messages
-        // Add the pending wallet message if it exists
-        // if (walletUpdateRef.current.pendingWalletMessage) {
-        //   newActiveChat.messageHistoryStore.addMessage(
-        //     walletUpdateRef.current.pendingWalletMessage,
-        //   );
-        //   walletUpdateRef.current.pendingWalletMessage = null;
-        // }
+        // Add initial messages if provided
+        for (const message of initialMessages) {
+          newActiveChat.messageHistoryStore.addMessage(message);
+        }
+        // if we're starting a new chat, we do not add the pending system message
+        setPendingSystemMessage(null);
+      } else if (pendingSystemMessage) {
+        newActiveChat.messageHistoryStore.addMessage({
+          role: 'system',
+          content: pendingSystemMessage,
+        });
+        setPendingSystemMessage(null);
       }
 
       // Add new messages to history
@@ -169,7 +165,7 @@ export const useChat = () => {
       }
 
       try {
-        await saveConversation(
+        await doSaveConversation(
           conversation,
           newActiveChat.messageHistoryStore.getSnapshot(),
         );
@@ -179,7 +175,7 @@ export const useChat = () => {
 
       // no need to catch
       // doChat won't throw and automatically sets errors in the activeChat's errorStore
-      await doChat(newActiveChat, toolCallRegistry, executeOperation);
+      await doChat(newActiveChat, toolCallRegistry, executeToolCall);
       setActiveChat((prev) => ({
         ...prev,
         isRequesting: false,
@@ -195,7 +191,7 @@ export const useChat = () => {
         }
       }
 
-      saveConversation(
+      doSaveConversation(
         conversation,
         newActiveChat.messageHistoryStore.getSnapshot(),
       )
@@ -206,7 +202,14 @@ export const useChat = () => {
           delete activeChats[activeChat.id];
         });
     },
-    [activeChat, conversationHistories, toolCallRegistry, executeOperation],
+    [
+      activeChat,
+      pendingSystemMessage,
+      conversationHistories,
+      toolCallRegistry,
+      executeToolCall,
+      initialMessages,
+    ],
   );
 
   const handleCancel = useCallback(() => {
@@ -232,43 +235,12 @@ export const useChat = () => {
       errorStore: new TextStreamStore(),
     };
 
-    // Add the default system prompt
-    newChat.messageHistoryStore.addMessage({
-      role: 'system',
-      content: defaultSystemPrompt,
-    });
+    // System prompt and any initial messages will be added once the first message is sent
 
     setActiveChat(newChat);
+  }, [client]);
 
-    // TODO: handle wallet connect system messages
-    // If wallet is connected, add the info as a separate system message
-    // try {
-    //   walletUpdateRef.current.isProcessing = true;
-
-    //   const walletInfo = await getCurrentWalletInfoForPrompt();
-
-    //   if (walletInfo.isConnected && walletInfo.address) {
-    //     const walletInfoMessage: ChatMessage = {
-    //       role: 'system',
-    //       content: `Current wallet information: Address: ${walletInfo.address} on chain ID: ${walletInfo.chainId}.
-    //       Wallet type: ${walletInfo.walletType || 'Unknown'}.
-    //       ${walletInfo.balancesPrompt}`,
-    //     };
-
-    //     newChat.messageHistoryStore.addMessage(walletInfoMessage);
-
-    //     //  Update ref with current wallet info
-    //     walletUpdateRef.current.previousAddress = walletInfo.address;
-    //     walletUpdateRef.current.previousChainId = walletInfo.chainId;
-    //   }
-    // } catch (error) {
-    //   console.error('Failed to add wallet info to new chat:', error);
-    // } finally {
-    //   walletUpdateRef.current.isProcessing = false;
-    // }
-  }, [initModel, client]);
-
-  const onSelectConversation = useCallback(
+  const selectConversation = useCallback(
     async (id: string) => {
       // already selected
       if (id === activeChat.id || !conversationHistories) return;
@@ -282,8 +254,8 @@ export const useChat = () => {
           const newActiveChat: ActiveChat = {
             id: selectedConversation.id,
             model: selectedConversation.model,
-            isOperationValidated: false,
             isRequesting: false,
+            isOperationValidated: false,
             isConversationStarted:
               Array.isArray(messages) &&
               messages.some((msg) => msg.role === 'assistant'),
@@ -302,9 +274,9 @@ export const useChat = () => {
     [conversationHistories, activeChat],
   );
 
-  const onDeleteConversation = useCallback(
+  const deleteConversation = useCallback(
     async (id: string) => {
-      await deleteConversation(id);
+      await doDeleteConversation(id);
       delete activeChats[id];
       if (id === activeChat.id) {
         await handleNewChat();
@@ -313,7 +285,7 @@ export const useChat = () => {
     [activeChat, handleNewChat],
   );
 
-  const onUpdateConversationTitle = useCallback(
+  const updateConversationTitle = useCallback(
     async (id: string, newTitle: string) => {
       await updateConversation(id, { title: newTitle });
     },
@@ -352,12 +324,13 @@ export const useChat = () => {
     handleNewChat,
     handleChatCompletion,
     handleCancel,
-    onSelectConversation,
-    onDeleteConversation,
-    onUpdateConversationTitle,
+    selectConversation: selectConversation,
+    deleteConversation: deleteConversation,
+    updateConversationTitle: updateConversationTitle,
     searchableHistory,
     fetchSearchHistory,
     toolCallRegistry,
     changeModel,
+    addPendingSystemMessage,
   };
 };
