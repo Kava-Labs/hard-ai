@@ -1,8 +1,23 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { ChatInterface, ChatInterfaceProps } from './ChatInterface';
-import { initializeToolCallRegistry } from './toolcalls/chain';
 import { ActiveChat } from './types';
+import { initializeToolCallRegistry } from './toolcalls/chain';
+
+// Mock the tool call registry to avoid WalletProvider issues
+vi.mock('./toolcalls/chain', () => ({
+  initializeToolCallRegistry: vi.fn(() => ({
+    get: vi.fn(),
+    getAllOperations: vi.fn(() => []),
+    getSystemPrompt: vi.fn(() => ''),
+    getIntroText: vi.fn(() => ''),
+    getInputPlaceholderText: vi.fn(() => ''),
+    getMessages: vi.fn(() => []),
+    getQueries: vi.fn(() => []),
+    getToolDefinitions: vi.fn(() => []),
+    executeToolCall: vi.fn(),
+  })),
+}));
 
 vi.mock('./ConversationWrapper', () => ({
   ConversationWrapper: ({ activeChat }: { activeChat: ActiveChat }) => (
@@ -46,10 +61,6 @@ describe('ChatInterface', () => {
     styles: {
       content: '',
     },
-    walletAddress: '',
-    onConnectWalletClick: vi.fn(),
-    disconnectWallet: vi.fn(),
-    availableProviderCount: 1,
   };
 
   beforeEach(() => {

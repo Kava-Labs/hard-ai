@@ -1,8 +1,13 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, fireEvent, cleanup } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import WalletModal from './WalletModal';
 import { EIP1193Provider, EIP6963ProviderDetail } from './stores/walletStore';
-import { PromotedWallet } from './types';
+import { useWalletState } from './stores/walletStore/useWalletState';
+
+// Mock the useWalletState hook
+vi.mock('./stores/walletStore/useWalletState', () => ({
+  useWalletState: vi.fn(),
+}));
 
 vi.mock('lib-kava-ai', () => ({
   ButtonIcon: ({
@@ -50,22 +55,10 @@ const otherWalletProvider: EIP6963ProviderDetail = {
   provider: mockProvider,
 };
 
-const promotedWallets: PromotedWallet[] = [
-  {
-    name: 'MetaMask',
-    logo: 'metamask-logo-url',
-    downloadUrl: 'https://metamask.io/download/',
-  },
-  {
-    name: 'HOT Wallet',
-    logo: 'hot-wallet-logo-url',
-    downloadUrl: 'https://hot-labs.org/extension/',
-  },
-];
-
 describe('WalletModal Component', () => {
   const onCloseMock = vi.fn();
-  const onSelectProviderMock = vi.fn();
+  const handleProviderSelectMock = vi.fn();
+  const mockUseWalletState = vi.mocked(useWalletState);
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -76,14 +69,16 @@ describe('WalletModal Component', () => {
   });
 
   it('should display "Get a Wallet" title and promoted wallet links when no providers are available', () => {
-    render(
-      <WalletModal
-        onClose={onCloseMock}
-        availableProviders={[]}
-        onSelectProvider={onSelectProviderMock}
-        promotedWallets={promotedWallets}
-      />,
-    );
+    mockUseWalletState.mockReturnValue({
+      availableProviders: [],
+      handleProviderSelect: handleProviderSelectMock,
+      disconnectWallet: vi.fn(),
+      walletAddress: '',
+      refreshProviders: vi.fn(),
+      walletProviderInfo: undefined,
+    });
+
+    render(<WalletModal onClose={onCloseMock} />);
 
     expect(screen.getByText('Get a Wallet')).toBeInTheDocument();
 
@@ -96,14 +91,16 @@ describe('WalletModal Component', () => {
   });
 
   it('should display one selectable option and one download option', () => {
-    render(
-      <WalletModal
-        onClose={onCloseMock}
-        availableProviders={[hotWalletProvider]}
-        onSelectProvider={onSelectProviderMock}
-        promotedWallets={promotedWallets}
-      />,
-    );
+    mockUseWalletState.mockReturnValue({
+      availableProviders: [hotWalletProvider],
+      handleProviderSelect: handleProviderSelectMock,
+      disconnectWallet: vi.fn(),
+      walletAddress: '',
+      refreshProviders: vi.fn(),
+      walletProviderInfo: undefined,
+    });
+
+    render(<WalletModal onClose={onCloseMock} />);
 
     expect(screen.getByText('Select a Wallet')).toBeInTheDocument();
 
@@ -119,18 +116,20 @@ describe('WalletModal Component', () => {
     expect(screen.getByText('Get')).toBeInTheDocument();
 
     fireEvent.click(screen.getByText('HOT Wallet'));
-    expect(onSelectProviderMock).toHaveBeenCalledWith(hotWalletProvider);
+    expect(handleProviderSelectMock).toHaveBeenCalledWith(hotWalletProvider);
   });
 
   it('should display other wallet as selectable provider and both promoted wallets as download options', () => {
-    render(
-      <WalletModal
-        onClose={onCloseMock}
-        availableProviders={[otherWalletProvider]}
-        onSelectProvider={onSelectProviderMock}
-        promotedWallets={promotedWallets}
-      />,
-    );
+    mockUseWalletState.mockReturnValue({
+      availableProviders: [otherWalletProvider],
+      handleProviderSelect: handleProviderSelectMock,
+      disconnectWallet: vi.fn(),
+      walletAddress: '',
+      refreshProviders: vi.fn(),
+      walletProviderInfo: undefined,
+    });
+
+    render(<WalletModal onClose={onCloseMock} />);
 
     expect(screen.getByText('Select a Wallet')).toBeInTheDocument();
 
@@ -141,22 +140,24 @@ describe('WalletModal Component', () => {
     expect(walletLinks).toHaveLength(2);
 
     fireEvent.click(screen.getByText('Other Wallet'));
-    expect(onSelectProviderMock).toHaveBeenCalledWith(otherWalletProvider);
+    expect(handleProviderSelectMock).toHaveBeenCalledWith(otherWalletProvider);
   });
 
   it('should display all available wallet providers and no download options when all promoted wallets are installed', () => {
-    render(
-      <WalletModal
-        onClose={onCloseMock}
-        availableProviders={[
-          metamaskProvider,
-          hotWalletProvider,
-          otherWalletProvider,
-        ]}
-        onSelectProvider={onSelectProviderMock}
-        promotedWallets={promotedWallets}
-      />,
-    );
+    mockUseWalletState.mockReturnValue({
+      availableProviders: [
+        metamaskProvider,
+        hotWalletProvider,
+        otherWalletProvider,
+      ],
+      handleProviderSelect: handleProviderSelectMock,
+      disconnectWallet: vi.fn(),
+      walletAddress: '',
+      refreshProviders: vi.fn(),
+      walletProviderInfo: undefined,
+    });
+
+    render(<WalletModal onClose={onCloseMock} />);
 
     expect(screen.getByText('Select a Wallet')).toBeInTheDocument();
 
@@ -169,38 +170,44 @@ describe('WalletModal Component', () => {
     expect(screen.queryByRole('link')).not.toBeInTheDocument();
 
     fireEvent.click(screen.getByText('MetaMask'));
-    expect(onSelectProviderMock).toHaveBeenCalledWith(metamaskProvider);
+    expect(handleProviderSelectMock).toHaveBeenCalledWith(metamaskProvider);
 
     fireEvent.click(screen.getByText('HOT Wallet'));
-    expect(onSelectProviderMock).toHaveBeenCalledWith(hotWalletProvider);
+    expect(handleProviderSelectMock).toHaveBeenCalledWith(hotWalletProvider);
 
     fireEvent.click(screen.getByText('Other Wallet'));
-    expect(onSelectProviderMock).toHaveBeenCalledWith(otherWalletProvider);
+    expect(handleProviderSelectMock).toHaveBeenCalledWith(otherWalletProvider);
   });
 
   it('should call onClose when the close button is clicked', () => {
-    render(
-      <WalletModal
-        onClose={onCloseMock}
-        availableProviders={[metamaskProvider]}
-        onSelectProvider={onSelectProviderMock}
-        promotedWallets={promotedWallets}
-      />,
-    );
+    mockUseWalletState.mockReturnValue({
+      availableProviders: [metamaskProvider],
+      handleProviderSelect: handleProviderSelectMock,
+      disconnectWallet: vi.fn(),
+      walletAddress: '',
+      refreshProviders: vi.fn(),
+      walletProviderInfo: undefined,
+    });
+
+    render(<WalletModal onClose={onCloseMock} />);
 
     fireEvent.click(screen.getByTestId('button-icon'));
     expect(onCloseMock).toHaveBeenCalledTimes(1);
   });
 
   it('should call onClose when clicking outside the modal', () => {
+    mockUseWalletState.mockReturnValue({
+      availableProviders: [metamaskProvider],
+      handleProviderSelect: handleProviderSelectMock,
+      disconnectWallet: vi.fn(),
+      walletAddress: '',
+      refreshProviders: vi.fn(),
+      walletProviderInfo: undefined,
+    });
+
     render(
       <div data-testid="outside-modal">
-        <WalletModal
-          onClose={onCloseMock}
-          availableProviders={[metamaskProvider]}
-          onSelectProvider={onSelectProviderMock}
-          promotedWallets={promotedWallets}
-        />
+        <WalletModal onClose={onCloseMock} />
       </div>,
     );
 
@@ -211,14 +218,16 @@ describe('WalletModal Component', () => {
   });
 
   it('should not call onClose when clicking inside the modal', () => {
-    render(
-      <WalletModal
-        onClose={onCloseMock}
-        availableProviders={[metamaskProvider]}
-        onSelectProvider={onSelectProviderMock}
-        promotedWallets={promotedWallets}
-      />,
-    );
+    mockUseWalletState.mockReturnValue({
+      availableProviders: [metamaskProvider],
+      handleProviderSelect: handleProviderSelectMock,
+      disconnectWallet: vi.fn(),
+      walletAddress: '',
+      refreshProviders: vi.fn(),
+      walletProviderInfo: undefined,
+    });
+
+    render(<WalletModal onClose={onCloseMock} />);
 
     const modalContent = screen.getByText('Select a Wallet');
     fireEvent.mouseDown(modalContent);
