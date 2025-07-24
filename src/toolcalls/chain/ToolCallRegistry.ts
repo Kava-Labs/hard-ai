@@ -228,25 +228,7 @@ export class ToolCallRegistry<T> {
           ? mcpToolDefs
           : mcpToolDefs.filter((tool) => !tool.name.startsWith('exa_mcp'));
 
-        // Debug logging for MCP tool filtering
-        if (
-          !webSearchEnabled &&
-          mcpToolDefs.length > filteredMcpToolDefs.length
-        ) {
-          const filteredOutTools = mcpToolDefs.filter((tool) =>
-            tool.name.startsWith('exa_mcp'),
-          );
-          console.log(
-            `[MCP] Web search disabled - filtered out ${filteredOutTools.length} exa_mcp tools:`,
-            filteredOutTools.map((t) => t.name),
-          );
-        }
-
-        console.log(
-          `[MCP] Loading ${filteredMcpToolDefs.length} MCP tools (webSearchEnabled: ${webSearchEnabled}):`,
-          filteredMcpToolDefs.map((t) => t.name),
-        );
-
+        // Convert MCP tools to OpenAI tool format
         const mcpTools = filteredMcpToolDefs.map(
           (mcpTool): ChatCompletionTool => ({
             type: 'function',
@@ -311,7 +293,7 @@ export class ToolCallRegistry<T> {
         // Handle different result content types
         if (result.content && Array.isArray(result.content)) {
           return result.content
-            .map((content: any) => {
+            .map((content) => {
               if (content.type === 'text') {
                 return content.text;
               }
