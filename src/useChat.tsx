@@ -23,11 +23,11 @@ import {
   SearchableChatHistories,
 } from './types';
 import { ActiveChat } from './types.ts';
-import { ModelId } from './types/index.ts';
+import { ModelId, MODELS } from './types/index.ts';
 
 export const USE_LITELLM_TOKEN =
   import.meta.env.VITE_FEAT_USE_LITELLM_TOKEN === 'true';
-export const DEFAULT_MODEL = 'gpt-4o';
+export const DEFAULT_MODEL = MODELS[0].id;
 
 export function getToken() {
   if (USE_LITELLM_TOKEN) {

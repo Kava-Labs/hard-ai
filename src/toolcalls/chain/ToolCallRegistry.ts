@@ -35,6 +35,14 @@ export class ToolCallRegistry<T> {
   }
 
   /**
+   * Deregisters an operation from the registry.
+   * @param operation - Operation to deregister
+   */
+  deregister(operation: ChainToolCallOperation<T>) {
+    this.operations.delete(operation.name);
+  }
+
+  /**
    * Retrieves an operation by its type.
    * @param type - Operation type identifier
    * @returns The operation implementation or undefined if not found
