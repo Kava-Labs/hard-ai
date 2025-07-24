@@ -60,11 +60,7 @@ export const doChat = async (
       );
 
       // inform the model of the tool call responses
-      await doChat(
-        activeChat,
-        toolCallRegistry,
-        executeOperation,
-      );
+      await doChat(activeChat, toolCallRegistry, executeOperation);
     }
   } catch (e) {
     console.error(`An error occurred: ${e} `);

@@ -175,11 +175,7 @@ export const useChat = ({
 
       // no need to catch
       // doChat won't throw and automatically sets errors in the activeChat's errorStore
-      await doChat(
-        newActiveChat,
-        toolCallRegistry,
-        executeToolCall,
-      );
+      await doChat(newActiveChat, toolCallRegistry, executeToolCall);
       setActiveChat((prev) => ({
         ...prev,
         isRequesting: false,
