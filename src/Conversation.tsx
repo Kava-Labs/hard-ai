@@ -58,9 +58,7 @@ const ConversationComponent = ({
             <AssistantMessage
               key={index}
               content={message.content as string}
-              toolCalls={
-                (message as ChatCompletionAssistantMessageParam).tool_calls
-              }
+              toolCalls={message.tool_calls}
               toolCallRegistry={toolCallRegistry}
             />
           );
