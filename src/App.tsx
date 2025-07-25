@@ -8,7 +8,7 @@ import { useChatWithWallet } from './useChatWithWallet';
 import {
   deregisterMcpToolsFromRegistry,
   registerMcpToolsWithRegistry,
-} from './toolcalls/chain/MCPToolCallOperation';
+} from './toolcalls/chain/mcpRegistration';
 
 const toolCallRegistry = initializeToolCallRegistry();
 

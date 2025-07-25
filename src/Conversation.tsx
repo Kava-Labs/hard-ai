@@ -53,9 +53,16 @@ const ConversationComponent = ({
           );
         }
 
-        if (message.role === 'assistant' && message.content) {
+        if (message.role === 'assistant') {
           return (
-            <AssistantMessage key={index} content={message.content as string} />
+            <AssistantMessage
+              key={index}
+              content={message.content as string}
+              toolCalls={
+                (message as ChatCompletionAssistantMessageParam).tool_calls
+              }
+              toolCallRegistry={toolCallRegistry}
+            />
           );
         }
 
