@@ -3,13 +3,14 @@ import {
   initializeMCPClient,
   MCPToolDefinition,
 } from '../../utils/mcpClient';
-import { ToolCallRegistry } from './ToolCallRegistry';
 import {
   ChainToolCallOperation,
   MessageParam,
   OperationType,
 } from './chainToolCallOperation';
 import { ChainType } from './chainsRegistry';
+import { InProgressToolCallDisplay } from '../components/ToolCallDisplay';
+import { ToolCallRegistry } from './ToolCallRegistry';
 
 export interface McpToolCallParams {
   [key: string]: unknown;
@@ -149,6 +150,10 @@ export class McpToolCallOperation
       McpToolCallOperation.fromMcpTool(tool),
     );
   }
+
+  inProgressComponent() {
+    return InProgressToolCallDisplay;
+  }
 }
 
 /**
@@ -169,8 +174,10 @@ export async function registerMcpToolsWithRegistry(
 
     const toolDefinitions = client.convertToToolDefinitions();
 
-    // Create and register McpToolCallOperation instances
-    const mcpOperations = McpToolCallOperation.fromMcpTools(toolDefinitions);
+    // Create and register McpToolCallOperation instances, using WebSearchMcpOperation for web search tools
+    const mcpOperations = toolDefinitions.map((toolDefinition) => {
+      return McpToolCallOperation.fromMcpTool(toolDefinition);
+    });
 
     for (const operation of mcpOperations) {
       registry.register(operation);
