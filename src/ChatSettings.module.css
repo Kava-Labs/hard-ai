@@ -188,3 +188,189 @@
 .promptContainer::-webkit-scrollbar-thumb:hover {
   background: var(--colors-borderPrimary);
 }
+
+/* Toggle section styling */
+.toggleSection {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding: var(--spacing-sm) 0;
+}
+
+/* Textarea styling for custom prompt */
+.promptTextarea {
+  color: var(--colors-textSecondary);
+  font-size: 1.2rem;
+  line-height: 1.6;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  margin: 0;
+  background: var(--colors-bgSecondary);
+  border: 1px solid var(--colors-borderSecondary);
+  border-radius: var(--borderRadius-sm);
+  padding: var(--spacing-md);
+  width: 100%;
+  resize: vertical;
+  min-height: 300px;
+  outline: none;
+  transition: border-color 0.2s ease-in-out;
+}
+
+.promptTextarea:focus {
+  border-color: var(--colors-accent);
+  box-shadow: 0 0 0 2px rgba(var(--colors-accent-rgb), 0.1);
+}
+
+.promptTextarea::placeholder {
+  color: var(--colors-textTertiary);
+  opacity: 0.7;
+}
+
+/* Scrollbar styling for textarea */
+.promptTextarea::-webkit-scrollbar {
+  width: 8px;
+}
+
+.promptTextarea::-webkit-scrollbar-track {
+  background: var(--colors-bgSecondary);
+  border-radius: var(--borderRadius-xs);
+}
+
+.promptTextarea::-webkit-scrollbar-thumb {
+  background: var(--colors-borderSecondary);
+  border-radius: var(--borderRadius-xs);
+}
+
+.promptTextarea::-webkit-scrollbar-thumb:hover {
+  background: var(--colors-borderPrimary);
+}
+
+/* Custom prompt header styling */
+.customPromptHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--spacing-sm);
+}
+
+.customPromptHeader p {
+  margin: 0;
+  color: var(--colors-textSecondary);
+  font-size: 1.4rem;
+}
+
+/* Edit button styling */
+.editButton {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  background-color: var(--colors-bgTertiary);
+  border: 1px solid var(--colors-borderSecondary);
+  border-radius: var(--borderRadius-sm);
+  color: var(--colors-textSecondary);
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  font-size: 1.2rem;
+  outline: none;
+}
+
+.editButton:hover {
+  background-color: var(--colors-bgQuaternary);
+  border-color: var(--colors-borderPrimary);
+  color: var(--colors-textPrimary);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.editButton:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+}
+
+.editButton:focus {
+  outline: 2px solid var(--colors-accent);
+  outline-offset: 2px;
+}
+
+.editButton:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* Edit actions styling */
+.editActions {
+  display: flex;
+  gap: var(--spacing-sm);
+  margin-top: var(--spacing-md);
+  justify-content: flex-end;
+}
+
+.saveButton,
+.cancelButton {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  border: none;
+  border-radius: var(--borderRadius-sm);
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  padding: var(--spacing-sm) var(--spacing-md);
+  font-size: 1.2rem;
+  font-weight: var(--typography-fontWeightMedium);
+  outline: none;
+}
+
+.saveButton {
+  background-color: var(--colors-accent);
+  color: white;
+}
+
+.saveButton:hover {
+  background-color: var(--colors-accent);
+  opacity: 0.9;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(var(--colors-accent-rgb), 0.3);
+}
+
+.saveButton:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 6px rgba(var(--colors-accent-rgb), 0.2);
+}
+
+.saveButton:focus {
+  outline: 2px solid var(--colors-accent);
+  outline-offset: 2px;
+}
+
+.saveButton:focus:not(:focus-visible) {
+  outline: none;
+}
+
+.cancelButton {
+  background-color: var(--colors-bgTertiary);
+  color: var(--colors-textSecondary);
+  border: 1px solid var(--colors-borderSecondary);
+}
+
+.cancelButton:hover {
+  background-color: var(--colors-bgQuaternary);
+  border-color: var(--colors-borderPrimary);
+  color: var(--colors-textPrimary);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.cancelButton:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+}
+
+.cancelButton:focus {
+  outline: 2px solid var(--colors-accent);
+  outline-offset: 2px;
+}
+
+.cancelButton:focus:not(:focus-visible) {
+  outline: none;
+}
