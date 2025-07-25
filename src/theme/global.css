@@ -46,6 +46,7 @@ p {
   text-wrap: pretty;
   line-height: 1.45;
   margin-top: 0;
+  color: var(--colors-textSecondary);
 }
 
 h1 {

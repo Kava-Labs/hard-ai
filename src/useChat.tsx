@@ -1,28 +1,29 @@
 import {
   deleteConversation as doDeleteConversation,
+  saveConversation as doSaveConversation,
   getAllConversations,
   getConversationMessages,
   getSearchableHistory,
   idbEventTarget,
-  saveConversation as doSaveConversation,
   TextStreamStore,
   updateConversation,
 } from 'lib-kava-ai';
 import OpenAI from 'openai/index';
 import { useCallback, useEffect, useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
-import { doChat, generateConversationTitle } from './api/chat';
-import { MessageHistoryStore } from './stores/messageHistoryStore';
-import { ToolCallStreamStore } from './stores/toolCallStreamStore';
-import { ToolCallRegistry } from './toolcalls/chain';
-import { defaultSystemPrompt } from './toolcalls/chain/prompts';
+import { doChat, generateConversationTitle } from './api/chat.ts';
+import { useGlobalChatState } from './components/chat/useGlobalChatState.ts';
+import { MessageHistoryStore } from './stores/messageHistoryStore/index.ts';
+import { ToolCallStreamStore } from './stores/toolCallStreamStore/index.ts';
+import { ToolCallRegistry } from './toolcalls/chain/index.ts';
+import { defaultSystemPrompt } from './toolcalls/chain/prompts.ts';
 import {
+  ActiveChat,
   ChatMessage,
   ConversationHistories,
   ConversationHistory,
   SearchableChatHistories,
-} from './types';
-import { ActiveChat } from './types.ts';
+} from './types.ts';
 import { ModelId, MODELS } from './types/index.ts';
 
 export const USE_LITELLM_TOKEN =
@@ -56,6 +57,7 @@ export const useChat = ({
   executeToolCall,
   initialMessages = [],
 }: UseChatOptions) => {
+  const { customSystemPrompt, enableCustomSystemPrompt } = useGlobalChatState();
   const [client] = useState(() => {
     return new OpenAI({
       baseURL: import.meta.env['VITE_OPENAI_BASE_URL'],
@@ -124,7 +126,9 @@ export const useChat = ({
         // Add default system prompt
         newActiveChat.messageHistoryStore.addMessage({
           role: 'system',
-          content: defaultSystemPrompt,
+          content: enableCustomSystemPrompt
+            ? customSystemPrompt
+            : defaultSystemPrompt,
         });
 
         // Add initial messages if provided
@@ -208,6 +212,8 @@ export const useChat = ({
       conversationHistories,
       toolCallRegistry,
       executeToolCall,
+      enableCustomSystemPrompt,
+      customSystemPrompt,
       initialMessages,
     ],
   );
