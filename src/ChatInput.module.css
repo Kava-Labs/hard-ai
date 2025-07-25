@@ -19,6 +19,7 @@
   text-wrap: wrap;
   min-height: 30px;
   padding-top: 4px;
+  padding-bottom: 3.2rem; /* Add bottom padding to make room for settings button */
   scrollbar-color: var(--colors-textMuted) var(--colors-bgTertiary);
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;

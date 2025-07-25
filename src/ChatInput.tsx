@@ -3,6 +3,7 @@ import { ChangeEvent, useCallback, useRef, useState } from 'react';
 import { SendChatIcon } from './SendChatIcon';
 import { ChatMessage } from './types';
 import { CancelChatIcon } from './CancelChatIcon';
+import { ChatSettingsButton } from './ChatSettings';
 
 const DEFAULT_HEIGHT = '30px';
 
@@ -62,6 +63,7 @@ export const ChatInput = ({
     <>
       <div className={styles.controls}>
         <div className={styles.inputContainer}>
+          <ChatSettingsButton />
           <textarea
             className={styles.input}
             rows={1}
