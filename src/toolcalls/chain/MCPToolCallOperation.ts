@@ -5,7 +5,7 @@ import {
   OperationType,
 } from './chainToolCallOperation';
 import { ChainType } from './chainsRegistry';
-import { InProgressMcpDisplay } from '../components/InProgressMcpDisplay';
+import { InProgressToolCallDisplay } from '../components/ToolCallDisplay';
 
 export interface McpToolCallParams {
   [key: string]: unknown;
@@ -147,6 +147,6 @@ export class McpToolCallOperation
   }
 
   inProgressComponent() {
-    return InProgressMcpDisplay;
+    return InProgressToolCallDisplay;
   }
 }
