@@ -1,15 +1,21 @@
-import React, { useEffect, useRef } from 'react';
-import styles from './Modal.module.css';
 import { ButtonIcon } from 'lib-kava-ai';
 import { X } from 'lucide-react';
+import React, { useEffect, useRef } from 'react';
+import styles from './Modal.module.css';
 
 interface ModalProps {
   title: string;
   onClose: () => void;
   children: React.ReactNode;
+  maxWidth?: React.CSSProperties['maxWidth'];
 }
 
-const Modal: React.FC<ModalProps> = ({ title, onClose, children }) => {
+const Modal: React.FC<ModalProps> = ({
+  title,
+  onClose,
+  maxWidth,
+  children,
+}) => {
   const modalRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -31,7 +37,7 @@ const Modal: React.FC<ModalProps> = ({ title, onClose, children }) => {
 
   return (
     <div className={styles.modalBackdrop}>
-      <div className={styles.modal} ref={modalRef}>
+      <div className={styles.modal} ref={modalRef} style={{ maxWidth }}>
         <div className={styles.modalHeader}>
           <h3>{title}</h3>
           <ButtonIcon icon={X} aria-label={'Close modal'} onClick={onClose} />
@@ -48,9 +54,10 @@ export const ModalButton: React.FC<
   React.PropsWithChildren<{
     className?: string;
     modalTitle: string;
-    modalContent: string;
+    modalContent: React.ReactNode;
+    modalMaxWidth?: React.CSSProperties['maxWidth'];
   }>
-> = ({ children, modalTitle, modalContent, className }) => {
+> = ({ children, modalTitle, modalContent, className, modalMaxWidth }) => {
   const [isOpen, setIsOpen] = React.useState(false);
   return (
     <>
@@ -58,7 +65,11 @@ export const ModalButton: React.FC<
         {children}
       </button>
       {isOpen && (
-        <Modal title={modalTitle} onClose={() => setIsOpen(false)}>
+        <Modal
+          title={modalTitle}
+          onClose={() => setIsOpen(false)}
+          maxWidth={modalMaxWidth}
+        >
           {modalContent}
         </Modal>
       )}

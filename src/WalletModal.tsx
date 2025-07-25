@@ -31,6 +31,7 @@ const WalletModal: React.FC<WalletModalProps> = ({ onClose }) => {
     <Modal
       title={hasProviders ? 'Select a Wallet' : 'Get a Wallet'}
       onClose={onClose}
+      maxWidth="32rem"
     >
       <div className={styles.providersList}>
         {hasProviders &&
