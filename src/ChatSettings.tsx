@@ -4,6 +4,7 @@ import { defaultSystemPrompt } from './toolcalls/chain/prompts';
 import { Cog } from 'lucide-react';
 import styles from './ChatSettings.module.css';
 
+
 const ChatSettingsModal: React.FC = () => {
   return (
     <div className={styles.modalContent}>
