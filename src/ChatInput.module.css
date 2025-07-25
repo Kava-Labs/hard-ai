@@ -4,6 +4,7 @@
   position: relative;
   min-height: 0;
   flex: 1;
+  gap: var(--spacing-sm);
 }
 
 .input {
@@ -19,6 +20,7 @@
   text-wrap: wrap;
   min-height: 30px;
   padding-top: 4px;
+  padding-bottom: 4px;
   scrollbar-color: var(--colors-textMuted) var(--colors-bgTertiary);
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
@@ -87,4 +89,11 @@
   font-size: 1.2rem;
   text-align: center;
   color: var(--colors-textMuted);
+}
+
+/* Mobile optimization */
+@media (max-width: 768px) {
+  .inputContainer {
+    padding-left: calc(36px + var(--spacing-sm)); /* Smaller button on mobile */
+  }
 }

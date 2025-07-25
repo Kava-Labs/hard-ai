@@ -67,7 +67,6 @@
 
   .modal {
     width: 90%;
-    max-width: 32rem;
     height: auto;
     max-height: 80vh;
     border-radius: var(--borderRadius-sm);
