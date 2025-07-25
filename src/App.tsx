@@ -1,10 +1,14 @@
 import { SearchHistoryModal, SideBar, useIsMobileLayout } from 'lib-kava-ai';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import styles from './App.module.css';
 import { ChatInterface } from './ChatInterface';
 import KavaAILogo from './kavaAILogo';
 import { initializeToolCallRegistry } from './toolcalls/chain';
 import { useChatWithWallet } from './useChatWithWallet';
+import {
+  deregisterMcpToolsFromRegistry,
+  registerMcpToolsWithRegistry,
+} from './toolcalls/chain/MCPToolCallOperation';
 
 const toolCallRegistry = initializeToolCallRegistry();
 
@@ -35,6 +39,16 @@ export const App = () => {
   const isSideBarOpen = isMobileLayout
     ? isMobileSideBarOpen
     : isDesktopSideBarOpen;
+
+  const [webSearchEnabled, setWebSearchEnabled] = useState(true);
+
+  useEffect(() => {
+    if (webSearchEnabled) {
+      registerMcpToolsWithRegistry(toolCallRegistry).catch(console.error);
+    } else {
+      deregisterMcpToolsFromRegistry(toolCallRegistry);
+    }
+  }, [webSearchEnabled]);
 
   const {
     activeChat,
@@ -80,6 +94,8 @@ export const App = () => {
         isSideBarOpen={isSideBarOpen}
         styles={styles}
         changeModel={changeModel}
+        webSearchEnabled={webSearchEnabled}
+        onWebSearchToggle={setWebSearchEnabled}
       />
       {isSearchHistoryOpen && searchableHistory && (
         <SearchHistoryModal

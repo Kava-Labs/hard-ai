@@ -35,6 +35,14 @@ export class ToolCallRegistry<T> {
   }
 
   /**
+   * Deregisters an operation from the registry.
+   * @param operation - Operation to deregister
+   */
+  deregister(operation: ChainToolCallOperation<T>) {
+    this.operations.delete(operation.name);
+  }
+
+  /**
    * Retrieves an operation by its type.
    * @param type - Operation type identifier
    * @returns The operation implementation or undefined if not found
@@ -100,39 +108,43 @@ export class ToolCallRegistry<T> {
    * @returns Array of tool definitions in OpenAI format
    */
   getToolDefinitions(): ChatCompletionTool[] {
-    return this.getAllOperations().map((operation) => ({
-      type: 'function',
-      function: {
-        name: operation.name,
-        description: operation.description,
-        parameters: {
-          type: 'object',
-          properties: Object.fromEntries(
-            operation.parameters.map((param) => {
-              const p = [
-                param.name,
-                {
-                  type: param.type,
-                  description: param.description,
-                },
-              ];
+    const operations = this.getAllOperations();
 
-              if (param.enum) {
-                // @ts-expect-error better types needed
-                p[1].enum = param.enum;
-              }
+    return operations.map(
+      (operation): ChatCompletionTool => ({
+        type: 'function',
+        function: {
+          name: operation.name,
+          description: operation.description,
+          parameters: {
+            type: 'object',
+            properties: Object.fromEntries(
+              operation.parameters.map((param) => {
+                const p = [
+                  param.name,
+                  {
+                    type: param.type,
+                    description: param.description,
+                  },
+                ];
 
-              return p;
-            }),
-          ),
-          required: operation.parameters
-            .filter((param) => param.required)
-            .map((param) => param.name),
-          strict: true,
-          additionalProperties: false,
+                if (param.enum) {
+                  // @ts-expect-error better types needed
+                  p[1].enum = param.enum;
+                }
+
+                return p;
+              }),
+            ),
+            required: operation.parameters
+              .filter((param) => param.required)
+              .map((param) => param.name),
+            strict: true,
+            additionalProperties: false,
+          },
         },
-      },
-    }));
+      }),
+    );
   }
 
   /**
@@ -152,6 +164,8 @@ export class ToolCallRegistry<T> {
     walletInfo: WalletInfo | null,
     walletStore: WalletStore,
   ): Promise<string> {
+    console.log(`Executing tool call: ${operationName} with params:`, params);
+
     const operation = this.get(operationName);
     if (!operation) {
       throw new Error(`Unknown operation type: ${operationName}`);
@@ -197,6 +211,8 @@ export class ToolCallRegistry<T> {
 
 export function initializeToolCallRegistry(): ToolCallRegistry<unknown> {
   const registry = new ToolCallRegistry();
+
+  // Register local operations
   registry.register(new EvmTransferMessage());
   registry.register(new EvmBalancesQuery());
   registry.register(new ERC20ConversionMessage());

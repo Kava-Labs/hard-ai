@@ -17,6 +17,7 @@ const walletContextMessage = (walletInfo: WalletInfo): ChatMessage => {
 interface UseChatWithWalletOptions {
   toolCallRegistry: ToolCallRegistry<unknown>;
   initialMessages?: ChatMessage[];
+  webSearchEnabled?: boolean;
 }
 
 export const useChatWithWallet = ({
