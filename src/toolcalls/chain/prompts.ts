@@ -1,3 +1,4 @@
+/* eslint-disable no-irregular-whitespace */
 export const defaultIntroText = `
 How can I help you with Web3?`;
 
