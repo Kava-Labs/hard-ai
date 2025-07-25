@@ -2,7 +2,7 @@ import styles from './Conversation.module.css';
 import { Content } from './Content';
 import { ChatCompletionMessageToolCall } from 'openai/resources/index';
 import { ToolCallRegistry } from './toolcalls/chain';
-import { ToolCallsDisplay } from './toolcalls/components/ToolCallsDisplay';
+import { ToolCallsDisplay } from './toolcalls/components/ToolCallDisplay';
 
 interface AssistantMessageProps {
   content: string | null;

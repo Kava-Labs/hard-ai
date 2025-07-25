@@ -82,6 +82,13 @@ const ConversationComponent = ({
         return null;
       })}
 
+      <ToolCallProgressCards
+        isOperationValidated={isOperationValidated}
+        onRendered={onRendered}
+        toolCallStreams={toolCallStreams}
+        toolCallRegistry={toolCallRegistry}
+      />
+
       {isRequesting && (
         <div className={styles.assistantOutputContainer}>
           <div className={styles.assistantContainer}>
@@ -114,13 +121,6 @@ const ConversationComponent = ({
           </div>
         </div>
       )}
-
-      <ToolCallProgressCards
-        isOperationValidated={isOperationValidated}
-        onRendered={onRendered}
-        toolCallStreams={toolCallStreams}
-        toolCallRegistry={toolCallRegistry}
-      />
     </div>
   );
 };
