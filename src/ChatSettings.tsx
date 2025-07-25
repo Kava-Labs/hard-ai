@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { ModalButton } from './components/Modal';
 import { defaultSystemPrompt } from './toolcalls/chain/prompts';
-import { Cog, Edit, Save, X } from 'lucide-react';
+import { Cog, Edit, Save, X, Copy, Check } from 'lucide-react';
 import styles from './ChatSettings.module.css';
 import { useGlobalChatState } from './components/chat/useGlobalChatState';
 import { Toggle } from './Toggle';
@@ -16,6 +16,7 @@ const ChatSettingsModal: React.FC = () => {
 
   const [isEditing, setIsEditing] = useState(false);
   const [editingPrompt, setEditingPrompt] = useState(customSystemPrompt);
+  const [didCopy, setDidCopy] = useState(false);
 
   const handleEdit = () => {
     setEditingPrompt(customSystemPrompt);
@@ -31,6 +32,25 @@ const ChatSettingsModal: React.FC = () => {
     setEditingPrompt(customSystemPrompt);
     setIsEditing(false);
   };
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(enableCustomSystemPrompt ? customSystemPrompt: defaultSystemPrompt);
+      setDidCopy(true);
+      setTimeout(() => setDidCopy(false), 2000);
+    } catch (err) {
+      console.error('Failed to copy default prompt:', err);
+    }
+  };
+
+  const CopyButton = () => (<button
+  className={styles.copyButton}
+  onClick={handleCopy}
+  type="button"
+>
+  {didCopy ? <Check size={16} /> : <Copy size={16} />}
+  {didCopy ? 'Copied!' : 'Copy'}
+</button>)
 
   return (
     <div className={styles.modalContent}>
@@ -55,7 +75,10 @@ const ChatSettingsModal: React.FC = () => {
 
       {!enableCustomSystemPrompt && (
         <div className={styles.section}>
-          <p>Using the default system prompt:</p>
+          <div className={styles.promptHeader}>
+            <p>Using the default system prompt:</p>
+            <CopyButton />
+          </div>
           <div className={styles.promptContainer}>
             <pre className={styles.promptText}>{defaultSystemPrompt}</pre>
           </div>
@@ -66,16 +89,19 @@ const ChatSettingsModal: React.FC = () => {
         <div className={styles.section}>
           <div className={styles.customPromptHeader}>
             <p>Custom system prompt:</p>
-            {!isEditing && (
-              <button
-                className={styles.editButton}
-                onClick={handleEdit}
-                type="button"
-              >
-                <Edit size={16} />
-                Edit
-              </button>
-            )}
+            <div className={styles.promptActions}>
+              {!isEditing && <CopyButton />}
+              {!isEditing && (
+                <button
+                  className={styles.editButton}
+                  onClick={handleEdit}
+                  type="button"
+                >
+                  <Edit size={16} />
+                  Edit
+                </button>
+              )}
+            </div>
           </div>
           <div className={styles.promptContainer}>
             {!isEditing ? (
