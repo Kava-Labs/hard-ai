@@ -212,18 +212,18 @@ export async function getChainAccounts(
 
   const walletAccounts: WalletResult[] = [];
 
-  try {
-    const walletAccountPromise: Promise<WalletResult>[] = [];
+  // try {
+  //   const walletAccountPromise: Promise<WalletResult>[] = [];
 
-    for (const chainConfig of Object.values(chainRegistry[ChainType.EVM])) {
-      const evmConfig = chainConfig as EVMChainConfig;
-      walletAccountPromise.push(getEVMChainBalances(evmConfig, accounts));
-    }
+  //   for (const chainConfig of Object.values(chainRegistry[ChainType.EVM])) {
+  //     const evmConfig = chainConfig as EVMChainConfig;
+  //     walletAccountPromise.push(getEVMChainBalances(evmConfig, accounts));
+  //   }
 
-    walletAccounts.push(...(await Promise.all(walletAccountPromise)));
-  } catch (error) {
-    console.error('Error fetching wallet balances:', error);
-  }
+  //   walletAccounts.push(...(await Promise.all(walletAccountPromise)));
+  // } catch (error) {
+  //   console.error('Error fetching wallet balances:', error);
+  // }
 
   return walletAccounts;
 }

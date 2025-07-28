@@ -9,6 +9,11 @@ import {
   deregisterMcpToolsFromRegistry,
   registerMcpToolsWithRegistry,
 } from './toolcalls/chain/MCPToolCallOperation';
+import {
+  deregisterEvmToolsFromRegistry,
+  registerEvmToolsWithRegistry,
+} from './toolcalls/chain/evmTools';
+import { useWalletState } from './stores/walletStore/useWalletState';
 
 const toolCallRegistry = initializeToolCallRegistry();
 
@@ -42,6 +47,10 @@ export const App = () => {
 
   const [webSearchEnabled, setWebSearchEnabled] = useState(true);
 
+  // Get wallet state to automatically enable EVM tools when wallet is connected
+  const { walletAddress } = useWalletState();
+  const isWalletConnected = !!walletAddress;
+
   useEffect(() => {
     if (webSearchEnabled) {
       registerMcpToolsWithRegistry(toolCallRegistry).catch(console.error);
@@ -49,6 +58,14 @@ export const App = () => {
       deregisterMcpToolsFromRegistry(toolCallRegistry);
     }
   }, [webSearchEnabled]);
+
+  useEffect(() => {
+    if (isWalletConnected) {
+      registerEvmToolsWithRegistry(toolCallRegistry);
+    } else {
+      deregisterEvmToolsFromRegistry(toolCallRegistry);
+    }
+  }, [isWalletConnected]);
 
   const {
     activeChat,

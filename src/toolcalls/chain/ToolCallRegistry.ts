@@ -213,10 +213,10 @@ export function initializeToolCallRegistry(): ToolCallRegistry<unknown> {
   const registry = new ToolCallRegistry();
 
   // Register local operations
-  registry.register(new EvmTransferMessage());
-  registry.register(new EvmBalancesQuery());
-  registry.register(new ERC20ConversionMessage());
-  registry.register(new EvmChainSwitchMessage());
+  // registry.register(new EvmTransferMessage());
+  // registry.register(new EvmBalancesQuery());
+  // registry.register(new ERC20ConversionMessage());
+  // registry.register(new EvmChainSwitchMessage());
 
   return registry;
 }

@@ -102,6 +102,7 @@ export const ChatInterface = ({
                       size="small"
                     />
                   )}
+
                   {changeModel && (
                     <ModelSelector
                       handleModelChange={changeModel}

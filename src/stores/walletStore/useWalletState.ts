@@ -93,13 +93,13 @@ export const useWalletState = (options: UseWalletStateOptions = {}) => {
       walletType: walletConnection.walletType,
     };
 
-    if (walletInfo.isConnected && walletConnection.provider) {
-      const balances = await getChainAccounts(walletConnection.provider);
-      walletInfo.balancesPrompt = formatWalletBalancesForPrompt(
-        balances,
-        walletConnection.walletChainId,
-      );
-    }
+    // if (walletInfo.isConnected && walletConnection.provider) {
+    //   const balances = await getChainAccounts(walletConnection.provider);
+    //   walletInfo.balancesPrompt = formatWalletBalancesForPrompt(
+    //     balances,
+    //     walletConnection.walletChainId,
+    //   );
+    // }
 
     return walletInfo;
   }, []);

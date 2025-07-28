@@ -9,8 +9,8 @@ const walletContextMessage = (walletInfo: WalletInfo): ChatMessage => {
   return {
     role: 'system',
     content: `Current wallet information: Address: ${walletInfo.address} on chain ID: ${walletInfo.chainId}.
-          Wallet type: ${walletInfo.walletType || 'Unknown'}.
-          ${walletInfo.balancesPrompt}`,
+          Wallet type: ${walletInfo.walletType || 'Unknown'}.`,
+    // ${walletInfo.balancesPrompt}`,
   };
 };
 
@@ -45,12 +45,14 @@ export const useChatWithWallet = ({
     initialMessages: currentInitialMessages,
     toolCallRegistry,
     executeToolCall: async (operationName, params) => {
-      return await toolCallRegistry.executeToolCall(
+      const result = await toolCallRegistry.executeToolCall(
         operationName,
         params,
         walletInfo,
         walletStore,
       );
+      console.log('tool call result:', result);
+      return result;
     },
   });
 
