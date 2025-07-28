@@ -31,10 +31,12 @@ import {
   ParseEtherTool,
   HashTool,
 } from './transactionTools';
+import { ChainSearchTool } from './evmChainSearch';
 
 // Centralized list of EVM tools (maintaining alphabetical order)
 const EVM_TOOLS = [
   new CallContractTool(),
+  new ChainSearchTool(),
   new EncodeFunctionDataTool(),
   new EstimateGasTool(),
   new FormatEtherTool(),

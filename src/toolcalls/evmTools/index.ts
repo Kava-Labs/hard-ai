@@ -29,6 +29,7 @@ export * from './networkTools';
 export * from './balanceAndBlockTools';
 export * from './contractTools';
 export * from './transactionTools';
+export * from './evmChainSearch';
 
 // Export registry management functions
 export * from './registry';
