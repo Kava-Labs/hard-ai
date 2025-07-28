@@ -4,6 +4,7 @@ import { SendChatIcon } from './SendChatIcon';
 import { ChatMessage } from './types';
 import { CancelChatIcon } from './CancelChatIcon';
 import { ChatSettingsButton } from './ChatSettings';
+import { useGlobalChatState } from './components/chat/useGlobalChatState';
 
 const DEFAULT_HEIGHT = '30px';
 
@@ -21,6 +22,7 @@ export const ChatInput = ({
   const [inputValue, setInputValue] = useState('');
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
+  const { enableCustomSystemPrompt } = useGlobalChatState();
 
   const handleInputChange = useCallback(
     (event: ChangeEvent<HTMLTextAreaElement>) => {
@@ -89,6 +91,11 @@ export const ChatInput = ({
       <div className={styles.importantInfo}>
         <span>KavaAI can make mistakes. Check important info.</span>
       </div>
+      {enableCustomSystemPrompt && (
+        <div className={styles.importantInfo}>
+          <span>You are using a modified system prompt.</span>
+        </div>
+      )}
     </>
   );
 };
