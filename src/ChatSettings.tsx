@@ -35,7 +35,9 @@ const ChatSettingsModal: React.FC = () => {
 
   const handleCopy = async () => {
     try {
-      await navigator.clipboard.writeText(enableCustomSystemPrompt ? customSystemPrompt: defaultSystemPrompt);
+      await navigator.clipboard.writeText(
+        enableCustomSystemPrompt ? customSystemPrompt : defaultSystemPrompt,
+      );
       setDidCopy(true);
       setTimeout(() => setDidCopy(false), 2000);
     } catch (err) {
@@ -43,14 +45,12 @@ const ChatSettingsModal: React.FC = () => {
     }
   };
 
-  const CopyButton = () => (<button
-  className={styles.copyButton}
-  onClick={handleCopy}
-  type="button"
->
-  {didCopy ? <Check size={16} /> : <Copy size={16} />}
-  {didCopy ? 'Copied!' : 'Copy'}
-</button>)
+  const CopyButton = () => (
+    <button className={styles.copyButton} onClick={handleCopy} type="button">
+      {didCopy ? <Check size={16} /> : <Copy size={16} />}
+      {didCopy ? 'Copied!' : 'Copy'}
+    </button>
+  );
 
   return (
     <div className={styles.modalContent}>

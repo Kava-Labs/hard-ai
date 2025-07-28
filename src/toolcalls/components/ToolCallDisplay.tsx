@@ -5,17 +5,21 @@ import { InProgressComponentProps } from '../chain';
 import { ToolCallStream } from '../../stores/toolCallStreamStore';
 import { useScrollToBottom } from '../../useScrollToBottom';
 import styles from './DisplayCards.module.css';
+import { WebSearchAnnotation } from './WebSearchAnnotation';
+import { ToolResultStore } from '../../stores/toolResultStore';
 
 interface ToolCallDisplayProps {
   toolCall: ChatCompletionMessageToolCall | ToolCallStream;
   status: 'completed' | 'in-progress';
   onRendered?: () => void;
   isOperationValidated?: boolean;
+  toolResultStore?: ToolResultStore;
 }
 
 interface ToolCallsDisplayProps {
   toolCalls: ChatCompletionMessageToolCall[];
   toolCallRegistry: ToolCallRegistry<unknown>;
+  toolResultStore?: ToolResultStore;
 }
 
 const parseToolCallArguments = (
@@ -43,11 +47,16 @@ const getToolDisplayName = (toolName: string): string => {
   return toolName.replace(/_/g, ' ');
 };
 
+const isWebSearchTool = (toolName: string): boolean => {
+  return toolName === 'exa_mcp-web_search_exa';
+};
+
 export const ToolCallDisplay = ({
   toolCall,
   status,
   onRendered,
   isOperationValidated,
+  toolResultStore,
 }: ToolCallDisplayProps) => {
   // Auto-scroll to bottom only for in-progress tool calls to keep UI updated
   // onRendered: callback to scroll when component renders
@@ -63,6 +72,7 @@ export const ToolCallDisplay = ({
   const toolDisplayName = getToolDisplayName(
     toolCall.function.name || 'unknown tool',
   );
+  const toolName = toolCall.function.name || '';
 
   const statusText = status === 'in-progress' ? 'In Progress' : 'Completed';
   const statusClass =
@@ -71,6 +81,11 @@ export const ToolCallDisplay = ({
     status === 'in-progress'
       ? 'in-progress-tool-display'
       : 'completed-tool-display';
+
+  // Get tool result for web search annotations
+  const toolResult = toolResultStore?.getResult(toolCall.id);
+  const showWebSearchAnnotation =
+    status === 'completed' && isWebSearchTool(toolName) && toolResult?.result;
 
   return (
     <div data-testid={testId} className={styles.inprogressContainer}>
@@ -94,6 +109,11 @@ export const ToolCallDisplay = ({
                   ))}
                 </div>
               )}
+              {showWebSearchAnnotation && (
+                <div className={styles.searchResults}>
+                  <WebSearchAnnotation toolResult={toolResult.result} />
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -114,6 +134,7 @@ export const InProgressToolCallDisplay = (props: InProgressComponentProps) => (
 export const ToolCallsDisplay = ({
   toolCalls,
   toolCallRegistry: _toolCallRegistry,
+  toolResultStore,
 }: ToolCallsDisplayProps) => {
   if (!toolCalls || toolCalls.length === 0) {
     return null;
@@ -126,6 +147,7 @@ export const ToolCallsDisplay = ({
           key={toolCall.id}
           toolCall={toolCall}
           status="completed"
+          toolResultStore={toolResultStore}
         />
       ))}
     </div>

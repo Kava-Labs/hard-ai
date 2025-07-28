@@ -62,6 +62,7 @@ export const App = () => {
     searchableHistory,
     fetchSearchHistory,
     changeModel,
+    toolResultStore,
   } = useChatWithWallet({ toolCallRegistry });
 
   return (
@@ -90,6 +91,7 @@ export const App = () => {
         handleChatCompletion={handleChatCompletion}
         handleNewChat={handleNewChat}
         toolCallRegistry={toolCallRegistry}
+        toolResultStore={toolResultStore}
         onMenuClick={onOpenSideBar}
         isSideBarOpen={isSideBarOpen}
         styles={styles}

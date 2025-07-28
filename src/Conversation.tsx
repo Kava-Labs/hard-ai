@@ -12,6 +12,7 @@ import { ToolCallStream } from './stores/toolCallStreamStore';
 import { ToolCallRegistry } from './toolcalls/chain';
 import { ToolMessageContainer } from './toolcalls/components/ToolCallMessageContainer';
 import { BrainIcon } from 'lucide-react';
+import { ToolResultStore } from './stores/toolResultStore';
 
 export type ChatMessage =
   | ChatCompletionMessageParam
@@ -27,6 +28,7 @@ export interface ConversationProps {
   toolCallStreams: Array<ToolCallStream>;
   toolCallRegistry: ToolCallRegistry<unknown>;
   isOperationValidated: boolean;
+  toolResultStore?: ToolResultStore;
 }
 
 const ConversationComponent = ({
@@ -38,6 +40,7 @@ const ConversationComponent = ({
   toolCallStreams,
   toolCallRegistry,
   isOperationValidated,
+  toolResultStore,
 }: ConversationProps) => {
   return (
     <div className={styles.conversationContainer}>
@@ -60,6 +63,7 @@ const ConversationComponent = ({
               content={message.content as string}
               toolCalls={message.tool_calls}
               toolCallRegistry={toolCallRegistry}
+              toolResultStore={toolResultStore}
             />
           );
         }
