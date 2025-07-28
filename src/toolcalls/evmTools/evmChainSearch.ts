@@ -69,10 +69,11 @@ export class ChainSearchTool extends EvmToolOperation {
     query: string,
     limit: number,
   ): ChainInfo[] {
-    const searchTerm = query.toLowerCase().trim();
+    // Split query into multiple words for better matching
+    const searchTerms = query.toLowerCase().trim().split(/\s+/);
 
     // Try exact chainId match first
-    const chainId = parseInt(searchTerm);
+    const chainId = parseInt(query.trim());
     if (!isNaN(chainId)) {
       const exactMatch = chains.filter((chain) => chain.chainId === chainId);
       if (exactMatch.length > 0) {
@@ -80,43 +81,50 @@ export class ChainSearchTool extends EvmToolOperation {
       }
     }
 
-    // Search across multiple fields
-    const matches = chains.filter((chain) => {
-      const chainIdStr = chain.chainId.toString();
-      const name = (chain.name || '').toLowerCase();
-      const chainSymbol = (chain.chain || '').toLowerCase();
-      const shortName = (chain.shortName || '').toLowerCase();
-      const nativeSymbol = (chain.nativeCurrency?.symbol || '').toLowerCase();
-      const nativeName = (chain.nativeCurrency?.name || '').toLowerCase();
+    // Score chains by how many search terms they match
+    // This is to resolve cases where there's **too** many search terms that
+    // would exclude results, e.g. search "Kava Chain" wouldn't find "KAVA" if
+    // we did a simple match
+    const scoredMatches = chains
+      .map((chain) => {
+        const searchableText = [
+          chain.chainId,
+          chain.name || '',
+          chain.chain || '',
+          chain.shortName || '',
+          chain.nativeCurrency?.symbol || '',
+          chain.nativeCurrency?.name || '',
+        ]
+          .join(' ')
+          .toLowerCase();
 
-      return (
-        chainIdStr.includes(searchTerm) ||
-        name.includes(searchTerm) ||
-        chainSymbol.includes(searchTerm) ||
-        shortName.includes(searchTerm) ||
-        nativeSymbol.includes(searchTerm) ||
-        nativeName.includes(searchTerm)
-      );
-    });
+        // Count how many search terms match
+        const matchCount = searchTerms.filter((term) =>
+          searchableText.includes(term),
+        ).length;
 
-    // Sort by relevance (exact matches first, then by name length)
-    matches.sort((a, b) => {
-      const aName = a.name.toLowerCase();
-      const bName = b.name.toLowerCase();
+        // Bonus points for exact name match
+        const exactNameMatch = chain.name.toLowerCase() === query.toLowerCase();
 
-      // Exact name matches first
-      if (aName === searchTerm) {
-        return -1;
-      }
-      if (bName === searchTerm) {
-        return 1;
-      }
+        return {
+          chain,
+          score: matchCount + (exactNameMatch ? 10 : 0),
+          matchCount,
+        };
+      })
+      .filter(({ matchCount }) => matchCount > 0) // At least one term must match
+      .sort((a, b) => {
+        // Sort by score first
+        if (b.score !== a.score) {
+          return b.score - a.score;
+        }
 
-      // Then by name length (shorter names are often more relevant)
-      return aName.length - bName.length;
-    });
+        // Then by name length
+        return a.chain.name.length - b.chain.name.length;
+      })
+      .map(({ chain }) => chain);
 
-    return matches.slice(0, limit);
+    return scoredMatches.slice(0, limit);
   }
 
   private formatChainInfo(chain: ChainInfo): string {
