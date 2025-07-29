@@ -14,7 +14,7 @@ import {
 import { z } from 'zod';
 import { WalletProvider, WalletStore } from '../../stores/walletStore';
 import { ERC2O_ABI } from './abi/erc20abi';
-import { ChainType } from './chainsRegistry';
+import { chainRegistry, ChainType, EVMChainConfig } from './chainsRegistry';
 import {
   ChainToolCallOperation,
   MessageParam,
@@ -22,64 +22,33 @@ import {
 } from './chainToolCallOperation';
 import { ToolCallRegistry } from './ToolCallRegistry';
 
+/**
+ * EVM Tools Implementation
+ *
+ * This module provides a comprehensive set of EVM-compatible blockchain tools
+ * that can be used by the AI assistant to interact with Ethereum and EVM-compatible chains.
+ *
+ * Key Features:
+ * - Unified interface for all EVM operations
+ * - Automatic wallet detection and connection
+ * - Support for multiple EVM chains (Ethereum, Polygon, BSC, Kava EVM, etc.)
+ * - Token balance and information queries
+ * - Contract interaction capabilities
+ * - Transaction signing and broadcasting
+ *
+ * Architecture:
+ * - Uses viem for low-level EVM operations
+ * - Implements ChainToolCallOperation interface for integration
+ * - Supports dynamic tool registration/deregistration based on wallet state
+ * - Provides proper error handling and validation
+ */
+
 // EVM tools namespace
 const EVM_NAMESPACE = 'evm';
 
 // Helper function to create tool names with proper namespace
 const createToolName = (toolName: string): string =>
   `${EVM_NAMESPACE}-${toolName}`;
-
-// Contract Registry - Common token contracts by chain
-// TODO: automatically collect token definitions from Metamask (or other wallet).
-// TODO: someday, maybe expose this as a map in the UI that the user can manage for safety.
-const CONTRACT_REGISTRY = {
-  1: {
-    // Ethereum Mainnet
-    USDT: '0xdAC17F958D2ee523a2206206994597C13D831ec7',
-    USDC: '0xA0b86a33E6441b8c4C8C8C8C8C8C8C8C8C8C8C8C',
-    DAI: '0x6B175474E89094C44Da98b954EedeAC495271d0F',
-    WETH: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2',
-  },
-  137: {
-    // Polygon
-    USDT: '0xc2132D05D31c914a87C6611C10748AEb04B58e8F',
-    USDC: '0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174',
-    DAI: '0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063',
-    WMATIC: '0x0d500B1d8E8eF31E21C99d1Db9A6444d3ADf1270',
-  },
-  56: {
-    // BSC
-    USDT: '0x55d398326f99059fF775485246999027B3197955',
-    USDC: '0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d',
-    BUSD: '0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56',
-    WBNB: '0xbb4CdB9CBd36B01bD1cBaEF60aF814a3f6F8E2F9',
-  },
-  10: {
-    // Optimism
-    USDT: '0x94b008aA00579c1307B0EF2c499aD98a8ce58e58',
-    USDC: '0x7F5c764cBc14f9669B88837ca1490cCa17c31607',
-    DAI: '0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1',
-    WETH: '0x4200000000000000000000000000000000000006',
-  },
-  42161: {
-    // Arbitrum
-    USDT: '0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9',
-    USDC: '0xFF970A61A04b1cA14834A43f5dE4533eBDDB5CC8',
-    DAI: '0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1',
-    WETH: '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1',
-  },
-} as const;
-
-// Token metadata for better descriptions
-const TOKEN_METADATA = {
-  USDT: { name: 'Tether USD', symbol: 'USDT', decimals: 6 },
-  USDC: { name: 'USD Coin', symbol: 'USDC', decimals: 6 },
-  DAI: { name: 'Dai Stablecoin', symbol: 'DAI', decimals: 18 },
-  WETH: { name: 'Wrapped Ether', symbol: 'WETH', decimals: 18 },
-  WMATIC: { name: 'Wrapped MATIC', symbol: 'WMATIC', decimals: 18 },
-  BUSD: { name: 'Binance USD', symbol: 'BUSD', decimals: 18 },
-  WBNB: { name: 'Wrapped BNB', symbol: 'WBNB', decimals: 18 },
-} as const;
 
 // Type for Ethereum provider
 interface EthereumProvider {
@@ -122,9 +91,41 @@ const getContractAddress = async (
   tokenSymbol: string,
 ): Promise<string | null> => {
   const chainId = await getCurrentChainId();
-  const chainContracts =
-    CONTRACT_REGISTRY[chainId as keyof typeof CONTRACT_REGISTRY];
-  return chainContracts?.[tokenSymbol as keyof typeof chainContracts] || null;
+
+  // Find the chain in the registry by chain ID
+  const evmChains = chainRegistry[ChainType.EVM];
+  for (const [_chainName, chainConfig] of Object.entries(evmChains)) {
+    if (
+      chainConfig.chainType === ChainType.EVM &&
+      chainConfig.chainID === chainId.toString()
+    ) {
+      const contract = chainConfig.erc20Contracts[tokenSymbol];
+      return contract?.contractAddress || null;
+    }
+  }
+
+  return null;
+};
+
+// Helper to get chain config for current chain
+const getCurrentChainConfig = async () => {
+  const chainId = await getCurrentChainId();
+
+  // Find the chain in the registry by chain ID
+  const evmChains = chainRegistry[ChainType.EVM];
+  for (const [_chainName, chainConfig] of Object.entries(evmChains)) {
+    if (
+      chainConfig.chainType === ChainType.EVM &&
+      chainConfig.chainID === chainId.toString()
+    ) {
+      return {
+        chainName: _chainName,
+        chainConfig: chainConfig as EVMChainConfig,
+      };
+    }
+  }
+
+  throw new Error(`Chain with ID ${chainId} not found in registry`);
 };
 
 // Helper to convert BigInt values to strings for JSON serialization
@@ -257,7 +258,7 @@ class GetTokenBalanceTool extends EvmToolOperation {
       const registryAddress = await getContractAddress(symbol.toUpperCase());
       if (!registryAddress) {
         throw new Error(
-          `Token ${symbol} not found in registry. Please provide the contract address or perform a web search for it.`,
+          `Token ${symbol} not found in registry. Please provide the contract address or search for it.`,
         );
       }
       contractAddress = registryAddress;
@@ -325,22 +326,22 @@ class GetTokenInfoTool extends EvmToolOperation {
   description =
     'Get token information (name, symbol, decimals) for a contract address or token symbol';
   zodSchema = z.object({
-    token: z
+    symbol: z
       .string()
       .describe('Token symbol (e.g., USDT, USDC) or contract address'),
   });
 
   async execute(params: unknown): Promise<string> {
-    const { token } = this.zodSchema.parse(params) as { token: string };
+    const { symbol } = this.zodSchema.parse(params) as { symbol: string };
 
     let contractAddress: string;
-    if (isAddress(token)) {
-      contractAddress = getAddress(token);
+    if (isAddress(symbol)) {
+      contractAddress = getAddress(symbol);
     } else {
-      const registryAddress = await getContractAddress(token.toUpperCase());
+      const registryAddress = await getContractAddress(symbol.toUpperCase());
       if (!registryAddress) {
         throw new Error(
-          `Token ${token} not found in registry. Please provide the contract address.`,
+          `Token ${symbol} not found in registry. Please provide the contract address.`,
         );
       }
       contractAddress = registryAddress;
@@ -391,7 +392,7 @@ class GetTokenInfoTool extends EvmToolOperation {
       data: nameResult as Hex,
     }) as string;
 
-    const symbol = decodeFunctionResult({
+    const symbolValue = decodeFunctionResult({
       abi: ERC2O_ABI as Abi,
       functionName: 'symbol',
       data: symbolResult as Hex,
@@ -406,59 +407,125 @@ class GetTokenInfoTool extends EvmToolOperation {
     return JSON.stringify({
       contractAddress,
       name,
-      symbol,
+      symbol: symbolValue,
       decimals,
     });
   }
 }
 
 // List Supported Tokens Tool
-// TODO: this will make the LLM think _only_ these exist. encourage search. we should explain "registered" tokens.
 class ListSupportedTokensTool extends EvmToolOperation {
   name = createToolName('list-supported-tokens');
   description =
-    'List tokens registered in the registry for the current network.';
+    'List all supported tokens for the current network with their contract addresses';
   zodSchema = z.object({});
 
   async execute(): Promise<string> {
-    const chainId = await getCurrentChainId();
-    const chainContracts =
-      CONTRACT_REGISTRY[chainId as keyof typeof CONTRACT_REGISTRY];
-
-    if (!chainContracts) {
-      return JSON.stringify({
-        chainId,
-        message: 'No supported tokens found for this network',
-        tokens: [],
-      });
-    }
-
-    const tokens = Object.entries(chainContracts).map(([symbol, address]) => ({
-      symbol,
-      address,
-      metadata: TOKEN_METADATA[symbol as keyof typeof TOKEN_METADATA] || null,
-    }));
+    const { chainName, chainConfig } = await getCurrentChainConfig();
 
     return JSON.stringify({
-      chainId,
-      network: getNetworkName(chainId),
-      tokens,
+      chainId: chainConfig.chainID,
+      chainName,
+      network: chainConfig.name,
+      tokens: Object.entries(chainConfig.erc20Contracts).map(
+        ([symbol, contract]) => {
+          const erc20Contract = contract as {
+            contractAddress: string;
+            displayName: string;
+            decimals?: number;
+          };
+          return {
+            symbol,
+            address: erc20Contract.contractAddress,
+            displayName: erc20Contract.displayName,
+            decimals: erc20Contract.decimals,
+          };
+        },
+      ),
     });
   }
 }
 
-// Helper to get network name
-const getNetworkName = (chainId: number): string => {
-  const networks: Record<number, string> = {
-    1: 'Ethereum Mainnet',
-    137: 'Polygon',
-    56: 'Binance Smart Chain',
-    2222: 'Kava EVM',
-    42161: 'Arbitrum One',
-    10: 'Optimism',
-  };
-  return networks[chainId] || `Chain ${chainId}`;
-};
+// Switch Network Tool (Enhanced)
+class SwitchNetworkTool extends EvmToolOperation {
+  name = createToolName('switch-network');
+  description =
+    'Switch the connected wallet to a different EVM-compatible chain';
+  zodSchema = z.object({
+    chainName: z.string().describe('Name of the chain to switch to'),
+  });
+
+  async execute(params: unknown): Promise<string> {
+    const { chainName } = this.zodSchema.parse(params) as { chainName: string };
+
+    // Validate chain exists in registry
+    const evmChains = chainRegistry[ChainType.EVM];
+    if (!evmChains[chainName]) {
+      throw new Error(`Chain ${chainName} not found in registry`);
+    }
+
+    const chainConfig = evmChains[chainName];
+
+    // Use wallet_switchEthereumChain RPC method
+    const provider = getEthereumProvider();
+
+    try {
+      await provider.request({
+        method: 'wallet_switchEthereumChain',
+        params: [
+          { chainId: `0x${parseInt(chainConfig.chainID).toString(16)}` },
+        ],
+      });
+
+      return JSON.stringify({
+        success: true,
+        message: `Switched to ${chainName}`,
+        chainId: chainConfig.chainID,
+        chainName: chainConfig.name,
+      });
+    } catch (error) {
+      // If chain is not added to wallet, add it
+      if (
+        error instanceof Error &&
+        error.message.includes('Unrecognized chain ID')
+      ) {
+        try {
+          await provider.request({
+            method: 'wallet_addEthereumChain',
+            params: [
+              {
+                chainId: `0x${parseInt(chainConfig.chainID).toString(16)}`,
+                chainName: chainConfig.name,
+                nativeCurrency: {
+                  name: chainConfig.nativeToken,
+                  symbol: chainConfig.nativeToken,
+                  decimals: chainConfig.nativeTokenDecimals,
+                },
+                rpcUrls: chainConfig.rpcUrls,
+                blockExplorerUrls: chainConfig.blockExplorerUrls,
+              },
+            ],
+          });
+
+          return JSON.stringify({
+            success: true,
+            message: `Added and switched to ${chainName}`,
+            chainId: chainConfig.chainID,
+            chainName: chainConfig.name,
+          });
+        } catch (addError) {
+          throw new Error(
+            `Failed to add chain ${chainName}: ${addError instanceof Error ? addError.message : 'Unknown error'}`,
+          );
+        }
+      }
+
+      throw new Error(
+        `Failed to switch to chain ${chainName}: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      );
+    }
+  }
+}
 
 // Call Contract Tool
 class CallContractTool extends EvmToolOperation {
@@ -981,6 +1048,7 @@ const EVM_TOOLS = [
   new ReadContractTool(),
   new SendTransactionTool(),
   new SignMessageTool(),
+  new SwitchNetworkTool(),
 ];
 
 // Tool registry function

@@ -5,10 +5,6 @@ import {
   WalletProvider,
   walletStore,
 } from './walletStore';
-import {
-  formatWalletBalancesForPrompt,
-  getChainAccounts,
-} from '../../utils/wallet';
 
 interface UseWalletStateOptions {
   /**

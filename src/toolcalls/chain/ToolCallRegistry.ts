@@ -10,10 +10,7 @@ import {
   defaultIntroText,
   defaultSystemPrompt,
 } from './prompts';
-import { EvmBalancesQuery } from '../evmBalances';
-import { EvmTransferMessage } from '../evmTransfer';
 import { ERC20ConversionMessage } from '../erc20Conversion';
-import { EvmChainSwitchMessage } from '../switchNetwork';
 import { WalletInfo } from '../../types';
 import { WalletStore } from '../../stores/walletStore';
 
@@ -212,11 +209,14 @@ export class ToolCallRegistry<T> {
 export function initializeToolCallRegistry(): ToolCallRegistry<unknown> {
   const registry = new ToolCallRegistry();
 
-  // Register local operations
-  // registry.register(new EvmTransferMessage());
-  // registry.register(new EvmBalancesQuery());
-  // registry.register(new ERC20ConversionMessage());
-  // registry.register(new EvmChainSwitchMessage());
+  // Note: EVM tools are registered dynamically in App.tsx based on wallet state
+  // This prevents circular dependencies between wallet store and EVM tools
+
+  // Register Kava-specific tools only for Kava EVM
+  // Note: ERC20ConversionMessage is specific to Kava EVM (chain ID 2222)
+  // This tool will only be available when connected to Kava EVM
+  // TODO: but does will it really? i dont think so... lol
+  registry.register(new ERC20ConversionMessage());
 
   return registry;
 }
