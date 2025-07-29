@@ -5,11 +5,13 @@ import { formatConversationTitle } from 'lib-kava-ai';
 import { ToolCallRegistry } from '../toolcalls/chain/ToolCallRegistry';
 import { ToolCallStreamStore } from '../stores/toolCallStreamStore';
 import { MessageHistoryStore } from '../stores/messageHistoryStore';
+import { ToolResultStore } from '../stores/toolResultStore';
 
 export const doChat = async (
   activeChat: ActiveChat,
   toolCallRegistry: ToolCallRegistry<unknown>,
   executeOperation: ExecuteToolCall,
+  toolResultStore?: ToolResultStore,
 ) => {
   try {
     const stream = await activeChat.client.chat.completions.create(
@@ -57,10 +59,16 @@ export const doChat = async (
         activeChat.toolCallStreamStore,
         activeChat.messageHistoryStore,
         executeOperation,
+        toolResultStore,
       );
 
       // inform the model of the tool call responses
-      await doChat(activeChat, toolCallRegistry, executeOperation);
+      await doChat(
+        activeChat,
+        toolCallRegistry,
+        executeOperation,
+        toolResultStore,
+      );
     }
   } catch (e) {
     console.error(`An error occurred: ${e} `);
@@ -175,17 +183,20 @@ export async function callTools(
   toolCallStreamStore: ToolCallStreamStore,
   messageHistoryStore: MessageHistoryStore,
   executeOperation: ExecuteToolCall,
+  toolResultStore?: ToolResultStore,
 ): Promise<void> {
   for (const toolCall of toolCallStreamStore.getSnapShot()) {
     const name = toolCall.function?.name;
 
     if (name) {
       let content = '';
+      let rawResult = '';
       try {
         const result = await executeOperation(
           name,
           toolCall.function.arguments,
         );
+        rawResult = result;
         content = JSON.stringify({
           status: 'ok',
           info: result,
@@ -196,6 +207,11 @@ export async function callTools(
           status: 'failed',
           info: err instanceof Error ? err.message : err,
         } as OperationResult);
+      }
+
+      // Store the tool result if we have a store and a successful result
+      if (toolResultStore && rawResult) {
+        toolResultStore.setResult(toolCall.id, name, rawResult);
       }
 
       messageHistoryStore.addMessage({

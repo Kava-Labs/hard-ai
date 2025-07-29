@@ -15,6 +15,7 @@ import { doChat, generateConversationTitle } from './api/chat.ts';
 import { useGlobalChatState } from './components/chat/useGlobalChatState.ts';
 import { MessageHistoryStore } from './stores/messageHistoryStore/index.ts';
 import { ToolCallStreamStore } from './stores/toolCallStreamStore/index.ts';
+import { ToolResultStore } from './stores/toolResultStore';
 import { ToolCallRegistry } from './toolcalls/chain/index.ts';
 import { defaultSystemPrompt } from './toolcalls/chain/prompts.ts';
 import {
@@ -72,6 +73,8 @@ export const useChat = ({
   const [pendingSystemMessage, setPendingSystemMessage] = useState<
     string | null
   >(null);
+
+  const [toolResultStore] = useState(() => new ToolResultStore());
 
   const [activeChat, setActiveChat] = useState<ActiveChat>({
     id: uuidv4(), // add uuid v4 for conversation id
@@ -179,7 +182,12 @@ export const useChat = ({
 
       // no need to catch
       // doChat won't throw and automatically sets errors in the activeChat's errorStore
-      await doChat(newActiveChat, toolCallRegistry, executeToolCall);
+      await doChat(
+        newActiveChat,
+        toolCallRegistry,
+        executeToolCall,
+        toolResultStore,
+      );
       setActiveChat((prev) => ({
         ...prev,
         isRequesting: false,
@@ -212,6 +220,7 @@ export const useChat = ({
       conversationHistories,
       toolCallRegistry,
       executeToolCall,
+      toolResultStore,
       enableCustomSystemPrompt,
       customSystemPrompt,
       initialMessages,
@@ -337,5 +346,6 @@ export const useChat = ({
     fetchSearchHistory,
     changeModel,
     addPendingSystemMessage,
+    toolResultStore,
   };
 };

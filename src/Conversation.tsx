@@ -12,6 +12,7 @@ import { ToolCallStream } from './stores/toolCallStreamStore';
 import { ToolCallRegistry } from './toolcalls/chain';
 import { ToolMessageContainer } from './toolcalls/components/ToolCallMessageContainer';
 import { BrainIcon } from 'lucide-react';
+import { ToolResultStore } from './stores/toolResultStore';
 
 export type ChatMessage =
   | ChatCompletionMessageParam
@@ -27,6 +28,7 @@ export interface ConversationProps {
   toolCallStreams: Array<ToolCallStream>;
   toolCallRegistry: ToolCallRegistry<unknown>;
   isOperationValidated: boolean;
+  toolResultStore?: ToolResultStore;
 }
 
 const ConversationComponent = ({
@@ -38,6 +40,7 @@ const ConversationComponent = ({
   toolCallStreams,
   toolCallRegistry,
   isOperationValidated,
+  toolResultStore,
 }: ConversationProps) => {
   return (
     <div className={styles.conversationContainer}>
@@ -53,9 +56,15 @@ const ConversationComponent = ({
           );
         }
 
-        if (message.role === 'assistant' && message.content) {
+        if (message.role === 'assistant') {
           return (
-            <AssistantMessage key={index} content={message.content as string} />
+            <AssistantMessage
+              key={index}
+              content={message.content as string}
+              toolCalls={message.tool_calls}
+              toolCallRegistry={toolCallRegistry}
+              toolResultStore={toolResultStore}
+            />
           );
         }
 
@@ -74,6 +83,13 @@ const ConversationComponent = ({
 
         return null;
       })}
+
+      <ToolCallProgressCards
+        isOperationValidated={isOperationValidated}
+        onRendered={onRendered}
+        toolCallStreams={toolCallStreams}
+        toolCallRegistry={toolCallRegistry}
+      />
 
       {isRequesting && (
         <div className={styles.assistantOutputContainer}>
@@ -107,13 +123,6 @@ const ConversationComponent = ({
           </div>
         </div>
       )}
-
-      <ToolCallProgressCards
-        isOperationValidated={isOperationValidated}
-        onRendered={onRendered}
-        toolCallStreams={toolCallStreams}
-        toolCallRegistry={toolCallRegistry}
-      />
     </div>
   );
 };

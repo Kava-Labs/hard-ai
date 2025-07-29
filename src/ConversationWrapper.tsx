@@ -4,17 +4,20 @@ import { useTextStreamStore } from 'lib-kava-ai';
 import { ActiveChat } from './types';
 import { ToolCallRegistry } from './toolcalls/chain';
 import { useToolCallStreamStore } from './stores/toolCallStreamStore';
+import { ToolResultStore } from './stores/toolResultStore';
 
 interface ConversationWrapperProps {
   activeChat: ActiveChat;
   onRendered: () => void;
   toolCallRegistry: ToolCallRegistry<unknown>;
+  toolResultStore?: ToolResultStore;
 }
 
 export const ConversationWrapper = ({
   activeChat,
   onRendered,
   toolCallRegistry,
+  toolResultStore,
 }: ConversationWrapperProps) => {
   const {
     messageHistoryStore,
@@ -40,6 +43,7 @@ export const ConversationWrapper = ({
       onRendered={onRendered}
       toolCallStreams={toolCallStreams}
       toolCallRegistry={toolCallRegistry}
+      toolResultStore={toolResultStore}
     />
   );
 };
