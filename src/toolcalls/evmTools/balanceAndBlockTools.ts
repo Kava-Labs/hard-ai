@@ -7,7 +7,7 @@ import { getCurrentAccount, getEthereumProvider } from './helpers';
 export class GetBalanceTool extends EvmToolOperation {
   name = createToolName('get-balance');
   description =
-    'Get the **native** currency balance of an address (not ERC20 tokens). Use this for ETH, MATIC, BNB, etc.';
+    'Get the **native** currency balance of an address (not ERC20 tokens). Returns native token amount in human-readable format.';
   zodSchema = z.object({
     address: z
       .string()

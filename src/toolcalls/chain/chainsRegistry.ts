@@ -349,7 +349,7 @@ export const chainRegistry: ChainRegistry = {
     [ChainNames.OPTIMISM]: {
       chainType: ChainType.EVM,
       name: ChainNames.OPTIMISM,
-      chainID: '10',
+      chainID: '0xa',
       nativeToken: 'ETH',
       nativeTokenDecimals: 18,
       rpcUrls: ['https://mainnet.optimism.io'],

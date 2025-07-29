@@ -63,9 +63,12 @@ export const getCurrentChainConfig = async () => {
 
 // Helper to get chain config by chain ID for EVM chains
 export const getChainConfigByChainId = (
-  chainId: string,
+  chainIdInput: string,
 ): { chainName: string; chainConfig: EVMChainConfig } | null => {
   const evmChains = chainRegistry[ChainType.EVM];
+  const chainId = chainIdInput.startsWith('0x')
+    ? parseInt(chainIdInput, 16).toString()
+    : chainIdInput;
   for (const [chainName, chainConfig] of Object.entries(evmChains)) {
     if (
       chainConfig.chainType === ChainType.EVM &&
