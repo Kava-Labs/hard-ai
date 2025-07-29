@@ -1,5 +1,3 @@
-export * from './types';
-
 export type Model = {
   id: string;
   displayName: string;

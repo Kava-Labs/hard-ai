@@ -1,4 +1,6 @@
 import {
+  ConversationHistories,
+  ConversationHistory,
   deleteConversation as doDeleteConversation,
   saveConversation as doSaveConversation,
   getAllConversations,
@@ -16,15 +18,10 @@ import { useGlobalChatState } from './components/chat/useGlobalChatState.ts';
 import { MessageHistoryStore } from './stores/messageHistoryStore/index.ts';
 import { ToolCallStreamStore } from './stores/toolCallStreamStore/index.ts';
 import { ToolResultStore } from './stores/toolResultStore';
+import { UsageStore } from './stores/usageStore/index.ts';
 import { ToolCallRegistry } from './toolcalls/chain/index.ts';
 import { defaultSystemPrompt } from './toolcalls/chain/prompts.ts';
-import {
-  ActiveChat,
-  ChatMessage,
-  ConversationHistories,
-  ConversationHistory,
-  SearchableChatHistories,
-} from './types.ts';
+import { ActiveChat, ChatMessage, SearchableChatHistories } from './types.ts';
 import { ModelId, MODELS } from './types/index.ts';
 
 export const USE_LITELLM_TOKEN =
@@ -88,6 +85,7 @@ export const useChat = ({
     messageHistoryStore: new MessageHistoryStore(),
     messageStore: new TextStreamStore(),
     errorStore: new TextStreamStore(),
+    usageStore: new UsageStore(),
   });
 
   const fetchConversations = useCallback(() => {
@@ -188,6 +186,7 @@ export const useChat = ({
         executeToolCall,
         toolResultStore,
       );
+
       setActiveChat((prev) => ({
         ...prev,
         isRequesting: false,
@@ -248,6 +247,7 @@ export const useChat = ({
       messageHistoryStore: new MessageHistoryStore(),
       messageStore: new TextStreamStore(),
       errorStore: new TextStreamStore(),
+      usageStore: new UsageStore(),
     };
 
     // System prompt and any initial messages will be added once the first message is sent
@@ -280,6 +280,7 @@ export const useChat = ({
             messageStore: new TextStreamStore(),
             client: activeChat.client,
             abortController: new AbortController(),
+            usageStore: new UsageStore(),
           };
 
           setActiveChat(newActiveChat);

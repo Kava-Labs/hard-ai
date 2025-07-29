@@ -5,6 +5,8 @@ import { ChatMessage } from './types';
 import { CancelChatIcon } from './CancelChatIcon';
 import { ChatSettingsButton } from './ChatSettings';
 import { useGlobalChatState } from './components/chat/useGlobalChatState';
+import { ContextUsageTracker } from './components/ContextUsageTracker';
+import { UsageStore } from './stores/usageStore';
 
 const DEFAULT_HEIGHT = '30px';
 
@@ -12,12 +14,14 @@ type ChatInputProps = {
   handleChatCompletion: (newMessages: ChatMessage[]) => void;
   onCancelClick: () => void;
   isRequesting: boolean;
+  usageStore: UsageStore;
 };
 
 export const ChatInput = ({
   handleChatCompletion,
   onCancelClick,
   isRequesting,
+  usageStore,
 }: ChatInputProps) => {
   const [inputValue, setInputValue] = useState('');
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -90,6 +94,7 @@ export const ChatInput = ({
       </div>
       <div className={styles.importantInfo}>
         <span>KavaAI can make mistakes. Check important info.</span>
+        <ContextUsageTracker usageStore={usageStore} />
       </div>
       {enableCustomSystemPrompt && (
         <div className={styles.importantInfo}>
