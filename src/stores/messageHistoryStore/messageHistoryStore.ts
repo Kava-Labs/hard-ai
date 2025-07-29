@@ -12,6 +12,10 @@ export class MessageHistoryStore {
     }
   }
 
+  public getMessages = () => {
+    return [...this.currentValue];
+  };
+
   public addMessage(msg: ChatMessage) {
     const newMessages = [...this.currentValue, msg];
     this.currentValue = newMessages;

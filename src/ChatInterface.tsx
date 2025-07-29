@@ -105,7 +105,14 @@ export const ChatInterface = ({
                       size="small"
                     />
                   )}
-
+                  <button
+                    title="Log active chat to console"
+                    onClick={() =>
+                      console.log(activeChat.messageHistoryStore.getMessages())
+                    }
+                  >
+                    debug
+                  </button>
                   {changeModel && (
                     <ModelSelector
                       handleModelChange={changeModel}
