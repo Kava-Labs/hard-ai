@@ -1,7 +1,7 @@
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import WalletModal from './WalletModal';
-import { EIP1193Provider, EIP6963ProviderDetail } from './stores/walletStore';
+import { EIP1193Provider, EIP6963ProviderDetail } from './types/wallet';
 import { useWalletState } from './stores/walletStore/useWalletState';
 
 // Mock the useWalletState hook

@@ -1,19 +1,14 @@
 import { SearchHistoryModal, SideBar, useIsMobileLayout } from 'lib-kava-ai';
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import styles from './App.module.css';
 import { ChatInterface } from './ChatInterface';
 import KavaAILogo from './kavaAILogo';
 import { initializeToolCallRegistry } from './toolcalls/chain';
-import { useChatWithWallet } from './useChatWithWallet';
 import {
   deregisterMcpToolsFromRegistry,
   registerMcpToolsWithRegistry,
 } from './toolcalls/chain/MCPToolCallOperation';
-import {
-  deregisterEvmToolsFromRegistry,
-  registerEvmToolsWithRegistry,
-} from './toolcalls/chain/evmTools';
-import { useWalletState } from './stores/walletStore/useWalletState';
+import { useChatWithWallet } from './useChatWithWallet';
 
 const toolCallRegistry = initializeToolCallRegistry();
 
@@ -47,10 +42,6 @@ export const App = () => {
 
   const [webSearchEnabled, setWebSearchEnabled] = useState(true);
 
-  // Get wallet state to automatically enable EVM tools when wallet is connected
-  const { walletAddress } = useWalletState();
-  const isWalletConnected = !!walletAddress;
-
   useEffect(() => {
     if (webSearchEnabled) {
       registerMcpToolsWithRegistry(toolCallRegistry).catch(console.error);
@@ -58,14 +49,6 @@ export const App = () => {
       deregisterMcpToolsFromRegistry(toolCallRegistry);
     }
   }, [webSearchEnabled]);
-
-  useEffect(() => {
-    if (isWalletConnected) {
-      registerEvmToolsWithRegistry(toolCallRegistry);
-    } else {
-      deregisterEvmToolsFromRegistry(toolCallRegistry);
-    }
-  }, [isWalletConnected]);
 
   const {
     activeChat,

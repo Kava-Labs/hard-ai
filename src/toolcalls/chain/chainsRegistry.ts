@@ -1,7 +1,5 @@
-export enum ChainType {
-  COSMOS = 'cosmos',
-  EVM = 'evm',
-}
+import { ChainNames, ChainType } from './constants';
+import { ExtraToolKey } from './extraTools';
 
 export type ERC20Record = {
   contractAddress: string;
@@ -20,25 +18,10 @@ export type EVMChainConfig = {
   nativeToken: string;
   nativeTokenDecimals: number;
   erc20Contracts: Record<string, ERC20Record>;
-  // New fields for enhanced functionality
-  // TODO: This has a bad code smell. The tools that prompted the addition of these flags are both _only_ supported on Kava EVM. There will inevitably be future tools that only work on one (or one of several) chains.
-  // * Remove these flags.
-  //   * Consider extensible ways these tools can be registered.
-  //   * Refactor any necessary code to support this new use case (some tools are only supported by a subset of networks)
-  isKavaEVM?: boolean; // Special flag for Kava EVM specific features
-  supportsERC20Conversion?: boolean; // Whether this chain supports ERC20 conversion
+  // Chain-specific tools that should only be available when connected to this chain
+  // This is a list of string keys from the extraTools object to prevent circular dependencies
+  extraTools?: ExtraToolKey[];
 };
-
-export enum ChainNames {
-  KAVA_COSMOS = 'Kava Cosmos',
-  KAVA_EVM = 'Kava EVM',
-  ETH = 'Ethereum',
-  BSC = 'Binance Smart Chain',
-  POLYGON = 'Polygon',
-  ARBITRUM = 'Arbitrum One',
-  OPTIMISM = 'Optimism',
-  KAVA_EVM_INTERNAL_TESTNET = 'Kava EVM Internal Testnet',
-}
 
 export type CosmosChainConfig = {
   chainType: ChainType.COSMOS;
@@ -46,12 +29,14 @@ export type CosmosChainConfig = {
   rpcUrls: string[];
   blockExplorerUrls: string[];
   chainID: string;
-  evmChainName?: ChainNames;
-  denoms: Record<string, CoinRecord>;
-  bech32Prefix: string;
   nativeToken: string;
   nativeTokenDecimals: number;
+  bech32Prefix: string;
   defaultGasWanted: string;
+  denoms: Record<string, CoinRecord>;
+  evmChainName?: string;
+  // Chain-specific tools that should only be available when connected to this chain
+  extraTools?: ExtraToolKey[];
 };
 
 export type ChainConfig = EVMChainConfig | CosmosChainConfig;
@@ -68,8 +53,7 @@ export const chainRegistry: ChainRegistry = {
       nativeToken: 'KAVA',
       nativeTokenDecimals: 18,
       blockExplorerUrls: ['https://kavascan.com/'],
-      isKavaEVM: true, // Special flag for Kava EVM specific features
-      supportsERC20Conversion: true, // Kava EVM supports ERC20 conversion
+      extraTools: ['erc20-conversion'],
       erc20Contracts: {
         WHARD: {
           contractAddress: '0x25e9171C98Fc1924Fa9415CF50750274F0664764',
@@ -156,8 +140,7 @@ export const chainRegistry: ChainRegistry = {
       nativeToken: 'TKAVA',
       nativeTokenDecimals: 18,
       blockExplorerUrls: ['https://kavascan.com/'],
-      isKavaEVM: true,
-      supportsERC20Conversion: true,
+      extraTools: ['erc20-conversion'],
       erc20Contracts: {
         USDT: {
           contractAddress: '0xaCF81e57CBd9aF95FaBbe53678FcB70B1dD1b7A1',
@@ -446,14 +429,16 @@ export const chainRegistry: ChainRegistry = {
   },
 };
 
-export const chainNameToolCallParam = {
-  name: 'chainName',
-  type: 'string',
-  description:
-    'name of the chain the user is interacting with, if not specified by the user assume the currently connected network.',
-  enum: [
-    ...Object.keys(chainRegistry[ChainType.EVM]),
-    ...Object.keys(chainRegistry[ChainType.COSMOS]),
-  ],
-  required: true,
+export const getChainConfigByName = (
+  chainName: string,
+  chainType: ChainType,
+): unknown => {
+  const chains = chainRegistry[chainType];
+  const chainConfig = chains[chainName];
+
+  if (chainConfig && chainConfig.chainType === chainType) {
+    return chainConfig;
+  }
+
+  return null;
 };

@@ -1,4 +1,5 @@
-import { WalletStore, WalletProvider } from '../../stores/walletStore';
+import { WalletStore } from '../../stores/walletStore';
+import { WalletProvider } from '../../types/wallet';
 import { chainRegistry, ChainType } from '../../toolcalls/chain';
 
 /**

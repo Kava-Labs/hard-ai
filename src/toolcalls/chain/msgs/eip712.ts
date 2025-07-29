@@ -1,6 +1,7 @@
 /* eslint-disable  @typescript-eslint/no-explicit-any */
 import type { MetamaskSupportedMessageTypes } from './messageTypes';
 import type { CosmosChainConfig } from '../chainsRegistry';
+import { getChainConfigByName } from '../chainsRegistry';
 
 const msgConvertERC20ToCoinType = {
   MsgValueEVMConvertERC20ToCoin: [
@@ -525,12 +526,13 @@ export const eip712SignAndBroadcast = async (opts: EIP712SignerParams) => {
   const { createDefaultTypes } = await import('./aminoTypes');
   const { defaultRegistryTypes } = await import('./registry');
 
-  const { chainRegistry } = await import('../chainsRegistry');
   const { ChainType } = await import('..');
   const { bech32 } = await import('bech32');
   const { ethers } = await import('ethers');
 
-  if (!chainRegistry[ChainType.EVM][opts.chainConfig.evmChainName ?? '']) {
+  if (
+    !getChainConfigByName(opts.chainConfig.evmChainName ?? '', ChainType.EVM)
+  ) {
     throw new Error(
       `cosmos ${opts.chainConfig.name} chain must be linked to an evm chain`,
     );
@@ -659,7 +661,9 @@ export const eip712SignAndBroadcast = async (opts: EIP712SignerParams) => {
     domain: {
       name: chainConfig.name,
       version: '1.0.0',
-      chainId: chainRegistry[ChainType.EVM][chainConfig.evmChainName!].chainID,
+      chainId: (
+        getChainConfigByName(chainConfig.evmChainName!, ChainType.EVM) as any
+      ).chainID,
       verifyingContract: '',
       salt: '',
     },
@@ -691,7 +695,8 @@ export const eip712SignAndBroadcast = async (opts: EIP712SignerParams) => {
   // extension options and encode them using the registry
   const encodedPartial = ExtensionOptionsWeb3Tx.fromPartial({
     typedDataChainId: String(
-      chainRegistry[ChainType.EVM][chainConfig.evmChainName!].chainID,
+      (getChainConfigByName(chainConfig.evmChainName!, ChainType.EVM) as any)
+        .chainID,
     ),
     feePayer: signerAddress,
     feePayerSig: Uint8Array.from(atob(feePayerSignature), (c) =>

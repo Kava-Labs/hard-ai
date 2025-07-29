@@ -2,8 +2,7 @@ import React from 'react';
 import styles from './WalletModal.module.css';
 import Modal from './components/Modal';
 import { useWalletState } from './stores/walletStore/useWalletState';
-import { EIP6963ProviderDetail } from './stores/walletStore';
-import { PROMOTED_WALLETS } from './utils/wallet';
+import { EIP6963ProviderDetail, PROMOTED_WALLETS } from './types/wallet';
 
 interface WalletModalProps {
   onClose: () => void;

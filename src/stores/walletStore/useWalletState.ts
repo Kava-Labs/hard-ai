@@ -1,10 +1,7 @@
 import React from 'react';
 import { WalletInfo, WalletProviderDetail } from '../../types';
-import {
-  EIP6963ProviderDetail,
-  WalletProvider,
-  walletStore,
-} from './walletStore';
+import { EIP6963ProviderDetail, WalletProvider } from '../../types/wallet';
+import { walletStore } from './walletStore';
 
 interface UseWalletStateOptions {
   /**

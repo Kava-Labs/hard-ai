@@ -10,9 +10,10 @@ import {
   defaultIntroText,
   defaultSystemPrompt,
 } from './prompts';
-import { ERC20ConversionMessage } from '../erc20Conversion';
 import { WalletInfo } from '../../types';
 import { WalletStore } from '../../stores/walletStore';
+import { chainRegistry } from './chainsRegistry';
+import { ChainType } from './constants';
 
 /**
  * Central registry for all chain operations (messages and queries).
@@ -216,7 +217,7 @@ export function initializeToolCallRegistry(): ToolCallRegistry<unknown> {
   // Note: ERC20ConversionMessage is specific to Kava EVM (chain ID 2222)
   // This tool will only be available when connected to Kava EVM
   // TODO: but does will it really? i dont think so... lol
-  registry.register(new ERC20ConversionMessage());
+  // registry.register(new ERC20ConversionMessage()); // This line is removed
 
   return registry;
 }
@@ -225,3 +226,15 @@ export type ExecuteToolCall = (
   operationName: string,
   params: unknown,
 ) => Promise<string>;
+
+export const chainNameToolCallParam = {
+  name: 'chainName',
+  type: 'string',
+  description:
+    'name of the chain the user is interacting with, if not specified by the user assume Kava EVM',
+  enum: [
+    ...Object.keys(chainRegistry[ChainType.EVM]),
+    ...Object.keys(chainRegistry[ChainType.COSMOS]),
+  ],
+  required: true,
+};

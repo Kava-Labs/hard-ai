@@ -4,6 +4,11 @@ import { useWalletState } from './stores/walletStore/useWalletState';
 import { ToolCallRegistry } from './toolcalls/chain';
 import { ChatMessage, WalletInfo } from './types';
 import { useChat } from './useChat';
+import {
+  deregisterEvmToolsFromRegistry,
+  changeChainToolCallRegistration,
+  registerEvmToolsWithRegistry,
+} from './toolcalls/evmTools';
 
 const walletContextMessage = (walletInfo: WalletInfo): ChatMessage => {
   return {
@@ -64,6 +69,9 @@ export const useChatWithWallet = ({
     handleProviderSelect,
     walletProviderInfo,
   } = useWalletState({
+    // on wallet connection:
+    // * add connected wallet context to existing/new chats
+    // * register tool calls for the connected chain
     onWalletConnect: (walletInfo) => {
       const msg = walletContextMessage(walletInfo);
       // add connected wallet context to existing chat
@@ -71,14 +79,25 @@ export const useChatWithWallet = ({
       // ensure new chats include wallet context
       setCurrentInitialMessages([msg]);
       setWalletInfo(walletInfo);
+      registerEvmToolsWithRegistry(toolCallRegistry, walletInfo.chainId);
     },
-    onWalletDisconnect: () => {
+
+    // on wallet disconnect:
+    // * clear wallet context from existing/new chats
+    // * deregister tool calls for the connected chain
+    onWalletDisconnect: (walletInfo) => {
       setCurrentInitialMessages([]);
       addPendingSystemMessage(
         'Wallet has been disconnected. All previous wallet information is no longer valid.',
       );
       setWalletInfo(null);
+      deregisterEvmToolsFromRegistry(toolCallRegistry, walletInfo.chainId);
     },
+
+    // on change of connected wallet:
+    // * notify of connected wallet changed in context of existing/new chats
+    // * deregister tool calls for the old chain
+    // * register tool calls for the new connected chain
     onWalletChange: (prevInfo, walletInfo) => {
       const content = `Wallet account changed. New address: ${walletInfo.address} on chain ID: ${walletInfo.chainId}.
       Wallet type: ${walletInfo.walletType}.
@@ -86,6 +105,11 @@ export const useChatWithWallet = ({
       addPendingSystemMessage(content);
       setCurrentInitialMessages([walletContextMessage(walletInfo)]);
       setWalletInfo(walletInfo);
+      changeChainToolCallRegistration(
+        toolCallRegistry,
+        walletInfo.chainId,
+        prevInfo.chainId,
+      );
     },
   });
 

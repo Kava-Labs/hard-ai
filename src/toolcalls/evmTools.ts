@@ -12,15 +12,18 @@ import {
   type Hex,
 } from 'viem';
 import { z } from 'zod';
-import { WalletProvider, WalletStore } from '../../stores/walletStore';
-import { ERC2O_ABI } from './abi/erc20abi';
-import { chainRegistry, ChainType, EVMChainConfig } from './chainsRegistry';
+import { WalletStore } from '../stores/walletStore';
+import { WalletProvider } from '../types/wallet';
+import { ERC2O_ABI } from './chain/abi/erc20abi';
+import { chainRegistry, EVMChainConfig } from './chain/chainsRegistry';
 import {
   ChainToolCallOperation,
   MessageParam,
   OperationType,
-} from './chainToolCallOperation';
-import { ToolCallRegistry } from './ToolCallRegistry';
+} from './chain/chainToolCallOperation';
+import { ChainType } from './chain/constants';
+import { ToolCallRegistry } from './chain/ToolCallRegistry';
+import { getExtraToolByKey } from './chain/extraTools';
 
 /**
  * EVM Tools Implementation
@@ -91,41 +94,57 @@ const getContractAddress = async (
   tokenSymbol: string,
 ): Promise<string | null> => {
   const chainId = await getCurrentChainId();
+  const chainInfo = getChainConfigByChainId(chainId.toString());
 
-  // Find the chain in the registry by chain ID
-  const evmChains = chainRegistry[ChainType.EVM];
-  for (const [_chainName, chainConfig] of Object.entries(evmChains)) {
-    if (
-      chainConfig.chainType === ChainType.EVM &&
-      chainConfig.chainID === chainId.toString()
-    ) {
-      const contract = chainConfig.erc20Contracts[tokenSymbol];
-      return contract?.contractAddress || null;
-    }
+  if (!chainInfo) {
+    return null;
   }
 
-  return null;
+  const contract = chainInfo.chainConfig.erc20Contracts[tokenSymbol];
+  return contract?.contractAddress || null;
 };
 
 // Helper to get chain config for current chain
 const getCurrentChainConfig = async () => {
   const chainId = await getCurrentChainId();
+  const chainInfo = getChainConfigByChainId(chainId.toString());
 
-  // Find the chain in the registry by chain ID
+  if (!chainInfo) {
+    throw new Error(`Chain with ID ${chainId} not found in registry`);
+  }
+
+  return chainInfo;
+};
+
+// Helper to get chain config by chain ID for EVM chains
+const getChainConfigByChainId = (
+  chainId: string,
+): { chainName: string; chainConfig: EVMChainConfig } | null => {
   const evmChains = chainRegistry[ChainType.EVM];
-  for (const [_chainName, chainConfig] of Object.entries(evmChains)) {
+  for (const [chainName, chainConfig] of Object.entries(evmChains)) {
     if (
       chainConfig.chainType === ChainType.EVM &&
-      chainConfig.chainID === chainId.toString()
+      chainConfig.chainID === chainId
     ) {
       return {
-        chainName: _chainName,
+        chainName,
         chainConfig: chainConfig as EVMChainConfig,
       };
     }
   }
+  return null;
+};
 
-  throw new Error(`Chain with ID ${chainId} not found in registry`);
+// Helper to get chain config by name for EVM chains
+const getEvmChainConfigByName = (chainName: string): EVMChainConfig | null => {
+  const evmChains = chainRegistry[ChainType.EVM];
+  const chainConfig = evmChains[chainName];
+
+  if (chainConfig && chainConfig.chainType === ChainType.EVM) {
+    return chainConfig as EVMChainConfig;
+  }
+
+  return null;
 };
 
 // Helper to convert BigInt values to strings for JSON serialization
@@ -459,12 +478,10 @@ class SwitchNetworkTool extends EvmToolOperation {
     const { chainName } = this.zodSchema.parse(params) as { chainName: string };
 
     // Validate chain exists in registry
-    const evmChains = chainRegistry[ChainType.EVM];
-    if (!evmChains[chainName]) {
+    const chainConfig = getEvmChainConfigByName(chainName);
+    if (!chainConfig) {
       throw new Error(`Chain ${chainName} not found in registry`);
     }
-
-    const chainConfig = evmChains[chainName];
 
     // Use wallet_switchEthereumChain RPC method
     const provider = getEthereumProvider();
@@ -1051,19 +1068,19 @@ const EVM_TOOLS = [
   new SwitchNetworkTool(),
 ];
 
-// Tool registry function
-const registerEvmTools = (registry: ToolCallRegistry<unknown>): void => {
-  EVM_TOOLS.forEach((tool) => registry.register(tool));
-  console.log(`Registered ${EVM_TOOLS.length} EVM tools`);
-};
-
 // Integration functions
 export const registerEvmToolsWithRegistry = (
   registry: ToolCallRegistry<unknown>,
+  chainId?: string,
 ): void => {
   try {
-    registerEvmTools(registry);
-    console.log('Registered EVM tools');
+    EVM_TOOLS.forEach((tool) => registry.register(tool));
+    console.log(`Registered ${EVM_TOOLS.length} EVM tools`);
+
+    // Also register chain-specific tools for the current chain if chainId is provided
+    if (chainId) {
+      registerChainSpecificTools(registry, chainId);
+    }
   } catch (error) {
     console.warn('Failed to register EVM tools with registry:', error);
   }
@@ -1071,13 +1088,92 @@ export const registerEvmToolsWithRegistry = (
 
 export const deregisterEvmToolsFromRegistry = (
   registry: ToolCallRegistry<unknown>,
+  chainId?: string,
 ): void => {
-  // Only deregister tools that we actually registered
+  // Deregister standard EVM tools
   EVM_TOOLS.forEach((tool) => {
     registry.deregister(tool);
   });
 
+  // Also deregister any chain-specific tools if chainId is provided
+  if (chainId) {
+    deregisterChainSpecificTools(registry, chainId);
+  }
+
   console.log(`Deregistered ${EVM_TOOLS.length} EVM tools from registry`);
 };
 
-export default registerEvmTools;
+// Function to handle chain changes - can be called when wallet chain changes
+export const changeChainToolCallRegistration = (
+  registry: ToolCallRegistry<unknown>,
+  newChainId: string,
+  oldChainId?: string,
+): void => {
+  try {
+    // Deregister any existing chain-specific tools for the old chain
+    if (oldChainId) {
+      deregisterChainSpecificTools(registry, oldChainId);
+    }
+
+    // Register chain-specific tools for the new chain
+    registerChainSpecificTools(registry, newChainId);
+  } catch (error) {
+    console.warn('Failed to handle chain change:', error);
+  }
+};
+
+// Helper function to register chain-specific tools
+const registerChainSpecificTools = (
+  registry: ToolCallRegistry<unknown>,
+  chainId: string,
+): void => {
+  try {
+    const chainInfo = getChainConfigByChainId(chainId);
+    if (chainInfo && chainInfo.chainConfig.extraTools) {
+      chainInfo.chainConfig.extraTools.forEach((toolKey) => {
+        try {
+          const tool = getExtraToolByKey(toolKey);
+          registry.register(tool);
+        } catch (error) {
+          console.warn(
+            `Tool ${toolKey} not found in extraTools registry`,
+            error,
+          );
+        }
+      });
+      console.log(
+        `Registered ${chainInfo.chainConfig.extraTools.length} chain-specific tools for ${chainInfo.chainName}`,
+      );
+    }
+  } catch (error) {
+    console.warn('Failed to register chain-specific tools:', error);
+  }
+};
+
+// Helper function to deregister chain-specific tools
+const deregisterChainSpecificTools = (
+  registry: ToolCallRegistry<unknown>,
+  chainId: string,
+): void => {
+  try {
+    const chainInfo = getChainConfigByChainId(chainId);
+    if (chainInfo && chainInfo.chainConfig.extraTools) {
+      chainInfo.chainConfig.extraTools.forEach((toolKey) => {
+        try {
+          const tool = getExtraToolByKey(toolKey);
+          registry.deregister(tool);
+        } catch (error) {
+          console.warn(
+            `Tool ${toolKey} not found in extraTools registry`,
+            error,
+          );
+        }
+      });
+      console.log(
+        `Deregistered ${chainInfo.chainConfig.extraTools.length} chain-specific tools for ${chainInfo.chainName}`,
+      );
+    }
+  } catch (error) {
+    console.warn('Failed to deregister chain-specific tools:', error);
+  }
+};

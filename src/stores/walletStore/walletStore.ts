@@ -1,95 +1,19 @@
+import { ChainNames, ChainType, EVMChainConfig } from '../../toolcalls/chain';
+import { getChainConfigByName } from '../../toolcalls/chain/chainsRegistry';
+import type { EIP712SignerParams } from '../../toolcalls/chain/msgs/eip712';
 import {
-  ChainType,
-  EIP712SignerParams,
-  ChainNames,
-  chainRegistry,
-} from '../../toolcalls/chain';
+  EIP6963AnnounceProviderEvent,
+  EIP6963ProviderDetail,
+  EVMRequestPayload,
+  SignatureTypes,
+  SignOpts,
+  WalletConnection,
+  WalletProvider,
+} from '../../types/wallet';
 
 type Listener = () => void;
 
 const WALLET_TYPE_STORAGE_KEY = 'walletType';
-
-export enum WalletProvider {
-  EIP6963 = 'EIP6963',
-  NONE = 'NONE',
-}
-
-export enum SignatureTypes {
-  EIP712 = 'EIP712',
-  EVM = 'EVM',
-}
-
-export type SignOpts = {
-  chainId: string;
-  signatureType: SignatureTypes;
-  payload: EVMRequestPayload | EIP712SignerParams;
-};
-
-interface EVMTransactionRequest {
-  from: string;
-  to: string;
-  gas?: string;
-  gasPrice?: string;
-  value?: string;
-  data?: string;
-}
-
-interface EVMRequestPayload {
-  method: string;
-  params?: Array<EVMTransactionRequest>;
-}
-
-export interface EIP1193Provider {
-  isStatus?: boolean;
-  host?: string;
-  path?: string;
-  sendAsync?: (
-    request: { method: string; params?: Array<unknown> },
-    callback: (error: Error | null, response: unknown) => void,
-  ) => void;
-  send?: (
-    request: { method: string; params?: Array<unknown> },
-    callback: (error: Error | null, response: unknown) => void,
-  ) => void;
-  request: (request: {
-    method: string;
-    params?: Array<unknown>;
-  }) => Promise<unknown>;
-  on?: (eventName: string, listener: (...args: unknown[]) => void) => void;
-  off?: (eventName: string, listener: (...args: unknown[]) => void) => void;
-  //  Some providers use removeListener instead of off
-  removeListener?: (
-    eventName: string,
-    listener: (...args: unknown[]) => void,
-  ) => void;
-}
-
-export type WalletConnection = {
-  walletAddress: string;
-  walletChainId: string;
-  walletProvider: WalletProvider;
-  walletType: string;
-  isWalletConnected: boolean;
-  provider?: EIP1193Provider;
-  rdns?: string;
-};
-
-export interface EIP6963ProviderInfo {
-  uuid: string;
-  name: string;
-  icon: string;
-  rdns: string;
-}
-
-export interface EIP6963ProviderDetail {
-  info: EIP6963ProviderInfo;
-  provider: EIP1193Provider;
-}
-
-export interface EIP6963AnnounceProviderEvent extends CustomEvent {
-  type: 'eip6963:announceProvider';
-  detail: EIP6963ProviderDetail;
-}
 
 export class WalletStore {
   private currentValue: WalletConnection = {
@@ -198,7 +122,10 @@ export class WalletStore {
   }
 
   public async switchNetwork(chainName: string) {
-    const chain = chainRegistry[ChainType.EVM][chainName];
+    const chain = getChainConfigByName(
+      chainName,
+      ChainType.EVM,
+    ) as EVMChainConfig;
     if (!chain) {
       throw new Error(`Unknown chain ${chainName}`);
     }
