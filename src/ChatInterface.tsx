@@ -8,6 +8,7 @@ import ConnectWalletButton from './ConnectWalletButton';
 import { ModelId } from './types/index.ts';
 import { ModelSelector } from './ModelSelector';
 import { Toggle } from './Toggle.tsx';
+import { ToolResultStore } from './stores/toolResultStore';
 
 const showWalletConnect =
   import.meta.env['VITE_FEAT_WALLET_CONNECT'] === 'true';
@@ -18,6 +19,7 @@ export interface ChatInterfaceProps {
   handleCancel: () => void;
   handleNewChat: () => void;
   toolCallRegistry: ToolCallRegistry<unknown>;
+  toolResultStore?: ToolResultStore;
   isSideBarOpen: boolean;
   onMenuClick: () => void;
   styles: Record<string, string>;
@@ -32,6 +34,7 @@ export const ChatInterface = ({
   handleCancel,
   handleNewChat,
   toolCallRegistry,
+  toolResultStore,
   isSideBarOpen,
   onMenuClick,
   styles,
@@ -122,6 +125,7 @@ export const ChatInterface = ({
               {isConversationStarted && (
                 <ConversationWrapper
                   toolCallRegistry={toolCallRegistry}
+                  toolResultStore={toolResultStore}
                   activeChat={activeChat}
                   onRendered={handleContentRendered}
                 />

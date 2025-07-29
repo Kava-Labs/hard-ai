@@ -46,6 +46,7 @@ export const useChatWithWallet = ({
     fetchSearchHistory,
     changeModel,
     addPendingSystemMessage,
+    toolResultStore,
   } = useChat({
     initialMessages: currentInitialMessages,
     toolCallRegistry,
@@ -127,6 +128,7 @@ export const useChatWithWallet = ({
     fetchSearchHistory,
     changeModel,
     addPendingSystemMessage,
+    toolResultStore,
 
     // Wallet functionality
     walletInfo,
