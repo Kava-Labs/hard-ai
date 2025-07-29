@@ -210,14 +210,8 @@ export class ToolCallRegistry<T> {
 export function initializeToolCallRegistry(): ToolCallRegistry<unknown> {
   const registry = new ToolCallRegistry();
 
-  // Note: EVM tools are registered dynamically in App.tsx based on wallet state
-  // This prevents circular dependencies between wallet store and EVM tools
-
-  // Register Kava-specific tools only for Kava EVM
-  // Note: ERC20ConversionMessage is specific to Kava EVM (chain ID 2222)
-  // This tool will only be available when connected to Kava EVM
-  // TODO: but does will it really? i dont think so... lol
-  // registry.register(new ERC20ConversionMessage()); // This line is removed
+  // Note: EVM tools & chain-specific tools are registered dynamically in App.tsx
+  // based on connected wallet state.
 
   return registry;
 }
