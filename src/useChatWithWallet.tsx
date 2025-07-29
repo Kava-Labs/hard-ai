@@ -8,15 +8,65 @@ import {
   deregisterEvmToolsFromRegistry,
   changeChainToolCallRegistration,
   registerEvmToolsWithRegistry,
+  getChainConfigByChainId,
 } from './toolcalls/evmTools';
 
 const walletContextMessage = (walletInfo: WalletInfo): ChatMessage => {
+  if (!walletInfo.isConnected) {
+    return {
+      role: 'system',
+      content: 'User does not have a wallet connected.',
+    };
+  }
+
+  const details = getChainConfigByChainId(walletInfo.chainId);
+  const chainName = details?.chainName || 'Unknown';
+  const chainConfig = details?.chainConfig || null;
+
+  const context: string[] = [
+    'Connected wallet information:',
+    `  Wallet address: ${walletInfo.address}`,
+    `  Wallet type: ${walletInfo.walletType}`,
+    `Wallet connected to chain network:`,
+    `  Chain: ${chainName} (chainId=${walletInfo.chainId})`,
+  ];
+
+  if (chainConfig?.nativeToken) {
+    context.push(
+      `  Native token: ${chainConfig.nativeToken} (decimals=${chainConfig.nativeTokenDecimals})`,
+    );
+  }
+  if (
+    chainConfig?.blockExplorerUrls &&
+    chainConfig.blockExplorerUrls.length > 0
+  ) {
+    context.push(`  Block explorer: ${chainConfig.blockExplorerUrls[0]}`);
+  }
+
   return {
     role: 'system',
-    content: `Current wallet information: Address: ${walletInfo.address} on chain ID: ${walletInfo.chainId}.
-          Wallet type: ${walletInfo.walletType || 'Unknown'}.`,
-    // ${walletInfo.balancesPrompt}`,
+    content: context.join('\n'),
   };
+};
+
+const walletConnectionChangedMessage = (
+  prevInfo: WalletInfo,
+  walletInfo: WalletInfo,
+): string => {
+  const accountChanged = prevInfo.address !== walletInfo.address;
+  const chainChanged = prevInfo.chainId !== walletInfo.chainId;
+  const message = (() => {
+    if (accountChanged && chainChanged) {
+      return `**The connected wallet account and network changed.**`;
+    } else if (accountChanged) {
+      return `**The connected wallet has changed.**`;
+    } else if (chainChanged) {
+      return `**The connected network has changed.**`;
+    }
+  })();
+  return `${message} Keep previous connection information in context, but recognize that it is not current.
+
+${walletContextMessage(walletInfo).content}`;
 };
 
 interface UseChatWithWalletOptions {
@@ -89,7 +139,7 @@ export const useChatWithWallet = ({
     onWalletDisconnect: (walletInfo) => {
       setCurrentInitialMessages([]);
       addPendingSystemMessage(
-        'Wallet has been disconnected. All previous wallet information is no longer valid.',
+        '**Wallet has been disconnected.** All previous wallet information is no longer valid.',
       );
       setWalletInfo(null);
       deregisterEvmToolsFromRegistry(toolCallRegistry, walletInfo.chainId);
@@ -100,9 +150,7 @@ export const useChatWithWallet = ({
     // * deregister tool calls for the old chain
     // * register tool calls for the new connected chain
     onWalletChange: (prevInfo, walletInfo) => {
-      const content = `Wallet account changed. New address: ${walletInfo.address} on chain ID: ${walletInfo.chainId}.
-      Wallet type: ${walletInfo.walletType}.
-      Keep previous wallet information in context, but recognize that it is not current. ${walletInfo.balancesPrompt}`;
+      const content = walletConnectionChangedMessage(prevInfo, walletInfo);
       addPendingSystemMessage(content);
       setCurrentInitialMessages([walletContextMessage(walletInfo)]);
       setWalletInfo(walletInfo);
