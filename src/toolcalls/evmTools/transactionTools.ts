@@ -97,9 +97,9 @@ export class SignMessageTool extends EvmToolOperation {
 export class FormatEtherTool extends EvmToolOperation {
   name = createToolName('format-ether');
   description =
-    'Convert wei to ether (human-readable format). Use this to display balances in a user-friendly way.';
+    'Convert wei to ether (human-readable format). Use this to display balances in a user-friendly way by passing native token amount as `wei`.';
   zodSchema = z.object({
-    wei: z.string().describe('Amount in wei to convert'),
+    wei: z.string().describe('Amount in wei to convert. (integer)'),
   });
 
   async execute(params: unknown): Promise<string> {
