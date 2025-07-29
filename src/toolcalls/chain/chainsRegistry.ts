@@ -1,4 +1,7 @@
 import { ChainNames, ChainType } from './constants';
+
+// Re-export ChainType for backward compatibility
+export { ChainType };
 import { ExtraToolKey } from './extraTools';
 
 export type ERC20Record = {
