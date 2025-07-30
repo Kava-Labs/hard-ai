@@ -3,8 +3,14 @@ import { chainRegistry, EVMChainConfig } from '../chain/chainsRegistry';
 import { ChainType } from '../chain/constants';
 import { EthereumProvider } from './types';
 
-// Helper to get Ethereum provider
-export const getEthereumProvider = (): EthereumProvider => {
+// Helper to get Ethereum provider from wallet store
+export const getEthereumProvider = (
+  provider?: EthereumProvider,
+): EthereumProvider => {
+  if (provider) {
+    return provider;
+  }
+
   if (typeof window === 'undefined' || !window.ethereum) {
     throw new Error(
       'Ethereum provider not detected. Please install a compatible wallet extension and ensure it is connected.',
@@ -14,9 +20,11 @@ export const getEthereumProvider = (): EthereumProvider => {
 };
 
 // Helper to get current account
-export const getCurrentAccount = async (): Promise<string> => {
-  const provider = getEthereumProvider();
-  const accounts = (await provider.request({
+export const getCurrentAccount = async (
+  provider?: EthereumProvider,
+): Promise<string> => {
+  const ethereumProvider = getEthereumProvider(provider);
+  const accounts = (await ethereumProvider.request({
     method: 'eth_accounts',
   })) as string[];
   if (!accounts || accounts.length === 0) {
@@ -26,9 +34,11 @@ export const getCurrentAccount = async (): Promise<string> => {
 };
 
 // Helper to get chain ID
-export const getCurrentChainId = async (): Promise<number> => {
-  const provider = getEthereumProvider();
-  const chainId = (await provider.request({
+export const getCurrentChainId = async (
+  provider?: EthereumProvider,
+): Promise<number> => {
+  const ethereumProvider = getEthereumProvider(provider);
+  const chainId = (await ethereumProvider.request({
     method: 'eth_chainId',
   })) as string;
   return parseInt(chainId, 16);
@@ -37,8 +47,9 @@ export const getCurrentChainId = async (): Promise<number> => {
 // Helper to get contract address for a token on current chain
 export const getContractAddress = async (
   tokenSymbol: string,
+  provider?: EthereumProvider,
 ): Promise<string | null> => {
-  const chainId = await getCurrentChainId();
+  const chainId = await getCurrentChainId(provider);
   const chainInfo = getChainConfigByChainId(chainId.toString());
 
   if (!chainInfo) {
@@ -50,8 +61,8 @@ export const getContractAddress = async (
 };
 
 // Helper to get chain config for current chain
-export const getCurrentChainConfig = async () => {
-  const chainId = await getCurrentChainId();
+export const getCurrentChainConfig = async (provider?: EthereumProvider) => {
+  const chainId = await getCurrentChainId(provider);
   const chainInfo = getChainConfigByChainId(chainId.toString());
 
   if (!chainInfo) {

@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { formatEther } from 'viem';
-import { EvmToolOperation, createToolName } from './types';
+import { EvmToolOperation, createToolName, EthereumProvider } from './types';
 import { getCurrentAccount, getEthereumProvider } from './helpers';
 
 // Get Balance Tool
@@ -15,16 +15,16 @@ export class GetBalanceTool extends EvmToolOperation {
       .describe('Address to get balance for. Defaults to current account.'),
   });
 
-  async execute(params: unknown): Promise<string> {
+  async execute(params: unknown, provider?: EthereumProvider): Promise<string> {
     const { address } = this.zodSchema.parse(params) as { address?: string };
 
     let targetAddress = address;
     if (!targetAddress) {
-      targetAddress = await getCurrentAccount();
+      targetAddress = await getCurrentAccount(provider);
     }
 
-    const provider = getEthereumProvider();
-    const balance = (await provider.request({
+    const ethereumProvider = getEthereumProvider(provider);
+    const balance = (await ethereumProvider.request({
       method: 'eth_getBalance',
       params: [targetAddress, 'latest'],
     })) as string;
@@ -50,7 +50,7 @@ export class GetBlockTool extends EvmToolOperation {
       .describe('Block tag to fetch'),
   });
 
-  async execute(params: unknown): Promise<string> {
+  async execute(params: unknown, provider?: EthereumProvider): Promise<string> {
     const { blockNumber, blockHash, blockTag } = this.zodSchema.parse(
       params,
     ) as {
@@ -59,7 +59,7 @@ export class GetBlockTool extends EvmToolOperation {
       blockTag?: string;
     };
 
-    const provider = getEthereumProvider();
+    const ethereumProvider = getEthereumProvider(provider);
     let method = 'eth_getBlockByNumber';
     let methodParams: unknown[];
 
@@ -72,7 +72,7 @@ export class GetBlockTool extends EvmToolOperation {
       methodParams = [blockTag || 'latest', false];
     }
 
-    const block = await provider.request({
+    const block = await ethereumProvider.request({
       method,
       params: methodParams,
     });
@@ -93,12 +93,12 @@ export class GetBlockNumberTool extends EvmToolOperation {
       .describe('ID of chain to use when fetching data'),
   });
 
-  async execute(params: unknown): Promise<string> {
+  async execute(params: unknown, provider?: EthereumProvider): Promise<string> {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { chainId } = this.zodSchema.parse(params) as { chainId?: number };
 
-    const provider = getEthereumProvider();
-    const blockNumber = (await provider.request({
+    const ethereumProvider = getEthereumProvider(provider);
+    const blockNumber = (await ethereumProvider.request({
       method: 'eth_blockNumber',
     })) as string;
 

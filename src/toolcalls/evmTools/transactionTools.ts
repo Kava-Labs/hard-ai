@@ -7,7 +7,7 @@ import {
   toHex,
   type Hex,
 } from 'viem';
-import { EvmToolOperation, createToolName } from './types';
+import { EvmToolOperation, createToolName, EthereumProvider } from './types';
 import { getCurrentAccount, getEthereumProvider } from './helpers';
 
 // Send Transaction Tool
@@ -28,7 +28,7 @@ export class SendTransactionTool extends EvmToolOperation {
       .describe('Max priority fee per gas (EIP-1559)'),
   });
 
-  async execute(params: unknown): Promise<string> {
+  async execute(params: unknown, provider?: EthereumProvider): Promise<string> {
     const {
       to,
       value,
@@ -47,8 +47,8 @@ export class SendTransactionTool extends EvmToolOperation {
       maxPriorityFeePerGas?: string;
     };
 
-    const from = await getCurrentAccount();
-    const provider = getEthereumProvider();
+    const from = await getCurrentAccount(provider);
+    const ethereumProvider = getEthereumProvider(provider);
 
     const transactionParameters = {
       from,
@@ -61,7 +61,7 @@ export class SendTransactionTool extends EvmToolOperation {
       ...(maxPriorityFeePerGas && { maxPriorityFeePerGas }),
     };
 
-    const txHash = (await provider.request({
+    const txHash = (await ethereumProvider.request({
       method: 'eth_sendTransaction',
       params: [transactionParameters],
     })) as string;
@@ -79,12 +79,12 @@ export class SignMessageTool extends EvmToolOperation {
     message: z.string().describe('Message to sign'),
   });
 
-  async execute(params: unknown): Promise<string> {
+  async execute(params: unknown, provider?: EthereumProvider): Promise<string> {
     const { message } = this.zodSchema.parse(params) as { message: string };
-    const from = await getCurrentAccount();
-    const provider = getEthereumProvider();
+    const from = await getCurrentAccount(provider);
+    const ethereumProvider = getEthereumProvider(provider);
 
-    const signature = (await provider.request({
+    const signature = (await ethereumProvider.request({
       method: 'personal_sign',
       params: [message, from],
     })) as string;

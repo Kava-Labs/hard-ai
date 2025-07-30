@@ -1,11 +1,12 @@
 import { z } from 'zod';
 import {
-  ChainToolCallOperation,
   MessageParam,
   OperationType,
+  ChainToolCallWalletAction,
 } from '../chain/chainToolCallOperation';
 import { ChainType } from '../chain/constants';
 import { WalletStore } from '../../stores/walletStore';
+import { walletStore } from '../../stores/walletStore';
 import { WalletProvider } from '../../types/wallet';
 
 // EVM tools namespace
@@ -74,12 +75,15 @@ export const zodSchemaToMessageParams = (
 
 // Base class for EVM tools
 export abstract class EvmToolOperation
-  implements ChainToolCallOperation<unknown>
+  implements ChainToolCallWalletAction<unknown>
 {
   abstract name: string;
   abstract description: string;
   abstract zodSchema: z.ZodSchema;
-  abstract execute(params: unknown): Promise<string>;
+  abstract execute(
+    params: unknown,
+    provider?: EthereumProvider,
+  ): Promise<string>;
 
   chainType = ChainType.EVM;
   operationType = OperationType.WALLET;
@@ -105,7 +109,11 @@ export abstract class EvmToolOperation
 
   async executeRequest(params: unknown): Promise<string> {
     try {
-      return await this.execute(params);
+      // Get the provider from the wallet store
+      const walletConnection = walletStore.getSnapshot();
+      const provider = walletConnection.provider;
+
+      return await this.execute(params, provider);
     } catch (error) {
       console.error(`Error executing ${this.name}:`, error);
       throw new Error(

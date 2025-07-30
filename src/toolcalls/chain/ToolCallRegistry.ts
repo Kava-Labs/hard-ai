@@ -102,47 +102,35 @@ export class ToolCallRegistry<T> {
 
   /**
    * Generates OpenAI tool definitions for all registered operations.
-   * These definitions are used to create function-calling tools in the AI model.
-   * @returns Array of tool definitions in OpenAI format
+   * @returns Array of ChatCompletionTool objects
    */
   getToolDefinitions(): ChatCompletionTool[] {
-    const operations = this.getAllOperations();
-
-    return operations.map(
-      (operation): ChatCompletionTool => ({
-        type: 'function',
-        function: {
-          name: operation.name,
-          description: operation.description,
-          parameters: {
-            type: 'object',
-            properties: Object.fromEntries(
-              operation.parameters.map((param) => {
-                const p = [
-                  param.name,
-                  {
-                    type: param.type,
-                    description: param.description,
-                  },
-                ];
-
-                if (param.enum) {
-                  // @ts-expect-error better types needed
-                  p[1].enum = param.enum;
-                }
-
-                return p;
-              }),
-            ),
-            required: operation.parameters
-              .filter((param) => param.required)
-              .map((param) => param.name),
-            strict: true,
-            additionalProperties: false,
-          },
+    return this.getAllOperations().map((operation) => ({
+      type: 'function' as const,
+      function: {
+        name: operation.name,
+        description: operation.description,
+        parameters: {
+          type: 'object',
+          properties: operation.parameters.reduce(
+            (acc, param) => ({
+              ...acc,
+              [param.name]: {
+                type: param.type,
+                description: param.description,
+                ...(param.enum && { enum: param.enum }),
+              },
+            }),
+            {},
+          ),
+          required: operation.parameters
+            .filter((param) => param.required)
+            .map((param) => param.name),
+          strict: true,
+          additionalProperties: false,
         },
-      }),
-    );
+      },
+    }));
   }
 
   /**

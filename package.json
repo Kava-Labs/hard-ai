@@ -9,7 +9,7 @@
     "check": "tsc -p tsconfig.app.json",
     "lint": "eslint .",
     "preview": "vite preview",
-    "test:unit": "vitest src",
+    "test:unit": "vitest src --run",
     "test:e2e": "playwright test"
   },
   "dependencies": {

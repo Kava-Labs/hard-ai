@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { EvmToolOperation, createToolName } from './types';
+import { EvmToolOperation, createToolName, EthereumProvider } from './types';
 import {
   getCurrentAccount,
   getCurrentChainId,
@@ -16,7 +16,7 @@ export class SwitchNetworkTool extends EvmToolOperation {
     chainName: z.string().describe('Name of the chain to switch to'),
   });
 
-  async execute(params: unknown): Promise<string> {
+  async execute(params: unknown, provider?: EthereumProvider): Promise<string> {
     const { chainName } = this.zodSchema.parse(params) as { chainName: string };
 
     // Validate chain exists in registry
@@ -26,10 +26,10 @@ export class SwitchNetworkTool extends EvmToolOperation {
     }
 
     // Use wallet_switchEthereumChain RPC method
-    const provider = getEthereumProvider();
+    const ethereumProvider = getEthereumProvider(provider);
 
     try {
-      await provider.request({
+      await ethereumProvider.request({
         method: 'wallet_switchEthereumChain',
         params: [
           { chainId: `0x${parseInt(chainConfig.chainID).toString(16)}` },
@@ -49,7 +49,7 @@ export class SwitchNetworkTool extends EvmToolOperation {
         error.message.includes('Unrecognized chain ID')
       ) {
         try {
-          await provider.request({
+          await ethereumProvider.request({
             method: 'wallet_addEthereumChain',
             params: [
               {
@@ -92,8 +92,8 @@ export class GetAccountTool extends EvmToolOperation {
   description = 'Get the current 0x account address from the connected wallet';
   zodSchema = z.object({});
 
-  async execute(): Promise<string> {
-    const account = await getCurrentAccount();
+  async execute(params: unknown, provider?: EthereumProvider): Promise<string> {
+    const account = await getCurrentAccount(provider);
     return account;
   }
 }
@@ -102,11 +102,11 @@ export class GetAccountTool extends EvmToolOperation {
 export class GetChainIdTool extends EvmToolOperation {
   name = createToolName('get-chain-id');
   description =
-    'Get the current connected chain ID. Use this to determine which network the wallet is connected to.';
+    'Get the current chain ID from the connected wallet. Returns the chain ID as a number.';
   zodSchema = z.object({});
 
-  async execute(): Promise<string> {
-    const chainId = await getCurrentChainId();
+  async execute(params: unknown, provider?: EthereumProvider): Promise<string> {
+    const chainId = await getCurrentChainId(provider);
     return chainId.toString();
   }
 }

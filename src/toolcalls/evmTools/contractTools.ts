@@ -9,6 +9,7 @@ import {
   EvmToolOperation,
   createToolName,
   convertBigIntToString,
+  EthereumProvider,
 } from './types';
 import { getEthereumProvider } from './helpers';
 
@@ -28,21 +29,21 @@ export class CallContractTool extends EvmToolOperation {
       .describe('Value (in wei) sent with this transaction'),
   });
 
-  async execute(params: unknown): Promise<string> {
+  async execute(params: unknown, provider?: EthereumProvider): Promise<string> {
     const { to, data, value } = this.zodSchema.parse(params) as {
       to: string;
       data: string;
       value?: string;
     };
 
-    const provider = getEthereumProvider();
+    const ethereumProvider = getEthereumProvider(provider);
     const callParameters = {
       to,
       data,
       ...(value && { value }),
     };
 
-    const result = (await provider.request({
+    const result = (await ethereumProvider.request({
       method: 'eth_call',
       params: [callParameters, 'latest'],
     })) as string;
@@ -117,7 +118,7 @@ export class EstimateGasTool extends EvmToolOperation {
       .describe('Chain ID to validate against before sending transaction'),
   });
 
-  async execute(params: unknown): Promise<string> {
+  async execute(params: unknown, provider?: EthereumProvider): Promise<string> {
     const { to, data, value, maxFeePerGas, maxPriorityFeePerGas } =
       this.zodSchema.parse(params) as {
         to: string;
@@ -128,7 +129,7 @@ export class EstimateGasTool extends EvmToolOperation {
         chainId?: number;
       };
 
-    const provider = getEthereumProvider();
+    const ethereumProvider = getEthereumProvider(provider);
     const estimateParameters = {
       to,
       ...(data && { data }),
@@ -137,7 +138,7 @@ export class EstimateGasTool extends EvmToolOperation {
       ...(maxPriorityFeePerGas && { maxPriorityFeePerGas }),
     };
 
-    const gasEstimate = (await provider.request({
+    const gasEstimate = (await ethereumProvider.request({
       method: 'eth_estimateGas',
       params: [estimateParameters],
     })) as string;
@@ -165,7 +166,7 @@ export class ReadContractTool extends EvmToolOperation {
       .describe('ID of chain to use when fetching data'),
   });
 
-  async execute(params: unknown): Promise<string> {
+  async execute(params: unknown, provider?: EthereumProvider): Promise<string> {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { abi, address, functionName, args, chainId } = this.zodSchema.parse(
       params,
@@ -186,8 +187,8 @@ export class ReadContractTool extends EvmToolOperation {
       });
 
       // Make the call
-      const provider = getEthereumProvider();
-      const result = (await provider.request({
+      const ethereumProvider = getEthereumProvider(provider);
+      const result = (await ethereumProvider.request({
         method: 'eth_call',
         params: [{ to: address, data }, 'latest'],
       })) as string;
@@ -199,9 +200,10 @@ export class ReadContractTool extends EvmToolOperation {
         data: result as Hex,
       });
 
-      // Convert BigInt to string for JSON serialization
-      const serializableResult = convertBigIntToString(decodedResult);
-      return JSON.stringify(serializableResult);
+      // Convert BigInt values to strings for JSON serialization
+      const serializedResult = convertBigIntToString(decodedResult);
+
+      return JSON.stringify(serializedResult);
     } catch (error) {
       throw new Error(
         `Failed to read contract: ${error instanceof Error ? error.message : 'Unknown error'}`,

@@ -8,7 +8,7 @@ import {
   type Hex,
 } from 'viem';
 import { ERC2O_ABI } from '../chain/abi/erc20abi';
-import { EvmToolOperation, createToolName } from './types';
+import { EvmToolOperation, createToolName, EthereumProvider } from './types';
 import {
   getCurrentAccount,
   getCurrentChainConfig,
@@ -33,7 +33,7 @@ export class GetTokenBalanceTool extends EvmToolOperation {
       ),
   });
 
-  async execute(params: unknown): Promise<string> {
+  async execute(params: unknown, provider?: EthereumProvider): Promise<string> {
     const { symbol, address } = this.zodSchema.parse(params) as {
       symbol: string;
       address?: string;
@@ -41,7 +41,7 @@ export class GetTokenBalanceTool extends EvmToolOperation {
 
     let targetAddress = address;
     if (!targetAddress) {
-      targetAddress = await getCurrentAccount();
+      targetAddress = await getCurrentAccount(provider);
     }
 
     // Check if symbol is a symbol or address
@@ -50,7 +50,10 @@ export class GetTokenBalanceTool extends EvmToolOperation {
       contractAddress = getAddress(symbol);
     } else {
       // Try to get from registry
-      const registryAddress = await getContractAddress(symbol.toUpperCase());
+      const registryAddress = await getContractAddress(
+        symbol.toUpperCase(),
+        provider,
+      );
       if (!registryAddress) {
         throw new Error(
           `Token ${symbol} not found in registry. Please provide the contract address or search for it.`,
@@ -59,8 +62,8 @@ export class GetTokenBalanceTool extends EvmToolOperation {
       contractAddress = registryAddress;
     }
 
-    // Use viem directly for proper type handling
-    const provider = getEthereumProvider();
+    // Use the provided provider or fall back to window.ethereum
+    const ethereumProvider = getEthereumProvider(provider);
 
     // Encode balanceOf function call
     const balanceData = encodeFunctionData({
@@ -78,11 +81,11 @@ export class GetTokenBalanceTool extends EvmToolOperation {
 
     // Make the calls
     const [balanceResult, decimalsResult] = await Promise.all([
-      provider.request({
+      ethereumProvider.request({
         method: 'eth_call',
         params: [{ to: contractAddress, data: balanceData }, 'latest'],
       }),
-      provider.request({
+      ethereumProvider.request({
         method: 'eth_call',
         params: [{ to: contractAddress, data: decimalsData }, 'latest'],
       }),
@@ -126,14 +129,17 @@ export class GetTokenInfoTool extends EvmToolOperation {
       .describe('Token symbol (e.g., USDT, USDC) or contract address'),
   });
 
-  async execute(params: unknown): Promise<string> {
+  async execute(params: unknown, provider?: EthereumProvider): Promise<string> {
     const { symbol } = this.zodSchema.parse(params) as { symbol: string };
 
     let contractAddress: string;
     if (isAddress(symbol)) {
       contractAddress = getAddress(symbol);
     } else {
-      const registryAddress = await getContractAddress(symbol.toUpperCase());
+      const registryAddress = await getContractAddress(
+        symbol.toUpperCase(),
+        provider,
+      );
       if (!registryAddress) {
         throw new Error(
           `Token ${symbol} not found in registry. Please provide the contract address.`,
@@ -142,8 +148,8 @@ export class GetTokenInfoTool extends EvmToolOperation {
       contractAddress = registryAddress;
     }
 
-    // Use viem directly for proper type handling
-    const provider = getEthereumProvider();
+    // Use the provided provider or fall back to window.ethereum
+    const ethereumProvider = getEthereumProvider(provider);
 
     // Encode function calls
     const nameData = encodeFunctionData({
@@ -166,15 +172,15 @@ export class GetTokenInfoTool extends EvmToolOperation {
 
     // Make the calls
     const [nameResult, symbolResult, decimalsResult] = await Promise.all([
-      provider.request({
+      ethereumProvider.request({
         method: 'eth_call',
         params: [{ to: contractAddress, data: nameData }, 'latest'],
       }),
-      provider.request({
+      ethereumProvider.request({
         method: 'eth_call',
         params: [{ to: contractAddress, data: symbolData }, 'latest'],
       }),
-      provider.request({
+      ethereumProvider.request({
         method: 'eth_call',
         params: [{ to: contractAddress, data: decimalsData }, 'latest'],
       }),
@@ -215,8 +221,8 @@ export class ListSupportedTokensTool extends EvmToolOperation {
     'List all supported tokens for the current network with their contract addresses';
   zodSchema = z.object({});
 
-  async execute(): Promise<string> {
-    const { chainName, chainConfig } = await getCurrentChainConfig();
+  async execute(params: unknown, provider?: EthereumProvider): Promise<string> {
+    const { chainName, chainConfig } = await getCurrentChainConfig(provider);
 
     return JSON.stringify({
       chainId: chainConfig.chainID,
