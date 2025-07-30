@@ -13,10 +13,18 @@ export const ContextUsageTracker = ({
     usageStore.getSnapshot,
   );
 
+  // Don't show on landing page when no tokens have been used
+  if (!usage.promptTokens && !usage.completionTokens) {
+    return null;
+  }
+
   return (
     <>
       <span> • </span>
-      <span>Context: {usage.promptTokens.toLocaleString()} tokens</span>
+      <span>
+        {usage.promptTokens.toLocaleString()} prompt tokens {'- '}
+        {usage.completionTokens.toLocaleString()} completion tokens
+      </span>
     </>
   );
 };

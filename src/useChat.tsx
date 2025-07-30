@@ -165,7 +165,8 @@ export const useChat = ({
           model: activeChat.model,
           title: defaultNewChatTitle,
           lastSaved: Date.now(),
-          tokensRemaining: 1024 * 12, // todo: implement real tokens remaining
+          completionTokens: 0,
+          promptTokens: 0,
         };
       }
 
@@ -201,6 +202,13 @@ export const useChat = ({
           console.warn('failed to generate a conversation title', err);
         }
       }
+
+      // Update token counts from usage store
+      const usage = newActiveChat.usageStore.getSnapshot();
+      conversation.promptTokens = usage.promptTokens;
+      conversation.completionTokens = usage.completionTokens;
+
+      console.log(`Saving conversation: ${JSON.stringify(conversation)}`);
 
       doSaveConversation(
         conversation,
@@ -280,7 +288,13 @@ export const useChat = ({
             messageStore: new TextStreamStore(),
             client: activeChat.client,
             abortController: new AbortController(),
-            usageStore: new UsageStore(),
+            usageStore: new UsageStore({
+              promptTokens: selectedConversation.promptTokens,
+              completionTokens: selectedConversation.completionTokens,
+              totalTokens:
+                selectedConversation.promptTokens +
+                selectedConversation.completionTokens,
+            }),
           };
 
           setActiveChat(newActiveChat);
