@@ -18,13 +18,27 @@ export const ContextUsageTracker = ({
     return null;
   }
 
+  const contextPercentage =
+    usage.maxInputTokens && (usage.promptTokens / usage.maxInputTokens) * 100;
+
+  if (contextPercentage) {
+    // Show context usage as a percentage of max input tokens
+
+    return (
+      <>
+        <span> • </span>
+        <span>
+          Context: {contextPercentage.toFixed(2)}% (
+          {usage.promptTokens.toLocaleString()})
+        </span>
+      </>
+    );
+  }
+
   return (
     <>
       <span> • </span>
-      <span>
-        {usage.promptTokens.toLocaleString()} prompt tokens {'- '}
-        {usage.completionTokens.toLocaleString()} completion tokens
-      </span>
+      <span>Context: {usage.promptTokens.toLocaleString()}</span>
     </>
   );
 };

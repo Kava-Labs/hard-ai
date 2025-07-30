@@ -6,12 +6,12 @@ export type Model = {
 
 export const MODELS: Model[] = [
   {
-    id: 'openrouter-gpt-4o' as const,
+    id: 'gpt-4o' as const,
     displayName: 'GPT-4o',
     description: "OpenAI's foundational model",
   },
   {
-    id: 'openrouter-gpt-4.1' as const,
+    id: 'gpt-4.1' as const,
     displayName: 'GPT-4.1',
     description: "OpenAI's model optimized for instruction following",
   },

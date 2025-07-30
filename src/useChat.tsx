@@ -14,6 +14,7 @@ import OpenAI from 'openai/index';
 import { useCallback, useEffect, useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { doChat, generateConversationTitle } from './api/chat.ts';
+import { fetchModelInfo, getModelMaxInputTokens } from './api/modelInfo';
 import { useGlobalChatState } from './components/chat/useGlobalChatState.ts';
 import { MessageHistoryStore } from './stores/messageHistoryStore/index.ts';
 import { ToolCallStreamStore } from './stores/toolCallStreamStore/index.ts';
@@ -36,10 +37,33 @@ export function getToken() {
     // the token here.
     return import.meta.env.VITE_LITELLM_API_KEY;
   }
+
   const clientToken = uuidv4();
   const sessionToken = uuidv4();
   return `kavachat:${clientToken}:${sessionToken}`;
 }
+
+const fetchAndSetMaxInputTokens = async (
+  model: ModelId,
+  usageStore: UsageStore,
+) => {
+  try {
+    const apiKey = getToken();
+    if (apiKey) {
+      const modelInfoResponse = await fetchModelInfo(apiKey);
+      const maxInputTokens = getModelMaxInputTokens(
+        modelInfoResponse.data,
+        model,
+      );
+
+      console.log(`Max input tokens for model ${model}: ${maxInputTokens}`);
+
+      usageStore.setMaxInputTokens(maxInputTokens);
+    }
+  } catch (error) {
+    console.error('Failed to fetch model info:', error);
+  }
+};
 
 const activeChats: Record<string, ActiveChat> = {};
 
@@ -101,6 +125,11 @@ export const useChat = ({
   useEffect(() => {
     fetchConversations();
   }, [fetchConversations]);
+
+  // Initialize max input tokens for the current model
+  useEffect(() => {
+    fetchAndSetMaxInputTokens(activeChat.model, activeChat.usageStore);
+  }, [activeChat.model, activeChat.usageStore]);
 
   const addPendingSystemMessage = useCallback((content: string) => {
     setPendingSystemMessage(content);
@@ -243,6 +272,11 @@ export const useChat = ({
   // handler specific to the New Chat button
   const handleNewChat = useCallback(async () => {
     const newChatId = uuidv4();
+    const usageStore = new UsageStore();
+
+    // Fetch max input tokens for the default model
+    await fetchAndSetMaxInputTokens(DEFAULT_MODEL, usageStore);
+
     const newChat = {
       id: newChatId,
       isRequesting: false,
@@ -255,7 +289,7 @@ export const useChat = ({
       messageHistoryStore: new MessageHistoryStore(),
       messageStore: new TextStreamStore(),
       errorStore: new TextStreamStore(),
-      usageStore: new UsageStore(),
+      usageStore,
     };
 
     // System prompt and any initial messages will be added once the first message is sent
@@ -274,6 +308,20 @@ export const useChat = ({
         const selectedConversation = conversationHistories[id];
         if (selectedConversation) {
           const messages = await getConversationMessages(id);
+          const usageStore = new UsageStore({
+            promptTokens: selectedConversation.promptTokens,
+            completionTokens: selectedConversation.completionTokens,
+            totalTokens:
+              selectedConversation.promptTokens +
+              selectedConversation.completionTokens,
+          });
+
+          // Fetch max input tokens for the selected conversation's model
+          await fetchAndSetMaxInputTokens(
+            selectedConversation.model,
+            usageStore,
+          );
+
           const newActiveChat: ActiveChat = {
             id: selectedConversation.id,
             model: selectedConversation.model,
@@ -288,13 +336,7 @@ export const useChat = ({
             messageStore: new TextStreamStore(),
             client: activeChat.client,
             abortController: new AbortController(),
-            usageStore: new UsageStore({
-              promptTokens: selectedConversation.promptTokens,
-              completionTokens: selectedConversation.completionTokens,
-              totalTokens:
-                selectedConversation.promptTokens +
-                selectedConversation.completionTokens,
-            }),
+            usageStore,
           };
 
           setActiveChat(newActiveChat);
@@ -344,9 +386,15 @@ export const useChat = ({
     });
   }, [fetchConversations]);
 
-  const changeModel = useCallback((model: ModelId) => {
-    setActiveChat((prev) => ({ ...prev, model }));
-  }, []);
+  const changeModel = useCallback(
+    async (model: ModelId) => {
+      setActiveChat((prev) => ({ ...prev, model }));
+
+      // Fetch and set max input tokens for the new model
+      await fetchAndSetMaxInputTokens(model, activeChat.usageStore);
+    },
+    [activeChat],
+  );
 
   return {
     activeChat,
