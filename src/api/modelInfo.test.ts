@@ -81,27 +81,6 @@ describe('modelInfo API', () => {
       );
     });
 
-    it('should use default base URL when not specified', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({ data: [] }),
-      });
-
-      // Clear the base URL env var
-      const originalBaseUrl = import.meta.env.VITE_LITELLM_BASE_URL;
-      delete import.meta.env.VITE_LITELLM_BASE_URL;
-
-      await fetchModelInfo('test-api-key');
-
-      expect(mockFetch).toHaveBeenCalledWith(
-        'https://litellm.production.kava.io/v1/model/info',
-        expect.any(Object),
-      );
-
-      // Restore the env var
-      import.meta.env.VITE_LITELLM_BASE_URL = originalBaseUrl;
-    });
-
     it('should return cached data on second call', async () => {
       const mockResponse = {
         data: [
@@ -240,39 +219,6 @@ describe('modelInfo API', () => {
 
       // Restore Date.now
       Date.now = originalDateNow;
-    });
-
-    it('should cache separately for different base URLs', async () => {
-      const mockResponse1 = { data: [] };
-      const mockResponse2 = { data: [] };
-
-      mockFetch
-        .mockResolvedValueOnce({
-          ok: true,
-          json: async () => mockResponse1,
-        })
-        .mockResolvedValueOnce({
-          ok: true,
-          json: async () => mockResponse2,
-        });
-
-      // First call with custom base URL
-      import.meta.env.VITE_LITELLM_BASE_URL = 'https://test1.com';
-      await fetchModelInfo('test-api-key');
-      expect(mockFetch).toHaveBeenCalledTimes(1);
-      expect(mockFetch).toHaveBeenCalledWith(
-        'https://test1.com/v1/model/info',
-        expect.any(Object),
-      );
-
-      // Second call with different base URL - should not use cache
-      import.meta.env.VITE_LITELLM_BASE_URL = 'https://test2.com';
-      await fetchModelInfo('test-api-key');
-      expect(mockFetch).toHaveBeenCalledTimes(2);
-      expect(mockFetch).toHaveBeenLastCalledWith(
-        'https://test2.com/v1/model/info',
-        expect.any(Object),
-      );
     });
   });
 

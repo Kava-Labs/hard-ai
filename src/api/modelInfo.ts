@@ -34,10 +34,10 @@ interface CacheEntry {
 }
 
 const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
-const modelInfoCache: Map<string, CacheEntry> = new Map();
+let modelInfoCache: CacheEntry | null = null;
 
 export const clearModelInfoCache = () => {
-  modelInfoCache.clear();
+  modelInfoCache = null;
 };
 
 export const fetchModelInfo = async (
@@ -54,20 +54,17 @@ export const fetchModelInfo = async (
   const url = `${baseUrl}/v1/model/info`;
 
   // Check cache first
-  const cacheKey = url;
-  const cachedEntry = modelInfoCache.get(cacheKey);
-
-  if (cachedEntry) {
+  if (modelInfoCache) {
     const now = Date.now();
-    const age = now - cachedEntry.timestamp;
+    const age = now - modelInfoCache.timestamp;
 
     if (age < CACHE_TTL_MS) {
       // Return cached data if not expired
-      return cachedEntry.data;
+      return modelInfoCache.data;
     }
 
-    // Remove expired entry
-    modelInfoCache.delete(cacheKey);
+    // Clear expired cache
+    modelInfoCache = null;
   }
 
   const response = await fetch(url, {
@@ -87,10 +84,10 @@ export const fetchModelInfo = async (
   const data: ModelInfoResponse = await response.json();
 
   // Store in cache
-  modelInfoCache.set(cacheKey, {
+  modelInfoCache = {
     data,
     timestamp: Date.now(),
-  });
+  };
 
   return data;
 };
