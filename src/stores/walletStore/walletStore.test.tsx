@@ -1,6 +1,10 @@
-import { describe, test, expect, beforeEach, afterEach, vi } from 'vitest';
-import { EIP1193Provider, walletStore, WalletProvider } from './walletStore';
-import { EIP6963ProviderDetail } from './walletStore';
+import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
+import {
+  EIP1193Provider,
+  EIP6963ProviderDetail,
+  WalletProvider,
+} from '../../types/wallet';
+import { walletStore } from './walletStore';
 
 interface MockProviderOptions {
   name?: string;

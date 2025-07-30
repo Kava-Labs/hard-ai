@@ -1,22 +1,18 @@
 import {
-  ChainNames,
   chainRegistry,
-  CosmosChainConfig,
-  EVMChainConfig,
   ChainToolCallMessage,
-  ChainType,
-  OperationType,
+  CosmosChainConfig,
   EIP712SignerParams,
+  EVMChainConfig,
 } from './chain';
+import { ChainType, OperationType, ChainNames } from './chain/constants';
+import { getChainConfigByName } from './chain/chainsRegistry';
 
-import {
-  SignatureTypes,
-  WalletStore,
-  WalletProvider,
-} from '../stores/walletStore';
-import { InProgressTxDisplay } from './components/InProgressTxDisplay';
+import { WalletStore } from '../stores/walletStore';
+import { SignatureTypes, WalletProvider } from '../types/wallet';
 import { getCoinRecord, getERC20Record } from '../utils/helpers';
 import { ERC2O_ABI } from './chain/abi';
+import { InProgressTxDisplay } from './components/InProgressTxDisplay';
 
 interface ERC20ConvertParams {
   chainName: string;
@@ -35,6 +31,9 @@ export class ERC20ConversionMessage
   operationType = OperationType.TRANSACTION;
   walletMustMatchChainID = true;
   needsWallet = [WalletProvider.EIP6963];
+
+  // Chain IDs where this tool is supported (Kava EVM chains)
+  private supportedChainIds = ['2222', '2221']; // Kava EVM mainnet and testnet
 
   /**
    * Parameter definitions for the message.
@@ -92,6 +91,14 @@ export class ERC20ConversionMessage
       }
     }
 
+    // Check if the current chain supports ERC20 conversion
+    const currentChainId = walletStore.getSnapshot().walletChainId;
+    if (!this.supportedChainIds.includes(currentChainId)) {
+      throw new Error(
+        `ERC20 conversion is only supported on Kava EVM chains (chain IDs: ${this.supportedChainIds.join(', ')}). Current chain ID: ${currentChainId}`,
+      );
+    }
+
     if (!chainRegistry[this.chainType][params.chainName]) {
       throw new Error(`unknown chain name ${params.chainName}`);
     }
@@ -110,16 +117,18 @@ export class ERC20ConversionMessage
 
     if (
       !chainInfo.evmChainName ||
-      !chainRegistry[ChainType.EVM][chainInfo.evmChainName ?? '']
+      !getChainConfigByName(chainInfo.evmChainName, ChainType.EVM)
     ) {
       throw new Error(
         `cosmos chain ${chainInfo.name} must be linked to an EVM chain`,
       );
     }
 
-    const { erc20Contracts, rpcUrls } = chainRegistry[ChainType.EVM][
-      chainInfo.evmChainName
-    ] as EVMChainConfig;
+    const evmChainConfig = getChainConfigByName(
+      chainInfo.evmChainName,
+      ChainType.EVM,
+    ) as EVMChainConfig;
+    const { erc20Contracts, rpcUrls } = evmChainConfig;
 
     if (
       !getERC20Record(denom, erc20Contracts) ||
@@ -201,13 +210,15 @@ export class ERC20ConversionMessage
     walletStore: WalletStore,
   ): Promise<string> {
     const { ethers } = await import('ethers');
-    const cosmosChainConfig = chainRegistry[this.chainType][
-      params.chainName
-    ] as CosmosChainConfig;
+    const cosmosChainConfig = getChainConfigByName(
+      params.chainName,
+      this.chainType,
+    ) as CosmosChainConfig;
 
-    const evmChainConfig = chainRegistry[ChainType.EVM][
-      cosmosChainConfig.evmChainName!
-    ] as EVMChainConfig;
+    const evmChainConfig = getChainConfigByName(
+      cosmosChainConfig.evmChainName!,
+      ChainType.EVM,
+    ) as EVMChainConfig;
 
     const { contractAddress } = getERC20Record(
       params.denom,

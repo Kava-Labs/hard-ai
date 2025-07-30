@@ -1,6 +1,7 @@
 import { ToolCallStream } from '../../stores/toolCallStreamStore';
-import { WalletProvider, WalletStore } from '../../stores/walletStore';
-import { ChainType } from './chainsRegistry';
+import { WalletStore } from '../../stores/walletStore';
+import { WalletProvider } from '../../types/wallet';
+import { ChainType, OperationType } from './constants';
 
 export interface MessageParam {
   name: string;
@@ -10,11 +11,8 @@ export interface MessageParam {
   enum?: string[];
 }
 
-export enum OperationType {
-  TRANSACTION = 'transaction',
-  QUERY = 'query',
-  WALLET = 'wallet',
-}
+// Re-export for backward compatibility
+export { OperationType };
 
 export interface InProgressComponentProps {
   toolCall: ToolCallStream;

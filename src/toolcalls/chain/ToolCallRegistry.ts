@@ -10,12 +10,10 @@ import {
   defaultIntroText,
   defaultSystemPrompt,
 } from './prompts';
-import { EvmBalancesQuery } from '../evmBalances';
-import { EvmTransferMessage } from '../evmTransfer';
-import { ERC20ConversionMessage } from '../erc20Conversion';
-import { EvmChainSwitchMessage } from '../switchNetwork';
 import { WalletInfo } from '../../types';
 import { WalletStore } from '../../stores/walletStore';
+import { chainRegistry } from './chainsRegistry';
+import { ChainType } from './constants';
 
 /**
  * Central registry for all chain operations (messages and queries).
@@ -104,47 +102,35 @@ export class ToolCallRegistry<T> {
 
   /**
    * Generates OpenAI tool definitions for all registered operations.
-   * These definitions are used to create function-calling tools in the AI model.
-   * @returns Array of tool definitions in OpenAI format
+   * @returns Array of ChatCompletionTool objects
    */
   getToolDefinitions(): ChatCompletionTool[] {
-    const operations = this.getAllOperations();
-
-    return operations.map(
-      (operation): ChatCompletionTool => ({
-        type: 'function',
-        function: {
-          name: operation.name,
-          description: operation.description,
-          parameters: {
-            type: 'object',
-            properties: Object.fromEntries(
-              operation.parameters.map((param) => {
-                const p = [
-                  param.name,
-                  {
-                    type: param.type,
-                    description: param.description,
-                  },
-                ];
-
-                if (param.enum) {
-                  // @ts-expect-error better types needed
-                  p[1].enum = param.enum;
-                }
-
-                return p;
-              }),
-            ),
-            required: operation.parameters
-              .filter((param) => param.required)
-              .map((param) => param.name),
-            strict: true,
-            additionalProperties: false,
-          },
+    return this.getAllOperations().map((operation) => ({
+      type: 'function' as const,
+      function: {
+        name: operation.name,
+        description: operation.description,
+        parameters: {
+          type: 'object',
+          properties: operation.parameters.reduce(
+            (acc, param) => ({
+              ...acc,
+              [param.name]: {
+                type: param.type,
+                description: param.description,
+                ...(param.enum && { enum: param.enum }),
+              },
+            }),
+            {},
+          ),
+          required: operation.parameters
+            .filter((param) => param.required)
+            .map((param) => param.name),
+          strict: true,
+          additionalProperties: false,
         },
-      }),
-    );
+      },
+    }));
   }
 
   /**
@@ -212,11 +198,8 @@ export class ToolCallRegistry<T> {
 export function initializeToolCallRegistry(): ToolCallRegistry<unknown> {
   const registry = new ToolCallRegistry();
 
-  // Register local operations
-  registry.register(new EvmTransferMessage());
-  registry.register(new EvmBalancesQuery());
-  registry.register(new ERC20ConversionMessage());
-  registry.register(new EvmChainSwitchMessage());
+  // Note: EVM tools & chain-specific tools are registered dynamically in App.tsx
+  // based on connected wallet state.
 
   return registry;
 }
@@ -225,3 +208,15 @@ export type ExecuteToolCall = (
   operationName: string,
   params: unknown,
 ) => Promise<string>;
+
+export const chainNameToolCallParam = {
+  name: 'chainName',
+  type: 'string',
+  description:
+    'name of the chain the user is interacting with, if not specified by the user assume the chain of the connected wallet',
+  enum: [
+    ...Object.keys(chainRegistry[ChainType.EVM]),
+    ...Object.keys(chainRegistry[ChainType.COSMOS]),
+  ],
+  required: true,
+};

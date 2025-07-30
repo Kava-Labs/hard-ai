@@ -1,14 +1,7 @@
 import React from 'react';
 import { WalletInfo, WalletProviderDetail } from '../../types';
-import {
-  EIP6963ProviderDetail,
-  WalletProvider,
-  walletStore,
-} from './walletStore';
-import {
-  formatWalletBalancesForPrompt,
-  getChainAccounts,
-} from '../../utils/wallet';
+import { EIP6963ProviderDetail, WalletProvider } from '../../types/wallet';
+import { walletStore } from './walletStore';
 
 interface UseWalletStateOptions {
   /**
@@ -92,14 +85,6 @@ export const useWalletState = (options: UseWalletStateOptions = {}) => {
       balancesPrompt: '',
       walletType: walletConnection.walletType,
     };
-
-    if (walletInfo.isConnected && walletConnection.provider) {
-      const balances = await getChainAccounts(walletConnection.provider);
-      walletInfo.balancesPrompt = formatWalletBalancesForPrompt(
-        balances,
-        walletConnection.walletChainId,
-      );
-    }
 
     return walletInfo;
   }, []);

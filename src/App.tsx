@@ -1,14 +1,14 @@
 import { SearchHistoryModal, SideBar, useIsMobileLayout } from 'lib-kava-ai';
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import styles from './App.module.css';
 import { ChatInterface } from './ChatInterface';
 import KavaAILogo from './kavaAILogo';
 import { initializeToolCallRegistry } from './toolcalls/chain';
-import { useChatWithWallet } from './useChatWithWallet';
 import {
   deregisterMcpToolsFromRegistry,
   registerMcpToolsWithRegistry,
 } from './toolcalls/chain/MCPToolCallOperation';
+import { useChatWithWallet } from './useChatWithWallet';
 
 const toolCallRegistry = initializeToolCallRegistry();
 

@@ -4,21 +4,6 @@ import { ChatInterface, ChatInterfaceProps } from './ChatInterface';
 import { ActiveChat } from './types';
 import { initializeToolCallRegistry } from './toolcalls/chain';
 
-// Mock the tool call registry to avoid WalletProvider issues
-vi.mock('./toolcalls/chain', () => ({
-  initializeToolCallRegistry: vi.fn(() => ({
-    get: vi.fn(),
-    getAllOperations: vi.fn(() => []),
-    getSystemPrompt: vi.fn(() => ''),
-    getIntroText: vi.fn(() => ''),
-    getInputPlaceholderText: vi.fn(() => ''),
-    getMessages: vi.fn(() => []),
-    getQueries: vi.fn(() => []),
-    getToolDefinitions: vi.fn(() => []),
-    executeToolCall: vi.fn(),
-  })),
-}));
-
 vi.mock('./ConversationWrapper', () => ({
   ConversationWrapper: ({ activeChat }: { activeChat: ActiveChat }) => (
     <div data-testid="conversation-wrapper">

@@ -7,10 +7,7 @@ import type { MessageHistoryStore } from './stores/messageHistoryStore';
 import type { TextStreamStore } from 'lib-kava-ai';
 import OpenAI from 'openai/index';
 import { ToolCallStreamStore } from './stores/toolCallStreamStore';
-import {
-  EIP6963ProviderDetail,
-  EIP6963ProviderInfo,
-} from './stores/walletStore';
+import { EIP6963ProviderDetail, EIP6963ProviderInfo } from './types/wallet';
 
 export type ActiveChat = {
   id: string;
