@@ -435,7 +435,7 @@ export const chainRegistry: ChainRegistry = {
 export const getChainConfigByName = (
   chainName: string,
   chainType: ChainType,
-): unknown => {
+): ChainConfig | null => {
   const chains = chainRegistry[chainType];
   const chainConfig = chains[chainName];
 

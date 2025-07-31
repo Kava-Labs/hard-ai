@@ -13,12 +13,12 @@
     "test:e2e": "playwright test"
   },
   "dependencies": {
-    "@cosmjs/amino": "^0.27.0",
-    "@cosmjs/proto-signing": "^0.27.0",
-    "@cosmjs/stargate": "^0.27.0",
+    "@cosmjs/amino": "^0.34.0",
+    "@cosmjs/proto-signing": "^0.34.0",
+    "@cosmjs/stargate": "^0.34.0",
     "@fontsource/inter": "^5.1.0",
     "@hanchon/signature-to-pubkey": "^1.0.0",
-    "@kava-labs/javascript-sdk": "^14.0.0-beta-6",
+    "@kava-labs/javascript-sdk": "^14.0.2",
     "@modelcontextprotocol/sdk": "^1.17.0",
     "@streamparser/json": "^0.0.21",
     "@uidotdev/usehooks": "^2.4.1",
@@ -64,5 +64,10 @@
     "vite": "^6.2.0",
     "vite-plugin-node-polyfills": "^0.23.0",
     "vitest": "^3.0.8"
+  },
+  "overrides": {
+    "braces": "^3.0.3",
+    "cookie": "^0.7.0",
+    "micromatch": "^4.0.8"
   }
 }

@@ -1,6 +1,7 @@
 /* eslint-disable  @typescript-eslint/no-explicit-any */
 import type { MetamaskSupportedMessageTypes } from './messageTypes';
-import type { CosmosChainConfig } from '../chainsRegistry';
+import type { CosmosChainConfig, EVMChainConfig } from '../chainsRegistry';
+
 import { getChainConfigByName } from '../chainsRegistry';
 
 const msgConvertERC20ToCoinType = {
@@ -530,13 +531,19 @@ export const eip712SignAndBroadcast = async (opts: EIP712SignerParams) => {
   const { bech32 } = await import('bech32');
   const { ethers } = await import('ethers');
 
-  if (
-    !getChainConfigByName(opts.chainConfig.evmChainName ?? '', ChainType.EVM)
-  ) {
+  const evmChainConfig = getChainConfigByName(
+    opts.chainConfig.evmChainName ?? '',
+    ChainType.EVM,
+  );
+
+  if (!evmChainConfig || evmChainConfig.chainType !== ChainType.EVM) {
     throw new Error(
       `cosmos ${opts.chainConfig.name} chain must be linked to an evm chain`,
     );
   }
+
+  // At this point, evmChainConfig is guaranteed to be a non-null EVMChainConfig
+  const evmConfig = evmChainConfig as EVMChainConfig;
 
   if (Array.isArray(opts.messages)) {
     // todo: uncomment this once we get IBC set up and fillIbcMsgHeight implemented
@@ -562,7 +569,7 @@ export const eip712SignAndBroadcast = async (opts: EIP712SignerParams) => {
   const registry = new Registry(await defaultRegistryTypes());
 
   const aminoTypes = new AminoTypes({
-    additions: await createDefaultTypes(),
+    additions: (await createDefaultTypes()) as any,
   });
 
   // get the Eth address from metamask
@@ -648,6 +655,8 @@ export const eip712SignAndBroadcast = async (opts: EIP712SignerParams) => {
     ],
     fee,
     Number(gas),
+    undefined, // feeGranter
+    undefined, // feePayer
     signMode,
   );
 
@@ -661,9 +670,7 @@ export const eip712SignAndBroadcast = async (opts: EIP712SignerParams) => {
     domain: {
       name: chainConfig.name,
       version: '1.0.0',
-      chainId: (
-        getChainConfigByName(chainConfig.evmChainName!, ChainType.EVM) as any
-      ).chainID,
+      chainId: evmConfig.chainID,
       verifyingContract: '',
       salt: '',
     },
@@ -694,10 +701,7 @@ export const eip712SignAndBroadcast = async (opts: EIP712SignerParams) => {
   // extension options are used with metamask EIP related data. Build the
   // extension options and encode them using the registry
   const encodedPartial = ExtensionOptionsWeb3Tx.fromPartial({
-    typedDataChainId: String(
-      (getChainConfigByName(chainConfig.evmChainName!, ChainType.EVM) as any)
-        .chainID,
-    ),
+    typedDataChainId: String(evmConfig.chainID),
     feePayer: signerAddress,
     feePayerSig: Uint8Array.from(atob(feePayerSignature), (c) =>
       c.charCodeAt(0),
