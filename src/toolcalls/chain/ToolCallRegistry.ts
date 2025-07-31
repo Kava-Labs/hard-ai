@@ -15,6 +15,7 @@ import { WalletStore } from '../../stores/walletStore';
 import { chainRegistry } from './chainsRegistry';
 import { ChainType } from './constants';
 import { ChainSearchTool } from '../evmTools/evmChainSearch';
+import { COINGECKO_TOOLS } from '../coingecko/tools';
 
 /**
  * Central registry for all chain operations (messages and queries).
@@ -199,7 +200,7 @@ export class ToolCallRegistry<T> {
 }
 
 // Always-on tools that don't require wallet connection
-const ALWAYS_ON_TOOLS = [new ChainSearchTool()];
+const ALWAYS_ON_TOOLS = [new ChainSearchTool(), ...COINGECKO_TOOLS];
 
 export function initializeToolCallRegistry(): ToolCallRegistry<unknown> {
   const registry = new ToolCallRegistry();
