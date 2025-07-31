@@ -31,12 +31,12 @@ import {
   ParseEtherTool,
   HashTool,
 } from './transactionTools';
-import { ChainSearchTool } from './evmChainSearch';
 
 // Centralized list of EVM tools (maintaining alphabetical order)
+// These are tools that are ONLY registered when the wallet is connected, and
+// are not available otherwise.
 const EVM_TOOLS = [
   new CallContractTool(),
-  new ChainSearchTool(),
   new EncodeFunctionDataTool(),
   new EstimateGasTool(),
   new FormatEtherTool(),
