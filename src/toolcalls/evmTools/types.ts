@@ -8,6 +8,7 @@ import { ChainType } from '../chain/constants';
 import { WalletStore } from '../../stores/walletStore';
 import { walletStore } from '../../stores/walletStore';
 import { WalletProvider } from '../../types/wallet';
+import { zodSchemaToMessageParams } from '../helpers/zod';
 
 // EVM tools namespace
 export const EVM_NAMESPACE = 'evm';
@@ -39,39 +40,6 @@ export const convertBigIntToString = (value: unknown): unknown => {
   return value;
 };
 
-// Helper to convert Zod schema to MessageParam array
-export const zodSchemaToMessageParams = (
-  schema: z.ZodSchema,
-): MessageParam[] => {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const def = (schema as any)._def;
-  if (def?.typeName !== 'ZodObject') {
-    return [];
-  }
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const shape = (schema as z.ZodObject<any>)._def.shape;
-  return Object.entries(shape).map(([key, value]) => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const def = (value as any)._def;
-    return {
-      name: key,
-      type:
-        def.typeName === 'ZodString'
-          ? 'string'
-          : def.typeName === 'ZodNumber'
-            ? 'number'
-            : def.typeName === 'ZodBoolean'
-              ? 'boolean'
-              : def.typeName === 'ZodArray'
-                ? 'array'
-                : 'string',
-      description: def.description || '',
-      required: !def.isOptional,
-      enum: def.values,
-    };
-  });
-};
 
 // Base class for EVM tools
 export abstract class EvmToolOperation

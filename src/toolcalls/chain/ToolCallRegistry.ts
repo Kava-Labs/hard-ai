@@ -119,6 +119,8 @@ export class ToolCallRegistry<T> {
                 type: param.type,
                 description: param.description,
                 ...(param.enum && { enum: param.enum }),
+                // TODO: make this support more than just string arrays
+                ...(param.type === 'array' && { items: { type: 'string' } }),
               },
             }),
             {},
