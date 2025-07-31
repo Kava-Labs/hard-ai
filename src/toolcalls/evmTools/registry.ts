@@ -33,6 +33,8 @@ import {
 } from './transactionTools';
 
 // Centralized list of EVM tools (maintaining alphabetical order)
+// These are tools that are ONLY registered when the wallet is connected, and
+// are not available otherwise.
 const EVM_TOOLS = [
   new CallContractTool(),
   new EncodeFunctionDataTool(),

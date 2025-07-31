@@ -14,6 +14,7 @@ import { WalletInfo } from '../../types';
 import { WalletStore } from '../../stores/walletStore';
 import { chainRegistry } from './chainsRegistry';
 import { ChainType } from './constants';
+import { ChainSearchTool } from '../evmTools/evmChainSearch';
 
 /**
  * Central registry for all chain operations (messages and queries).
@@ -197,8 +198,14 @@ export class ToolCallRegistry<T> {
   }
 }
 
+// Always-on tools that don't require wallet connection
+const ALWAYS_ON_TOOLS = [new ChainSearchTool()];
+
 export function initializeToolCallRegistry(): ToolCallRegistry<unknown> {
   const registry = new ToolCallRegistry();
+
+  // Register always-on tools
+  ALWAYS_ON_TOOLS.forEach((tool) => registry.register(tool));
 
   // Note: EVM tools & chain-specific tools are registered dynamically in App.tsx
   // based on connected wallet state.
