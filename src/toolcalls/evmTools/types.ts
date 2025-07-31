@@ -61,17 +61,18 @@ export abstract class EvmToolOperation
   }
 
   async validate(params: unknown, walletStore: WalletStore): Promise<boolean> {
-    try {
-      // Validate parameters using Zod schema
-      this.zodSchema.parse(params);
-
-      // Ensure wallet is connected
-      const walletInfo = walletStore.getSnapshot();
-      return !!(walletInfo && walletInfo.isWalletConnected);
-    } catch (error) {
-      console.error('Validation failed:', error);
-      return false;
+    const result = this.zodSchema.safeParse(params);
+    if (!result.success) {
+      throw new Error(
+        `Invalid parameters passed to ${this.name}: ${result.error.message}`,
+      );
     }
+    // Ensure wallet is connected
+    const walletInfo = walletStore.getSnapshot();
+    if (!walletInfo || !walletInfo.isWalletConnected) {
+      throw new Error('Wallet is not connected');
+    }
+    return true;
   }
 
   async executeRequest(params: unknown): Promise<string> {
