@@ -40,7 +40,6 @@ export const convertBigIntToString = (value: unknown): unknown => {
   return value;
 };
 
-
 // Base class for EVM tools
 export abstract class EvmToolOperation
   implements ChainToolCallWalletAction<unknown>

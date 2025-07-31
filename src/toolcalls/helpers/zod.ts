@@ -1,114 +1,93 @@
 import {
-  ZodSchema,
-  ZodObject,
-  ZodTypeAny,
   ZodArray,
-  ZodString,
-  ZodNumber,
   ZodBoolean,
-  ZodEnum,
-  ZodOptional,
   ZodDefault,
+  ZodEnum,
+  ZodNumber,
+  ZodObject,
+  ZodOptional,
+  ZodSchema,
+  ZodString,
 } from 'zod';
 import { MessageParam } from '../chain';
 
+/**
+ * Creates a MessageParam from a Zod schema field
+ */
+function createMessageParam(
+  key: string,
+  schema: unknown,
+  description: string,
+  required: boolean,
+): MessageParam[] {
+  if (schema instanceof ZodString) {
+    return [{ name: key, type: 'string', description, required }];
+  }
+
+  if (schema instanceof ZodNumber) {
+    return [{ name: key, type: 'number', description, required }];
+  }
+
+  if (schema instanceof ZodBoolean) {
+    return [{ name: key, type: 'boolean', description, required }];
+  }
+
+  if (schema instanceof ZodArray) {
+    return [{ name: key, type: 'array', description, required }];
+  }
+
+  if (schema instanceof ZodEnum) {
+    return [
+      {
+        name: key,
+        type: 'string',
+        description,
+        required,
+        enum: schema.options,
+      },
+    ];
+  }
+
+  if (schema instanceof ZodObject) {
+    // For nested objects, flatten them with prefixed names
+    const nestedParams = zodSchemaToMessageParams(schema);
+    return nestedParams.map((param) => ({
+      ...param,
+      name: `${key}.${param.name}`,
+    }));
+  }
+
+  // Fallback for unsupported types
+  return [{ name: key, type: 'string', description, required }];
+}
+
 export function zodSchemaToMessageParams(schema: ZodSchema): MessageParam[] {
-  const parseSchema = (
-    schema: ZodTypeAny,
-    parentKey: string = '',
-    required = true,
-  ): MessageParam[] => {
-    const description = schema.description || '';
+  // Only process ZodObject schemas at the top level
+  if (!(schema instanceof ZodObject)) {
+    return [];
+  }
 
-    if (schema instanceof ZodObject) {
-      const shape = schema.shape;
-      const params: MessageParam[] = [];
+  const shape = schema.shape;
+  const params: MessageParam[] = [];
 
-      for (const key in shape) {
-        const fieldSchema = shape[key];
-        params.push(
-          ...parseSchema(
-            fieldSchema,
-            key,
-            !(
-              fieldSchema instanceof ZodOptional ||
-              fieldSchema instanceof ZodDefault
-            ),
-          ),
-        );
-      }
+  for (const key in shape) {
+    const fieldSchema = shape[key];
+    const isOptional =
+      fieldSchema instanceof ZodOptional || fieldSchema instanceof ZodDefault;
 
-      return params;
-    }
+    // Get the inner type for optional/default fields
+    const innerSchema = isOptional ? fieldSchema._def.innerType : fieldSchema;
+    const description =
+      fieldSchema.description || innerSchema.description || '';
 
-    if (schema instanceof ZodArray) {
-      console.log(schema);
-      return [
-        {
-          name: parentKey,
-          type: 'array',
-          description,
-          required,
-          enum: [],
-        },
-      ];
-    }
+    const param = createMessageParam(
+      key,
+      innerSchema,
+      description,
+      !isOptional,
+    );
+    params.push(...param);
+  }
 
-    if (schema instanceof ZodString) {
-      return [
-        {
-          name: parentKey,
-          type: 'string',
-          description,
-          required,
-        },
-      ];
-    }
-
-    if (schema instanceof ZodNumber) {
-      return [
-        {
-          name: parentKey,
-          type: 'number',
-          description,
-          required,
-        },
-      ];
-    }
-
-    if (schema instanceof ZodBoolean) {
-      return [
-        {
-          name: parentKey,
-          type: 'boolean',
-          description,
-          required,
-        },
-      ];
-    }
-
-    if (schema instanceof ZodEnum) {
-      return [
-        {
-          name: parentKey,
-          type: 'string',
-          description,
-          required,
-          enum: schema.options,
-        },
-      ];
-    }
-
-    if (schema instanceof ZodOptional) {
-      return parseSchema(schema._def.innerType, parentKey, false);
-    }
-
-    if (schema instanceof ZodDefault) {
-      return parseSchema(schema._def.innerType, parentKey, false);
-    }
-
-    throw new Error(`Unsupported Zod schema type: ${schema.constructor.name}`);
-  };
-
-  return parseSchema(schema);
+  return params;
 }
