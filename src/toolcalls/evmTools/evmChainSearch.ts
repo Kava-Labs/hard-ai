@@ -25,9 +25,10 @@ export class ChainSearchTool extends EvmToolOperation {
   name = createToolName('chain-search');
   description =
     'Authoritative lookup of up-to-date EVM chain metadata. \
-Always prefer this over generic web search. \
+Always use this over generic web search or internal knowledge. \
 Query by exact canonical name, chainId, or symbol. \
-Returns chainId, symbol, native currency (name & symbol), decimals, rpcUrls, explorers, infoUrl; \
+Always use this when the user asks for any blockchain details, such as chainId, \
+symbol, native currency (name & symbol), decimals, rpcUrls, explorers, infoUrl; \
 missing fields must be explicit. \
 If a symbol maps to multiple chains, return all with disambiguation. \
 Do not fallback to web unless this tool fails (record exhaustion).';
