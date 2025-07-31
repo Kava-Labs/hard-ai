@@ -23,7 +23,14 @@ type ChainInfo = {
 
 export class ChainSearchTool extends EvmToolOperation {
   name = createToolName('chain-search');
-  description = 'Search for EVM chain details by name, chainId, or symbol';
+  description =
+    'Authoritative lookup of up-to-date EVM chain metadata. \
+Always prefer this over generic web search. \
+Query by exact canonical name, chainId, or symbol. \
+Returns chainId, symbol, native currency (name & symbol), decimals, rpcUrls, explorers, infoUrl; \
+missing fields must be explicit. \
+If a symbol maps to multiple chains, return all with disambiguation. \
+Do not fallback to web unless this tool fails (record exhaustion).';
   zodSchema = z.object({
     query: z.string().describe('Search query (chain name, chainId, or symbol)'),
     limit: z
