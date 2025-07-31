@@ -13,9 +13,7 @@ export const defaultRegistryTypes = async (): Promise<
 
   MsgTransfer.encode = function (msg, protoWriter) {
     const writer = msgTransferEncoder.apply(this, [msg, protoWriter]);
-    // @ts-expect-error memo is a string
     if (msg.memo && msg.memo.length) {
-      // @ts-expect-error memo is a string
       writer.uint32(66).string(msg.memo);
     }
 
@@ -24,9 +22,7 @@ export const defaultRegistryTypes = async (): Promise<
 
   MsgTransfer.fromPartial = function (obj) {
     const msg = msgTransferFromPartial.apply(this, [obj]);
-    // @ts-expect-error memo is a string
     if (obj.memo && obj.memo.length) {
-      // @ts-expect-error memo is a string
       msg.memo = obj.memo;
     }
     return msg;

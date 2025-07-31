@@ -1,6 +1,7 @@
 /* eslint-disable  @typescript-eslint/no-explicit-any */
 import type { MetamaskSupportedMessageTypes } from './messageTypes';
 import type { CosmosChainConfig } from '../chainsRegistry';
+
 import { getChainConfigByName } from '../chainsRegistry';
 
 const msgConvertERC20ToCoinType = {
@@ -562,7 +563,7 @@ export const eip712SignAndBroadcast = async (opts: EIP712SignerParams) => {
   const registry = new Registry(await defaultRegistryTypes());
 
   const aminoTypes = new AminoTypes({
-    additions: await createDefaultTypes(),
+    additions: (await createDefaultTypes()) as any,
   });
 
   // get the Eth address from metamask
@@ -648,6 +649,8 @@ export const eip712SignAndBroadcast = async (opts: EIP712SignerParams) => {
     ],
     fee,
     Number(gas),
+    undefined, // feeGranter
+    undefined, // feePayer
     signMode,
   );
 
@@ -661,9 +664,10 @@ export const eip712SignAndBroadcast = async (opts: EIP712SignerParams) => {
     domain: {
       name: chainConfig.name,
       version: '1.0.0',
-      chainId: (
-        getChainConfigByName(chainConfig.evmChainName!, ChainType.EVM) as any
-      ).chainID,
+      chainId: chainConfig
+        ? getChainConfigByName(chainConfig.evmChainName || '', ChainType.EVM)
+            ?.chainID
+        : '',
       verifyingContract: '',
       salt: '',
     },
