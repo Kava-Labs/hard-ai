@@ -1,4 +1,3 @@
-import { z } from 'zod';
 import {
   decodeFunctionResult,
   encodeFunctionData,
@@ -7,35 +6,38 @@ import {
   type Abi,
   type Hex,
 } from 'viem';
+import { z } from 'zod';
 import { ERC2O_ABI } from '../chain/abi/erc20abi';
-import { EvmToolOperation, createToolName, EthereumProvider } from './types';
 import {
+  getContractAddress,
   getCurrentAccount,
   getCurrentChainConfig,
-  getContractAddress,
   getEthereumProvider,
 } from './helpers';
+import { createToolName, EthereumProvider, EvmToolOperation } from './types';
 
 // Get Token Balance Tool (High-level)
 export class GetTokenBalanceTool extends EvmToolOperation {
   name = createToolName('get-token-balance');
   description =
-    'Get ERC20 token balance for a specific token symbol (e.g., USDT, USDC) or contract address. For common tokens like USDT, USDC, DAI, just provide the symbol. For custom tokens, provide the contract address.';
+    'Get ERC20 token balance for a specific token symbol (e.g., USDT, USDC) or contract address (either passed as `token`). For common tokens like USDT, USDC, DAI, you may provide the symbol. For any ERC20 token, provide the contract address.';
   zodSchema = z.object({
-    symbol: z
+    token: z
       .string()
-      .describe('Token symbol (e.g., USDT, USDC, DAI) or contract address'),
+      .describe(
+        'Token symbol (e.g., USDT, USDC, DAI) or ERC20 contract address',
+      ),
     address: z
       .string()
       .optional()
       .describe(
-        'Address to check balance for. Defaults to current wallet address.',
+        'Address to check balance for. Defaults to connected wallet address.',
       ),
   });
 
   async execute(params: unknown, provider?: EthereumProvider): Promise<string> {
-    const { symbol, address } = this.zodSchema.parse(params) as {
-      symbol: string;
+    const { token, address } = this.zodSchema.parse(params) as {
+      token: string;
       address?: string;
     };
 
@@ -46,17 +48,17 @@ export class GetTokenBalanceTool extends EvmToolOperation {
 
     // Check if symbol is a symbol or address
     let contractAddress: string;
-    if (isAddress(symbol)) {
-      contractAddress = getAddress(symbol);
+    if (isAddress(token)) {
+      contractAddress = getAddress(token);
     } else {
       // Try to get from registry
       const registryAddress = await getContractAddress(
-        symbol.toUpperCase(),
+        token.toUpperCase(),
         provider,
       );
       if (!registryAddress) {
         throw new Error(
-          `Token ${symbol} not found in registry. Please provide the contract address or search for it.`,
+          `Token ${token} not found in registry. Please provide the contract address or search for it.`,
         );
       }
       contractAddress = registryAddress;
@@ -108,7 +110,7 @@ export class GetTokenBalanceTool extends EvmToolOperation {
     const formattedBalance = Number(balance) / Math.pow(10, decimals);
 
     return JSON.stringify({
-      token: symbol.toUpperCase(),
+      token: token.toUpperCase(),
       address: targetAddress,
       contractAddress,
       balance: balance.toString(),
@@ -124,28 +126,28 @@ export class GetTokenInfoTool extends EvmToolOperation {
   description =
     'Get token information (name, symbol, decimals) for a contract address or token symbol';
   zodSchema = z.object({
-    symbol: z
+    token: z
       .string()
       .describe('Token symbol (e.g., USDT, USDC) or contract address'),
   });
 
   async execute(params: unknown, provider?: EthereumProvider): Promise<string> {
-    const { symbol } = this.zodSchema.parse(params) as { symbol: string };
+    const { token } = this.zodSchema.parse(params) as { token: string };
 
-    let contractAddress: string;
-    if (isAddress(symbol)) {
-      contractAddress = getAddress(symbol);
+    let address: string;
+    if (isAddress(token)) {
+      address = getAddress(token);
     } else {
       const registryAddress = await getContractAddress(
-        symbol.toUpperCase(),
+        token.toUpperCase(),
         provider,
       );
       if (!registryAddress) {
         throw new Error(
-          `Token ${symbol} not found in registry. Please provide the contract address.`,
+          `Token ${token} not found in registry. Please provide the contract address.`,
         );
       }
-      contractAddress = registryAddress;
+      address = registryAddress;
     }
 
     // Use the provided provider or fall back to window.ethereum
@@ -174,15 +176,15 @@ export class GetTokenInfoTool extends EvmToolOperation {
     const [nameResult, symbolResult, decimalsResult] = await Promise.all([
       ethereumProvider.request({
         method: 'eth_call',
-        params: [{ to: contractAddress, data: nameData }, 'latest'],
+        params: [{ to: address, data: nameData }, 'latest'],
       }),
       ethereumProvider.request({
         method: 'eth_call',
-        params: [{ to: contractAddress, data: symbolData }, 'latest'],
+        params: [{ to: address, data: symbolData }, 'latest'],
       }),
       ethereumProvider.request({
         method: 'eth_call',
-        params: [{ to: contractAddress, data: decimalsData }, 'latest'],
+        params: [{ to: address, data: decimalsData }, 'latest'],
       }),
     ]);
 
@@ -206,9 +208,9 @@ export class GetTokenInfoTool extends EvmToolOperation {
     }) as number;
 
     return JSON.stringify({
-      contractAddress,
-      name,
       symbol: symbolValue,
+      address,
+      name,
       decimals,
     });
   }
@@ -218,7 +220,7 @@ export class GetTokenInfoTool extends EvmToolOperation {
 export class ListSupportedTokensTool extends EvmToolOperation {
   name = createToolName('list-supported-tokens');
   description =
-    'List all supported tokens for the current network with their contract addresses';
+    'List all known tokens for the current network and their contract addresses.';
   zodSchema = z.object({});
 
   async execute(params: unknown, provider?: EthereumProvider): Promise<string> {
@@ -238,7 +240,7 @@ export class ListSupportedTokensTool extends EvmToolOperation {
           return {
             symbol,
             address: erc20Contract.contractAddress,
-            displayName: erc20Contract.displayName,
+            name: erc20Contract.displayName,
             decimals: erc20Contract.decimals,
           };
         },
