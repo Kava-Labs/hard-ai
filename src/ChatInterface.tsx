@@ -148,6 +148,7 @@ export const ChatInterface = ({
                 handleChatCompletion={handleChatCompletion}
                 onCancelClick={handleCancel}
                 isRequesting={isRequesting}
+                usageStore={activeChat.usageStore}
               />
             </div>
           </div>

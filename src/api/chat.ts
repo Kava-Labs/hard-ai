@@ -20,6 +20,9 @@ export const doChat = async (
         messages: activeChat.messageHistoryStore.getSnapshot(),
         stream: true,
         tools: toolCallRegistry.getToolDefinitions(),
+        stream_options: {
+          include_usage: true,
+        },
       },
       {
         signal: activeChat.abortController.signal,
@@ -36,6 +39,11 @@ export const doChat = async (
           activeChat.messageStore.appendText(
             chunk['choices'][0]['delta']['content'],
           );
+        }
+
+        // Capture usage data from the final chunk
+        if (chunk.usage) {
+          activeChat.usageStore.setUsage(chunk.usage);
         }
       } else if (isToolCallChunk(chunk)) {
         assembleToolCallsFromStream(chunk, activeChat.toolCallStreamStore);
@@ -90,10 +98,12 @@ export const doChat = async (
 };
 
 export const isContentChunk = (result: ChatCompletionChunk): boolean => {
-  //  Treat usage-only chunks as content chunks
-  if (result.usage && (!result.choices || result.choices.length === 0)) {
+  // Treat chunks with usage data as content chunks, could be empty content
+  // or still have content in the delta.
+  if (result.usage) {
     return true;
   }
+
   const delta = result.choices[0].delta;
   //  Sometimes content is an empty string, so we check if content is a string property.
   return delta && 'content' in delta && typeof delta.content === 'string';

@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, fireEvent } from '@testing-library/react';
 import { ChatInput } from './ChatInput';
+import { UsageStore } from './stores/usageStore';
 
 //  Mock for scrollHeight
 Object.defineProperty(HTMLElement.prototype, 'scrollHeight', {
@@ -13,6 +14,7 @@ Object.defineProperty(HTMLElement.prototype, 'scrollHeight', {
 
 const onCancelClick = vi.fn();
 const handleChatCompletion = vi.fn();
+const mockUsageStore = new UsageStore();
 
 describe('ChatInput', () => {
   beforeEach(() => {
@@ -25,6 +27,7 @@ describe('ChatInput', () => {
         onCancelClick={onCancelClick}
         handleChatCompletion={handleChatCompletion}
         isRequesting={false}
+        usageStore={mockUsageStore}
       />,
     );
 
@@ -61,6 +64,7 @@ describe('ChatInput', () => {
         onCancelClick={onCancelClick}
         handleChatCompletion={handleChatCompletion}
         isRequesting={false}
+        usageStore={mockUsageStore}
       />,
     );
 
@@ -85,6 +89,7 @@ describe('ChatInput', () => {
         onCancelClick={onCancelClick}
         handleChatCompletion={handleChatCompletion}
         isRequesting={false}
+        usageStore={mockUsageStore}
       />,
     );
 
@@ -98,6 +103,7 @@ describe('ChatInput', () => {
         onCancelClick={onCancelClick}
         handleChatCompletion={handleChatCompletion}
         isRequesting={false}
+        usageStore={mockUsageStore}
       />,
     );
 
@@ -122,6 +128,7 @@ describe('ChatInput', () => {
         onCancelClick={onCancelClick}
         handleChatCompletion={handleChatCompletion}
         isRequesting={true}
+        usageStore={mockUsageStore}
       />,
     );
 
@@ -135,6 +142,7 @@ describe('ChatInput', () => {
         onCancelClick={onCancelClick}
         handleChatCompletion={handleChatCompletion}
         isRequesting={true}
+        usageStore={mockUsageStore}
       />,
     );
 
@@ -152,6 +160,7 @@ describe('ChatInput', () => {
         onCancelClick={onCancelClick}
         handleChatCompletion={handleChatCompletion}
         isRequesting={true}
+        usageStore={mockUsageStore}
       />,
     );
 
@@ -165,6 +174,7 @@ describe('ChatInput', () => {
         onCancelClick={onCancelClick}
         handleChatCompletion={handleChatCompletion}
         isRequesting={false}
+        usageStore={mockUsageStore}
       />,
     );
 
@@ -175,6 +185,7 @@ describe('ChatInput', () => {
         onCancelClick={onCancelClick}
         handleChatCompletion={handleChatCompletion}
         isRequesting={true}
+        usageStore={mockUsageStore}
       />,
     );
 
@@ -187,6 +198,7 @@ describe('ChatInput', () => {
         onCancelClick={onCancelClick}
         handleChatCompletion={handleChatCompletion}
         isRequesting={true}
+        usageStore={mockUsageStore}
       />,
     );
 

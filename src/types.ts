@@ -8,6 +8,7 @@ import type { TextStreamStore } from 'lib-kava-ai';
 import OpenAI from 'openai/index';
 import { ToolCallStreamStore } from './stores/toolCallStreamStore';
 import { EIP6963ProviderDetail, EIP6963ProviderInfo } from './types/wallet';
+import { UsageStore } from './stores/usageStore';
 
 export type ActiveChat = {
   id: string;
@@ -21,17 +22,8 @@ export type ActiveChat = {
   messageHistoryStore: MessageHistoryStore;
   messageStore: TextStreamStore;
   errorStore: TextStreamStore;
+  usageStore: UsageStore;
 };
-
-export type ConversationHistory = {
-  id: string;
-  model: string;
-  title: string;
-  lastSaved: number;
-  tokensRemaining: number;
-};
-
-export type ConversationHistories = Record<string, ConversationHistory>;
 
 export type ChatMessage =
   | ChatCompletionMessageParam

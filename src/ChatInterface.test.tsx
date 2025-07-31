@@ -3,6 +3,7 @@ import { render, screen } from '@testing-library/react';
 import { ChatInterface, ChatInterfaceProps } from './ChatInterface';
 import { ActiveChat } from './types';
 import { initializeToolCallRegistry } from './toolcalls/chain';
+import { UsageStore } from './stores/usageStore';
 
 vi.mock('./ConversationWrapper', () => ({
   ConversationWrapper: ({ activeChat }: { activeChat: ActiveChat }) => (
@@ -31,11 +32,13 @@ vi.mock('lib-kava-ai', async () => {
 });
 
 describe('ChatInterface', () => {
+  const mockUsageStore = new UsageStore();
   const mockProps: ChatInterfaceProps = {
     activeChat: {
       id: 'test-chat-id',
       isConversationStarted: false,
       messages: [],
+      usageStore: mockUsageStore,
     } as unknown as ActiveChat,
     handleChatCompletion: vi.fn(),
     handleCancel: vi.fn(),
