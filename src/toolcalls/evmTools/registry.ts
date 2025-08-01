@@ -57,27 +57,27 @@ const EVM_TOOLS = [
 ];
 
 // Integration functions
-export const registerEvmToolsWithRegistry = (
+export const registerEvmToolsWithRegistry = async (
   registry: ToolCallRegistry<unknown>,
   chainId?: string,
-): void => {
+): Promise<void> => {
   try {
     EVM_TOOLS.forEach((tool) => registry.register(tool));
     console.log(`Registered ${EVM_TOOLS.length} EVM tools`);
 
     // Also register chain-specific tools for the current chain if chainId is provided
     if (chainId) {
-      registerChainSpecificTools(registry, chainId);
+      await registerChainSpecificTools(registry, chainId);
     }
   } catch (error) {
     console.warn('Failed to register EVM tools with registry:', error);
   }
 };
 
-export const deregisterEvmToolsFromRegistry = (
+export const deregisterEvmToolsFromRegistry = async (
   registry: ToolCallRegistry<unknown>,
   chainId?: string,
-): void => {
+): Promise<void> => {
   // Deregister standard EVM tools
   EVM_TOOLS.forEach((tool) => {
     registry.deregister(tool);
@@ -85,38 +85,38 @@ export const deregisterEvmToolsFromRegistry = (
 
   // Also deregister any chain-specific tools if chainId is provided
   if (chainId) {
-    deregisterChainSpecificTools(registry, chainId);
+    await deregisterChainSpecificTools(registry, chainId);
   }
 
   console.log(`Deregistered ${EVM_TOOLS.length} EVM tools from registry`);
 };
 
 // Function to handle chain changes - can be called when wallet chain changes
-export const changeChainToolCallRegistration = (
+export const changeChainToolCallRegistration = async (
   registry: ToolCallRegistry<unknown>,
   newChainId: string,
   oldChainId?: string,
-): void => {
+): Promise<void> => {
   try {
     // Deregister any existing chain-specific tools for the old chain
     if (oldChainId) {
-      deregisterChainSpecificTools(registry, oldChainId);
+      await deregisterChainSpecificTools(registry, oldChainId);
     }
 
     // Register chain-specific tools for the new chain
-    registerChainSpecificTools(registry, newChainId);
+    await registerChainSpecificTools(registry, newChainId);
   } catch (error) {
     console.warn('Failed to handle chain change:', error);
   }
 };
 
 // Helper function to register chain-specific tools
-const registerChainSpecificTools = (
+const registerChainSpecificTools = async (
   registry: ToolCallRegistry<unknown>,
   chainId: string,
-): void => {
+): Promise<void> => {
   try {
-    const chainInfo = getChainConfigByChainId(chainId);
+    const chainInfo = await getChainConfigByChainId(chainId);
     if (chainInfo && chainInfo.chainConfig.extraTools) {
       chainInfo.chainConfig.extraTools.forEach((toolKey) => {
         try {
@@ -139,12 +139,12 @@ const registerChainSpecificTools = (
 };
 
 // Helper function to deregister chain-specific tools
-const deregisterChainSpecificTools = (
+const deregisterChainSpecificTools = async (
   registry: ToolCallRegistry<unknown>,
   chainId: string,
-): void => {
+): Promise<void> => {
   try {
-    const chainInfo = getChainConfigByChainId(chainId);
+    const chainInfo = await getChainConfigByChainId(chainId);
     if (chainInfo && chainInfo.chainConfig.extraTools) {
       chainInfo.chainConfig.extraTools.forEach((toolKey) => {
         try {

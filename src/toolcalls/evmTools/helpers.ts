@@ -1,6 +1,7 @@
 import { getAddress, isAddress } from 'viem';
 import { chainRegistry, EVMChainConfig } from '../chain/chainsRegistry';
 import { ChainType } from '../chain/constants';
+import { chainService } from '../chain/ChainService';
 import { EthereumProvider } from './types';
 
 // Helper to get Ethereum provider from wallet store
@@ -50,7 +51,7 @@ export const getContractAddress = async (
   provider?: EthereumProvider,
 ): Promise<string | null> => {
   const chainId = await getCurrentChainId(provider);
-  const chainInfo = getChainConfigByChainId(chainId.toString());
+  const chainInfo = await getChainConfigByChainId(chainId.toString());
 
   if (!chainInfo) {
     return null;
@@ -63,7 +64,7 @@ export const getContractAddress = async (
 // Helper to get chain config for current chain
 export const getCurrentChainConfig = async (provider?: EthereumProvider) => {
   const chainId = await getCurrentChainId(provider);
-  const chainInfo = getChainConfigByChainId(chainId.toString());
+  const chainInfo = await getChainConfigByChainId(chainId.toString());
 
   if (!chainInfo) {
     throw new Error(`Chain with ID ${chainId} not found in registry`);
@@ -73,13 +74,15 @@ export const getCurrentChainConfig = async (provider?: EthereumProvider) => {
 };
 
 // Helper to get chain config by chain ID for EVM chains
-export const getChainConfigByChainId = (
+export const getChainConfigByChainId = async (
   chainIdInput: string,
-): { chainName: string; chainConfig: EVMChainConfig } | null => {
+): Promise<{ chainName: string; chainConfig: EVMChainConfig } | null> => {
+  // Try static registry first
   const evmChains = chainRegistry[ChainType.EVM];
   const chainId = chainIdInput.startsWith('0x')
     ? parseInt(chainIdInput, 16).toString()
     : chainIdInput;
+  
   for (const [chainName, chainConfig] of Object.entries(evmChains)) {
     if (
       chainConfig.chainType === ChainType.EVM &&
@@ -91,6 +94,20 @@ export const getChainConfigByChainId = (
       };
     }
   }
+
+  // Fallback to ChainService for dynamic chains
+  try {
+    const dynamicChain = await chainService.getChainByChainId(chainId);
+    if (dynamicChain && dynamicChain.chainType === ChainType.EVM) {
+      return {
+        chainName: dynamicChain.name,
+        chainConfig: dynamicChain as EVMChainConfig,
+      };
+    }
+  } catch (error) {
+    console.warn('Failed to fetch dynamic chain:', error);
+  }
+
   return null;
 };
 
