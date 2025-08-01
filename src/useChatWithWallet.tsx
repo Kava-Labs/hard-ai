@@ -11,7 +11,9 @@ import {
   getChainConfigByChainId,
 } from './toolcalls/evmTools';
 
-const walletContextMessage = async (walletInfo: WalletInfo): Promise<ChatMessage> => {
+const walletContextMessage = async (
+  walletInfo: WalletInfo,
+): Promise<ChatMessage> => {
   if (!walletInfo.isConnected) {
     return {
       role: 'system',
@@ -64,7 +66,7 @@ const walletConnectionChangedMessage = async (
       return `**The connected network has changed.**`;
     }
   })();
-  
+
   const contextMessage = await walletContextMessage(walletInfo);
   return `${message} Keep previous connection information in context, but recognize that it is not current.
 
@@ -144,7 +146,10 @@ export const useChatWithWallet = ({
         '**Wallet has been disconnected.** All previous wallet information is no longer valid.',
       );
       setWalletInfo(null);
-      await deregisterEvmToolsFromRegistry(toolCallRegistry, walletInfo.chainId);
+      await deregisterEvmToolsFromRegistry(
+        toolCallRegistry,
+        walletInfo.chainId,
+      );
     },
 
     // on change of connected wallet:
@@ -152,7 +157,10 @@ export const useChatWithWallet = ({
     // * deregister tool calls for the old chain
     // * register tool calls for the new connected chain
     onWalletChange: async (prevInfo, walletInfo) => {
-      const content = await walletConnectionChangedMessage(prevInfo, walletInfo);
+      const content = await walletConnectionChangedMessage(
+        prevInfo,
+        walletInfo,
+      );
       addPendingSystemMessage(content);
       const contextMsg = await walletContextMessage(walletInfo);
       setCurrentInitialMessages([contextMsg]);
