@@ -20,7 +20,7 @@ export class SwitchNetworkTool extends EvmToolOperation {
     const { chainName } = this.zodSchema.parse(params) as { chainName: string };
 
     // Validate chain exists in registry
-    const chainConfig = getEvmChainConfigByName(chainName);
+    const chainConfig = await getEvmChainConfigByName(chainName);
     if (!chainConfig) {
       throw new Error(`Chain ${chainName} not found in registry`);
     }
