@@ -4,6 +4,9 @@ import { chainService } from '../chain/ChainService';
 import { ChainConfig } from '../chain/chainsRegistry';
 
 export class ChainSearchTool extends EvmToolOperation {
+  // Wallet not required
+  needsWallet = [];
+
   name = createToolName('chain-search');
   description =
     'Authoritative lookup of up-to-date EVM chain metadata. \
@@ -22,6 +25,18 @@ Do not fallback to web unless this tool fails (record exhaustion).';
       .default(10)
       .describe('Maximum number of results to return (default: 10)'),
   });
+
+  async validate(params: unknown): Promise<boolean> {
+    // Override validate so we skip the wallet check
+    const result = this.zodSchema.safeParse(params);
+    if (!result.success) {
+      throw new Error(
+        `Invalid parameters passed to ${this.name}: ${result.error.message}`,
+      );
+    }
+
+    return true;
+  }
 
   private formatChainConfig(chain: ChainConfig): string {
     let infoStr = `
