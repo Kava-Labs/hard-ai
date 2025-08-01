@@ -1,17 +1,18 @@
-import { z } from 'zod';
 import {
   decodeFunctionResult,
   encodeFunctionData,
+  parseAbi,
   type Abi,
   type Hex,
 } from 'viem';
-import {
-  EvmToolOperation,
-  createToolName,
-  convertBigIntToString,
-  EthereumProvider,
-} from './types';
+import { z } from 'zod';
 import { getEthereumProvider } from './helpers';
+import {
+  convertBigIntToString,
+  createToolName,
+  EthereumProvider,
+  EvmToolOperation,
+} from './types';
 
 // Call Contract Tool
 export class CallContractTool extends EvmToolOperation {
@@ -56,10 +57,13 @@ export class CallContractTool extends EvmToolOperation {
 export class EncodeFunctionDataTool extends EvmToolOperation {
   name = createToolName('encode-function-data');
   description =
-    'Encode function data for contract calls using ABI and parameters. Use this to prepare data for contract interactions.';
+    'Encode function data for contract calls using function signature and parameters. Use this to prepare data for contract interactions.';
   zodSchema = z.object({
-    abi: z.array(z.unknown()).describe('The contract ABI'),
-    functionName: z.string().describe('The function name to encode'),
+    funcSignature: z
+      .string()
+      .describe(
+        'The function signature (e.g., "function approve(address spender, uint256 amount)")',
+      ),
     args: z
       .array(z.unknown())
       .optional()
@@ -67,15 +71,20 @@ export class EncodeFunctionDataTool extends EvmToolOperation {
   });
 
   async execute(params: unknown): Promise<string> {
-    const { abi, functionName, args } = this.zodSchema.parse(params) as {
-      abi: unknown[];
-      functionName: string;
+    const { funcSignature, args } = this.zodSchema.parse(params) as {
+      funcSignature: string;
       args?: unknown[];
     };
 
     try {
+      // Parse the function signature into ABI format
+      const abi = parseAbi([funcSignature]) as Abi;
+
+      // Extract function name from the signature
+      const functionName = (abi[0] as { name: string }).name;
+
       const encodedData = encodeFunctionData({
-        abi: abi as Abi,
+        abi,
         functionName,
         args: args || [],
       });
