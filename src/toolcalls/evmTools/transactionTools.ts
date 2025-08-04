@@ -104,16 +104,9 @@ export class FormatEtherTool extends EvmToolOperation {
 
   async execute(params: unknown): Promise<string> {
     const { wei } = this.zodSchema.parse(params) as { wei: string };
-
-    try {
-      const weiBigInt = BigInt(wei);
-      const ether = formatEther(weiBigInt);
-      return ether;
-    } catch (error) {
-      throw new Error(
-        `Failed to format ether: ${error instanceof Error ? error.message : 'Unknown error'}`,
-      );
-    }
+    const weiBigInt = BigInt(wei);
+    const ether = formatEther(weiBigInt);
+    return ether;
   }
 }
 
@@ -128,15 +121,8 @@ export class ParseEtherTool extends EvmToolOperation {
 
   async execute(params: unknown): Promise<string> {
     const { ether } = this.zodSchema.parse(params) as { ether: string };
-
-    try {
-      const wei = parseEther(ether);
-      return wei.toString();
-    } catch (error) {
-      throw new Error(
-        `Failed to parse ether: ${error instanceof Error ? error.message : 'Unknown error'}`,
-      );
-    }
+    const wei = parseEther(ether);
+    return wei.toString();
   }
 }
 
@@ -160,28 +146,22 @@ export class HashTool extends EvmToolOperation {
       type?: 'string' | 'hex' | 'bytes';
     };
 
-    try {
-      let input: Hex;
+    let input: Hex;
 
-      switch (type) {
-        case 'hex':
-          input = data as Hex;
-          break;
-        case 'bytes':
-          input = toHex(data);
-          break;
-        case 'string':
-        default:
-          input = stringToHex(data);
-          break;
-      }
-
-      const hash = keccak256(input);
-      return hash;
-    } catch (error) {
-      throw new Error(
-        `Failed to hash data: ${error instanceof Error ? error.message : 'Unknown error'}`,
-      );
+    switch (type) {
+      case 'hex':
+        input = data as Hex;
+        break;
+      case 'bytes':
+        input = toHex(data);
+        break;
+      case 'string':
+      default:
+        input = stringToHex(data);
+        break;
     }
+
+    const hash = keccak256(input);
+    return hash;
   }
 }

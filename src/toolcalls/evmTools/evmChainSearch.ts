@@ -179,25 +179,20 @@ Do not fallback to web unless this tool fails (record exhaustion).';
       limit: number;
     };
 
-    try {
-      const chains = await this.fetchChainData();
-      const results = this.searchChains(chains, query, limit);
+    const chains = await this.fetchChainData();
+    const results = this.searchChains(chains, query, limit);
 
-      if (results.length === 0) {
-        return `No chains found matching "${query}"`;
-      }
-
-      const formatted = results
-        .map((chain) => this.formatChainInfo(chain))
-        .join('\n---\n');
-
-      const plural = results.length > 1 ? 's' : '';
-      const response = `Found ${results.length} chain${plural} matching "${query}":\n\n${formatted}`;
-
-      return response;
-    } catch (error) {
-      console.error('Error executing chain search:', error);
-      return `Error searching for chains: ${error instanceof Error ? error.message : 'Unknown error'}`;
+    if (results.length === 0) {
+      return `No chains found matching "${query}"`;
     }
+
+    const formatted = results
+      .map((chain) => this.formatChainInfo(chain))
+      .join('\n---\n');
+
+    const plural = results.length > 1 ? 's' : '';
+    const response = `Found ${results.length} chain${plural} matching "${query}":\n\n${formatted}`;
+
+    return response;
   }
 }

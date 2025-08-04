@@ -84,11 +84,8 @@ export abstract class EvmToolOperation
       return await this.execute(params, provider);
     } catch (error) {
       console.error(`Error executing ${this.name}:`, error);
-      throw new Error(
-        `Failed to execute ${this.name}: ${
-          error instanceof Error ? error.message : 'Unknown error'
-        }`,
-      );
+      const message = (error as { message: string }).message ?? 'Unknown error';
+      throw new Error(`Failed to execute ${this.name}: ${message}`);
     }
   }
 }
