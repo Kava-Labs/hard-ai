@@ -81,6 +81,10 @@
   color: #0070f3;
 }
 
+.statusText.error {
+  color: #dc2626;
+}
+
 .hashLink {
   display: flex;
   align-items: center;
@@ -297,4 +301,48 @@
 
 .searchTime {
   color: var(--colors-textMuted);
+}
+
+.toolResponse {
+  margin-top: var(--spacing-md);
+  border-top: 1px solid var(--colors-bgTertiary);
+  padding-top: var(--spacing-md);
+}
+
+.toolResponseHeader {
+  margin-bottom: var(--spacing-sm);
+}
+
+.toolResponseContent {
+  margin-top: var(--spacing-sm);
+}
+
+.toolResponseJson {
+  background-color: var(--colors-bgPrimary);
+  border: 1px solid var(--colors-bgTertiary);
+  border-radius: var(--borderRadius-sm);
+  padding: var(--spacing-sm);
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  font-size: 13px;
+  line-height: 1.4;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  color: var(--colors-textPrimary);
+}
+
+.toolResponseText {
+  background-color: var(--colors-bgPrimary);
+  border: 1px solid var(--colors-bgTertiary);
+  border-radius: var(--borderRadius-sm);
+  padding: var(--spacing-sm);
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--colors-textPrimary);
+  white-space: pre-wrap;
+}
+
+.toolResponseEmpty {
+  font-style: italic;
+  color: var(--colors-textMuted);
+  font-size: 13px;
 }

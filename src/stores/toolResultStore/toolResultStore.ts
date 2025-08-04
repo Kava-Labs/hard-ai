@@ -3,6 +3,9 @@ export interface ToolResult {
   toolName: string;
   result: string;
   timestamp: number;
+  error?: string;
+  stackTrace?: string;
+  isError?: boolean;
 }
 
 type Listener = () => void;
@@ -17,6 +20,25 @@ export class ToolResultStore {
       toolName,
       result,
       timestamp: Date.now(),
+      isError: false,
+    });
+    this.emitChange();
+  }
+
+  setError(
+    toolCallId: string,
+    toolName: string,
+    error: string,
+    stackTrace?: string,
+  ) {
+    this.results.set(toolCallId, {
+      toolCallId,
+      toolName,
+      result: '', // Empty result for errors
+      timestamp: Date.now(),
+      error,
+      stackTrace,
+      isError: true,
     });
     this.emitChange();
   }

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { ChatCompletionMessageToolCall } from 'openai/resources/index';
 import { ToolCallRegistry } from '../chain';
 import { InProgressComponentProps } from '../chain';
@@ -6,7 +6,7 @@ import { ToolCallStream } from '../../stores/toolCallStreamStore';
 import { useScrollToBottom } from '../../useScrollToBottom';
 import styles from './DisplayCards.module.css';
 import { WebSearchAnnotation } from './WebSearchAnnotation';
-import { ToolResultStore } from '../../stores/toolResultStore';
+import { ToolResultStore, ToolResult } from '../../stores/toolResultStore';
 
 interface ToolCallDisplayProps {
   toolCall: ChatCompletionMessageToolCall | ToolCallStream;
@@ -51,6 +51,108 @@ const isWebSearchTool = (toolName: string): boolean => {
   return toolName === 'exa_mcp-web_search_exa';
 };
 
+const formatResponseContent = (
+  content: string,
+): { type: 'json' | 'text'; formatted: string } => {
+  try {
+    const parsed = JSON.parse(content);
+    return {
+      type: 'json',
+      formatted: JSON.stringify(parsed, null, 2),
+    };
+  } catch {
+    return {
+      type: 'text',
+      formatted: content,
+    };
+  }
+};
+
+const ToolResponseSection = ({
+  toolResult,
+}: {
+  toolResult: ToolResult | undefined;
+}) => {
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  if (!toolResult) return null;
+
+  const hasResponse = toolResult.result && toolResult.result.trim();
+  const hasError = toolResult.isError && toolResult.error;
+
+  if (!hasResponse && !hasError) return null;
+
+  const toggleExpanded = () => setIsExpanded(!isExpanded);
+
+  return (
+    <div className={styles.toolResponse}>
+      <div className={styles.toolResponseHeader}>
+        <button
+          className={styles.collapseButton}
+          onClick={toggleExpanded}
+          type="button"
+        >
+          <svg
+            className={styles.chevronIcon}
+            style={{
+              transform: isExpanded ? 'rotate(90deg)' : 'rotate(0deg)',
+              transition: 'transform 0.2s ease',
+            }}
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M9 5l7 7-7 7"
+            />
+          </svg>
+          View Response
+        </button>
+      </div>
+      {isExpanded && (
+        <div className={styles.toolResponseContent}>
+          {hasError ? (
+            <div>
+              <div className={styles.sectionLabel}>Error</div>
+              <div className={styles.toolResponseJson}>{toolResult.error}</div>
+              {toolResult.stackTrace && (
+                <div style={{ marginTop: 'var(--spacing-md)' }}>
+                  <div className={styles.sectionLabel}>Stack Trace</div>
+                  <div className={styles.toolResponseJson}>
+                    {toolResult.stackTrace}
+                  </div>
+                </div>
+              )}
+            </div>
+          ) : hasResponse ? (
+            (() => {
+              const { type, formatted } = formatResponseContent(
+                toolResult.result,
+              );
+              return (
+                <div
+                  className={
+                    type === 'json'
+                      ? styles.toolResponseJson
+                      : styles.toolResponseText
+                  }
+                >
+                  {formatted}
+                </div>
+              );
+            })()
+          ) : (
+            <div className={styles.toolResponseEmpty}>No response data</div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
+
 export const ToolCallDisplay = ({
   toolCall,
   status,
@@ -74,16 +176,27 @@ export const ToolCallDisplay = ({
   );
   const toolName = toolCall.function.name || '';
 
-  const statusText = status === 'in-progress' ? 'In Progress' : 'Completed';
-  const statusClass =
-    status === 'in-progress' ? styles.inProgress : styles.complete;
+  // Get tool result for error checking and web search annotations
+  const toolResult = toolResultStore?.getResult(toolCall.id);
+  const hasError = toolResult?.isError;
+
+  let statusText: string;
+  let statusClass: string;
+
+  if (status === 'in-progress') {
+    statusText = 'In Progress';
+    statusClass = styles.inProgress;
+  } else if (hasError) {
+    statusText = `Error: ${toolDisplayName} - ${toolResult?.error || 'Unknown error'}`;
+    statusClass = styles.error;
+  } else {
+    statusText = `Completed: ${toolDisplayName}`;
+    statusClass = styles.complete;
+  }
   const testId =
     status === 'in-progress'
       ? 'in-progress-tool-display'
       : 'completed-tool-display';
-
-  // Get tool result for web search annotations
-  const toolResult = toolResultStore?.getResult(toolCall.id);
   const showWebSearchAnnotation =
     status === 'completed' && isWebSearchTool(toolName) && toolResult?.result;
 
@@ -95,7 +208,7 @@ export const ToolCallDisplay = ({
           <div className={styles.statusIndicator}>
             <div>
               <p className={`${styles.statusText} ${statusClass}`}>
-                {statusText}: {toolDisplayName}
+                {statusText}
               </p>
               {Object.keys(args).length > 0 && (
                 <div className={styles.toolCallArgs}>
@@ -116,6 +229,9 @@ export const ToolCallDisplay = ({
               )}
             </div>
           </div>
+          {status === 'completed' && !isWebSearchTool(toolName) && (
+            <ToolResponseSection toolResult={toolResult} />
+          )}
         </div>
       </div>
     </div>
