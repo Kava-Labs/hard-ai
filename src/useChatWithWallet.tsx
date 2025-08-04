@@ -11,7 +11,9 @@ import {
   getChainConfigByChainId,
 } from './toolcalls/evmTools';
 
-const walletContextMessage = (walletInfo: WalletInfo): ChatMessage => {
+const walletContextMessage = async (
+  walletInfo: WalletInfo,
+): Promise<ChatMessage> => {
   if (!walletInfo.isConnected) {
     return {
       role: 'system',
@@ -19,7 +21,7 @@ const walletContextMessage = (walletInfo: WalletInfo): ChatMessage => {
     };
   }
 
-  const details = getChainConfigByChainId(walletInfo.chainId);
+  const details = await getChainConfigByChainId(walletInfo.chainId);
   const chainName = details?.chainName || 'Unknown';
   const chainConfig = details?.chainConfig || null;
 
@@ -49,10 +51,10 @@ const walletContextMessage = (walletInfo: WalletInfo): ChatMessage => {
   };
 };
 
-const walletConnectionChangedMessage = (
+const walletConnectionChangedMessage = async (
   prevInfo: WalletInfo,
   walletInfo: WalletInfo,
-): string => {
+): Promise<string> => {
   const accountChanged = prevInfo.address !== walletInfo.address;
   const chainChanged = prevInfo.chainId !== walletInfo.chainId;
   const message = (() => {
@@ -64,9 +66,11 @@ const walletConnectionChangedMessage = (
       return `**The connected network has changed.**`;
     }
   })();
+
+  const contextMessage = await walletContextMessage(walletInfo);
   return `${message} Keep previous connection information in context, but recognize that it is not current.
 
-${walletContextMessage(walletInfo).content}`;
+${contextMessage.content}`;
 };
 
 interface UseChatWithWalletOptions {
@@ -123,38 +127,45 @@ export const useChatWithWallet = ({
     // on wallet connection:
     // * add connected wallet context to existing/new chats
     // * register tool calls for the connected chain
-    onWalletConnect: (walletInfo) => {
-      const msg = walletContextMessage(walletInfo);
+    onWalletConnect: async (walletInfo) => {
+      const msg = await walletContextMessage(walletInfo);
       // add connected wallet context to existing chat
       addPendingSystemMessage(msg.content as string);
       // ensure new chats include wallet context
       setCurrentInitialMessages([msg]);
       setWalletInfo(walletInfo);
-      registerEvmToolsWithRegistry(toolCallRegistry, walletInfo.chainId);
+      await registerEvmToolsWithRegistry(toolCallRegistry, walletInfo.chainId);
     },
 
     // on wallet disconnect:
     // * clear wallet context from existing/new chats
     // * deregister tool calls for the connected chain
-    onWalletDisconnect: (walletInfo) => {
+    onWalletDisconnect: async (walletInfo) => {
       setCurrentInitialMessages([]);
       addPendingSystemMessage(
         '**Wallet has been disconnected.** All previous wallet information is no longer valid.',
       );
       setWalletInfo(null);
-      deregisterEvmToolsFromRegistry(toolCallRegistry, walletInfo.chainId);
+      await deregisterEvmToolsFromRegistry(
+        toolCallRegistry,
+        walletInfo.chainId,
+      );
     },
 
     // on change of connected wallet:
     // * notify of connected wallet changed in context of existing/new chats
     // * deregister tool calls for the old chain
     // * register tool calls for the new connected chain
-    onWalletChange: (prevInfo, walletInfo) => {
-      const content = walletConnectionChangedMessage(prevInfo, walletInfo);
+    onWalletChange: async (prevInfo, walletInfo) => {
+      const content = await walletConnectionChangedMessage(
+        prevInfo,
+        walletInfo,
+      );
       addPendingSystemMessage(content);
-      setCurrentInitialMessages([walletContextMessage(walletInfo)]);
+      const contextMsg = await walletContextMessage(walletInfo);
+      setCurrentInitialMessages([contextMsg]);
       setWalletInfo(walletInfo);
-      changeChainToolCallRegistration(
+      await changeChainToolCallRegistration(
         toolCallRegistry,
         walletInfo.chainId,
         prevInfo.chainId,

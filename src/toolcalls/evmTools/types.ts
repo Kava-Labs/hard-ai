@@ -72,6 +72,7 @@ export abstract class EvmToolOperation
     if (!walletInfo || !walletInfo.isWalletConnected) {
       throw new Error('Wallet is not connected');
     }
+
     return true;
   }
 
