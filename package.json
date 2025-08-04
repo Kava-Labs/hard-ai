@@ -29,7 +29,7 @@
     "dompurify": "^3.2.4",
     "ethers": "^6.13.4",
     "highlight.js": "^11.11.1",
-    "lib-kava-ai": "github:kava-labs/lib-kava-ai#dl-tool-state",
+    "lib-kava-ai": "github:kava-labs/lib-kava-ai#d4129629e7c6d7b85dc0429c756381be3c3d0d58",
     "long": "^5.2.3",
     "lucide-react": "^0.482.0",
     "marked": "^15.0.7",
