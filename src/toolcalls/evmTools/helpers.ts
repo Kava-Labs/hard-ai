@@ -111,37 +111,6 @@ export const getChainConfigByChainId = async (
   return null;
 };
 
-// Helper to get chain config by name for EVM chains
-export const getEvmChainConfigByName = async (
-  chainName: string,
-): Promise<EVMChainConfig | null> => {
-  // Try static registry first
-  const evmChains = chainRegistry[ChainType.EVM];
-  const chainConfig = evmChains[chainName];
-
-  if (chainConfig && chainConfig.chainType === ChainType.EVM) {
-    return chainConfig as EVMChainConfig;
-  }
-
-  // Fallback to ChainService for dynamic chains
-  try {
-    const searchResults = await chainService.searchChains(chainName, 1);
-    if (
-      searchResults.length > 0 &&
-      searchResults[0].chainType === ChainType.EVM
-    ) {
-      // Check if the name matches exactly (case-insensitive)
-      if (searchResults[0].name.toLowerCase() === chainName.toLowerCase()) {
-        return searchResults[0] as EVMChainConfig;
-      }
-    }
-  } catch (error) {
-    console.warn('Failed to search for dynamic chain:', error);
-  }
-
-  return null;
-};
-
 // Helper to validate and normalize address
 export const validateAddress = (address: string): string => {
   if (!isAddress(address)) {

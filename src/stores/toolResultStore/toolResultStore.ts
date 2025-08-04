@@ -14,6 +14,14 @@ export class ToolResultStore {
   private results: Map<string, ToolResult> = new Map();
   private listeners: Set<Listener> = new Set();
 
+  constructor(initResults?: ToolResult[]) {
+    if (initResults) {
+      for (const result of initResults) {
+        this.results.set(result.toolCallId, result);
+      }
+    }
+  }
+
   setResult(toolCallId: string, toolName: string, result: string) {
     this.results.set(toolCallId, {
       toolCallId,

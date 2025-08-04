@@ -203,6 +203,7 @@ export const useChat = ({
         await doSaveConversation(
           conversation,
           newActiveChat.messageHistoryStore.getSnapshot(),
+          toolResultStore.getSnapshot(),
         );
       } catch (err) {
         console.warn('failed to saveConversations', err);
@@ -242,6 +243,7 @@ export const useChat = ({
       doSaveConversation(
         conversation,
         newActiveChat.messageHistoryStore.getSnapshot(),
+        toolResultStore.getSnapshot(),
       )
         .catch((err) => {
           console.warn('failed to saveConversations', err);
@@ -307,7 +309,14 @@ export const useChat = ({
       } else {
         const selectedConversation = conversationHistories[id];
         if (selectedConversation) {
-          const messages = await getConversationMessages(id);
+          const messageHistory = await getConversationMessages(id);
+          const messages = Array.isArray(messageHistory)
+            ? messageHistory
+            : messageHistory?.messages;
+          const toolResults = Array.isArray(messageHistory)
+            ? undefined
+            : messageHistory?.toolResults;
+
           const usageStore = new UsageStore({
             promptTokens: selectedConversation.promptTokens,
             completionTokens: selectedConversation.completionTokens,
@@ -339,11 +348,32 @@ export const useChat = ({
             usageStore,
           };
 
+          // Restore tool results if available
+          if (toolResults) {
+            toolResultStore.clear();
+            for (const result of toolResults) {
+              if (result.isError) {
+                toolResultStore.setError(
+                  result.toolCallId,
+                  result.toolName,
+                  result.error || '',
+                  result.stackTrace,
+                );
+              } else {
+                toolResultStore.setResult(
+                  result.toolCallId,
+                  result.toolName,
+                  result.result,
+                );
+              }
+            }
+          }
+
           setActiveChat(newActiveChat);
         }
       }
     },
-    [conversationHistories, activeChat],
+    [conversationHistories, activeChat, toolResultStore],
   );
 
   const deleteConversation = useCallback(
