@@ -76,25 +76,19 @@ export class EncodeFunctionDataTool extends EvmToolOperation {
       args?: unknown[];
     };
 
-    try {
-      // Parse the function signature into ABI format
-      const abi = parseAbi([funcSignature]) as Abi;
+    // Parse the function signature into ABI format
+    const abi = parseAbi([funcSignature]) as Abi;
 
-      // Extract function name from the signature
-      const functionName = (abi[0] as { name: string }).name;
+    // Extract function name from the signature
+    const functionName = (abi[0] as { name: string }).name;
 
-      const encodedData = encodeFunctionData({
-        abi,
-        functionName,
-        args: args || [],
-      });
+    const encodedData = encodeFunctionData({
+      abi,
+      functionName,
+      args: args || [],
+    });
 
-      return encodedData;
-    } catch (error) {
-      throw new Error(
-        `Failed to encode function data: ${error instanceof Error ? error.message : 'Unknown error'}`,
-      );
-    }
+    return encodedData;
   }
 }
 
@@ -187,36 +181,30 @@ export class ReadContractTool extends EvmToolOperation {
       chainId?: number;
     };
 
-    try {
-      // Encode the function call
-      const data = encodeFunctionData({
-        abi: abi as Abi,
-        functionName,
-        args: args || [],
-      });
+    // Encode the function call
+    const data = encodeFunctionData({
+      abi: abi as Abi,
+      functionName,
+      args: args || [],
+    });
 
-      // Make the call
-      const ethereumProvider = getEthereumProvider(provider);
-      const result = (await ethereumProvider.request({
-        method: 'eth_call',
-        params: [{ to: address, data }, 'latest'],
-      })) as string;
+    // Make the call
+    const ethereumProvider = getEthereumProvider(provider);
+    const result = (await ethereumProvider.request({
+      method: 'eth_call',
+      params: [{ to: address, data }, 'latest'],
+    })) as string;
 
-      // Decode the result
-      const decodedResult = decodeFunctionResult({
-        abi: abi as Abi,
-        functionName,
-        data: result as Hex,
-      });
+    // Decode the result
+    const decodedResult = decodeFunctionResult({
+      abi: abi as Abi,
+      functionName,
+      data: result as Hex,
+    });
 
-      // Convert BigInt values to strings for JSON serialization
-      const serializedResult = convertBigIntToString(decodedResult);
+    // Convert BigInt values to strings for JSON serialization
+    const serializedResult = convertBigIntToString(decodedResult);
 
-      return JSON.stringify(serializedResult);
-    } catch (error) {
-      throw new Error(
-        `Failed to read contract: ${error instanceof Error ? error.message : 'Unknown error'}`,
-      );
-    }
+    return JSON.stringify(serializedResult);
   }
 }
