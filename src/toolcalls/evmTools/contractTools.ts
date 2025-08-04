@@ -1,18 +1,7 @@
-import {
-  decodeFunctionResult,
-  encodeFunctionData,
-  parseAbi,
-  type Abi,
-  type Hex,
-} from 'viem';
+import { encodeFunctionData, parseAbi, type Abi } from 'viem';
 import { z } from 'zod';
 import { getEthereumProvider } from './helpers';
-import {
-  convertBigIntToString,
-  createToolName,
-  EthereumProvider,
-  EvmToolOperation,
-} from './types';
+import { createToolName, EthereumProvider, EvmToolOperation } from './types';
 
 // Call Contract Tool
 export class CallContractTool extends EvmToolOperation {
@@ -154,15 +143,12 @@ export class EstimateGasTool extends EvmToolOperation {
 export class ReadContractTool extends EvmToolOperation {
   name = createToolName('read-contract');
   description =
-    'Call a read-only function on a contract, and return the response. Use this for reading any contract state with a specific ABI and function.';
+    'Call a read-only function on a contract, and return the response. Use this for reading any contract state.';
   zodSchema = z.object({
-    abi: z.array(z.unknown()).describe("The contract's ABI"),
-    address: z.string().describe("The contract's address"),
-    functionName: z.string().describe('Function to call on the contract'),
-    args: z
-      .array(z.unknown())
-      .optional()
-      .describe('Arguments to pass when calling the contract'),
+    to: z.string().describe("The contract's address"),
+    data: z
+      .string()
+      .describe('A contract hashed method call with encoded args'),
     chainId: z
       .number()
       .optional()
@@ -171,40 +157,19 @@ export class ReadContractTool extends EvmToolOperation {
 
   async execute(params: unknown, provider?: EthereumProvider): Promise<string> {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { abi, address, functionName, args, chainId } = this.zodSchema.parse(
-      params,
-    ) as {
-      abi: unknown[];
-      address: string;
-      functionName: string;
-      args?: unknown[];
+    const { to, data, chainId } = this.zodSchema.parse(params) as {
+      to: string;
+      data: string;
       chainId?: number;
     };
-
-    // Encode the function call
-    const data = encodeFunctionData({
-      abi: abi as Abi,
-      functionName,
-      args: args || [],
-    });
 
     // Make the call
     const ethereumProvider = getEthereumProvider(provider);
     const result = (await ethereumProvider.request({
       method: 'eth_call',
-      params: [{ to: address, data }, 'latest'],
+      params: [{ to, data }, 'latest'],
     })) as string;
 
-    // Decode the result
-    const decodedResult = decodeFunctionResult({
-      abi: abi as Abi,
-      functionName,
-      data: result as Hex,
-    });
-
-    // Convert BigInt values to strings for JSON serialization
-    const serializedResult = convertBigIntToString(decodedResult);
-
-    return JSON.stringify(serializedResult);
+    return result;
   }
 }
