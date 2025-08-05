@@ -6,6 +6,7 @@ import {
   stringToHex,
   toHex,
   type Hex,
+  type Transaction,
 } from 'viem';
 import { EvmToolOperation, createToolName, EthereumProvider } from './types';
 import { getCurrentAccount, getEthereumProvider } from './helpers';
@@ -163,5 +164,31 @@ export class HashTool extends EvmToolOperation {
 
     const hash = keccak256(input);
     return hash;
+  }
+}
+
+// Get Transaction By Hash Tool
+export class GetTransactionByHashTool extends EvmToolOperation {
+  name = createToolName('get-transaction-by-hash');
+  description =
+    'Get transaction details by hash. Use this to check the status of submitted transactions, verify transaction parameters, and retrieve transaction information including block number, gas used, and transaction receipt. Errors if transaction is pending or not found.';
+  zodSchema = z.object({
+    hash: z.string().describe('Transaction hash to look up'),
+  });
+
+  async execute(params: unknown, provider?: EthereumProvider): Promise<string> {
+    const { hash } = this.zodSchema.parse(params) as { hash: string };
+    const ethereumProvider = getEthereumProvider(provider);
+
+    const transaction = (await ethereumProvider.request({
+      method: 'eth_getTransactionByHash',
+      params: [hash],
+    })) as Transaction | null;
+
+    if (!transaction) {
+      throw new Error(`Transaction not found or pending: hash = ${hash}`);
+    }
+
+    return JSON.stringify(transaction, null, 2);
   }
 }
