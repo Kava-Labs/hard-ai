@@ -30,6 +30,7 @@ import {
   FormatEtherTool,
   ParseEtherTool,
   HashTool,
+  GetTransactionByHashTool,
 } from './transactionTools';
 
 // Centralized list of EVM tools (maintaining alphabetical order)
@@ -47,6 +48,7 @@ const EVM_TOOLS = [
   new GetChainIdTool(),
   new GetTokenBalanceTool(),
   new GetTokenInfoTool(),
+  new GetTransactionByHashTool(),
   new HashTool(),
   new ListSupportedTokensTool(),
   new ParseEtherTool(),
