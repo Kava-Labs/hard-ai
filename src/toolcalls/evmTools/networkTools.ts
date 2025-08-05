@@ -4,8 +4,9 @@ import {
   getCurrentAccount,
   getCurrentChainId,
   getEthereumProvider,
-  getEvmChainConfigByName,
 } from './helpers';
+import { chainService } from '../chain/ChainService';
+import { ChainType, EVMChainConfig } from '../chain/chainsRegistry';
 
 // Switch Network Tool (Enhanced)
 export class SwitchNetworkTool extends EvmToolOperation {
@@ -19,11 +20,23 @@ export class SwitchNetworkTool extends EvmToolOperation {
   async execute(params: unknown, provider?: EthereumProvider): Promise<string> {
     const { chainName } = this.zodSchema.parse(params) as { chainName: string };
 
-    // Validate chain exists in registry
-    const chainConfig = await getEvmChainConfigByName(chainName);
-    if (!chainConfig) {
-      throw new Error(`Chain ${chainName} not found in registry`);
+    // Search for chain in registry
+    const searchResults = await chainService.searchChains(chainName, 5);
+    const evmChain = searchResults.find(
+      (chain): chain is EVMChainConfig => chain.chainType === ChainType.EVM,
+    );
+
+    if (!evmChain) {
+      const availableEvmChains =
+        searchResults.length > 0
+          ? `Available chains matching "${chainName}": ${searchResults.map((c) => c.name).join(', ')}`
+          : `No chains found matching "${chainName}". Try searching for: Kava EVM, Ethereum, Polygon, etc.`;
+      throw new Error(
+        `EVM chain "${chainName}" not found in registry. ${availableEvmChains}`,
+      );
     }
+
+    const chainConfig = evmChain;
 
     // Use wallet_switchEthereumChain RPC method
     const ethereumProvider = getEthereumProvider(provider);

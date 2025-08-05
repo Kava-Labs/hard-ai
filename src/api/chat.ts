@@ -213,9 +213,17 @@ export async function callTools(
         } as OperationResult);
       } catch (err) {
         console.error(err);
+        const errorMessage = err instanceof Error ? err.message : String(err);
+        const stackTrace = err instanceof Error ? err.stack : undefined;
+
+        // Store the tool error if we have a store
+        if (toolResultStore) {
+          toolResultStore.setError(toolCall.id, name, errorMessage, stackTrace);
+        }
+
         content = JSON.stringify({
           status: 'failed',
-          info: err instanceof Error ? err.message : err,
+          info: errorMessage,
         } as OperationResult);
       }
 
